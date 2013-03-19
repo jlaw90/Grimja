@@ -1,0 +1,166 @@
+JFDML JFormDesigner: "5.1.0.2.64" Java: "1.7.0_09" encoding: "UTF-8"
+
+new FormModel {
+	contentType: "form/swing"
+	root: new FormRoot {
+		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+			name: "this"
+			add( new FormContainer( "javax.swing.JSplitPane", new FormLayoutManager( class javax.swing.JSplitPane ) ) {
+				name: "panel1"
+				"orientation": 0
+				"resizeWeight": 0.3
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+					name: "panel2"
+					"border": new javax.swing.border.TitledBorder( "Font Preview" )
+					add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+						name: "panel7"
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "fontPreview"
+							"horizontalAlignment": 0
+							"background": sfield java.awt.Color white
+						} )
+					}, new FormLayoutConstraints( class java.lang.String ) {
+						"value": "Center"
+					} )
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+						name: "panel4"
+						add( new FormComponent( "javax.swing.JTextField" ) {
+							name: "previewText"
+							"text": "!\"£ $%^&*()_+-=`[]{};:'@#~?/>.<,\\|0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+							addEvent( new FormEvent( "javax.swing.event.CaretListener", "caretUpdate", "previewTextChanged", true ) )
+							addEvent( new FormEvent( "java.beans.PropertyChangeListener", "propertyChange", "previewTextPropertyChange", true ) )
+						}, new FormLayoutConstraints( class java.lang.String ) {
+							"value": "Center"
+						} )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label1"
+							"text": "Preview Text: "
+							"horizontalAlignment": 11
+							"labelFor": new FormReference( "previewText" )
+						}, new FormLayoutConstraints( class java.lang.String ) {
+							"value": "West"
+						} )
+					}, new FormLayoutConstraints( class java.lang.String ) {
+						"value": "South"
+					} )
+				}, new FormLayoutConstraints( class java.lang.String ) {
+					"value": "left"
+				} )
+				add( new FormContainer( "javax.swing.JSplitPane", new FormLayoutManager( class javax.swing.JSplitPane ) ) {
+					name: "panel3"
+					"border": new javax.swing.border.TitledBorder( "Font Glyphs" )
+					"orientation": 0
+					"resizeWeight": 0.5
+					add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+						name: "scrollPane1"
+						add( new FormComponent( "javax.swing.JList" ) {
+							name: "list1"
+							"layoutOrientation": 2
+							"maximumSize": sfield com.jformdesigner.model.FormObject NULL_VALUE
+							"minimumSize": sfield com.jformdesigner.model.FormObject NULL_VALUE
+							"visibleRowCount": 0
+							addEvent( new FormEvent( "javax.swing.event.ListSelectionListener", "valueChanged", "glyphSelected", true ) )
+						} )
+					}, new FormLayoutConstraints( class java.lang.String ) {
+						"value": "left"
+					} )
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+						name: "panel5"
+						"border": new javax.swing.border.TitledBorder( "Glyph Properties" )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "glyphPreview"
+							"horizontalAlignment": 0
+							"background": sfield java.awt.Color white
+						}, new FormLayoutConstraints( class java.lang.String ) {
+							"value": "North"
+						} )
+						add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.GridBagLayout ) {
+							"$columnSpecs": "0, 0"
+							"$rowSpecs": "0, 0, 0, 0, 0"
+							"$hGap": 5
+							"$vGap": 5
+							"$alignTop": true
+							"$alignLeft": true
+						} ) {
+							name: "panel6"
+							add( new FormComponent( "javax.swing.JLabel" ) {
+								name: "label5"
+								"text": "Char: "
+								"horizontalAlignment": 11
+							}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) )
+							add( new FormComponent( "javax.swing.JSpinner" ) {
+								name: "charEntry"
+								"model": new javax.swing.SpinnerNumberModel( 0, 0, 65535, 1 )
+								addEvent( new FormEvent( "javax.swing.event.ChangeListener", "stateChanged", "valueChanged", true ) )
+							}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+								"gridx": 1
+							} )
+							add( new FormComponent( "javax.swing.JLabel" ) {
+								name: "label2"
+								"text": "X: "
+								"horizontalAlignment": 11
+								"labelFor": new FormReference( "xEntry" )
+							}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+								"gridy": 1
+							} )
+							add( new FormComponent( "javax.swing.JSpinner" ) {
+								name: "xEntry"
+								"model": new javax.swing.SpinnerNumberModel( 0, -128, 127, 1 )
+								addEvent( new FormEvent( "javax.swing.event.ChangeListener", "stateChanged", "valueChanged", true ) )
+							}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+								"gridx": 1
+								"weightx": 2.0
+								"gridy": 1
+							} )
+							add( new FormComponent( "javax.swing.JLabel" ) {
+								name: "label3"
+								"text": "Y: "
+								"horizontalAlignment": 11
+								"labelFor": new FormReference( "yEntry" )
+							}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+								"gridy": 2
+							} )
+							add( new FormComponent( "javax.swing.JSpinner" ) {
+								name: "yEntry"
+								"model": new javax.swing.SpinnerNumberModel( 0, -128, 127, 1 )
+								addEvent( new FormEvent( "javax.swing.event.ChangeListener", "stateChanged", "valueChanged", true ) )
+							}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+								"gridx": 1
+								"gridy": 2
+								"weightx": 2.0
+							} )
+							add( new FormComponent( "javax.swing.JLabel" ) {
+								name: "label4"
+								"text": "Width: "
+								"horizontalAlignment": 11
+								"labelFor": new FormReference( "widthEntry" )
+							}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+								"gridy": 3
+							} )
+							add( new FormComponent( "javax.swing.JSpinner" ) {
+								name: "widthEntry"
+								"model": new javax.swing.SpinnerNumberModel( 0, -128, 127, 1 )
+								addEvent( new FormEvent( "javax.swing.event.ChangeListener", "stateChanged", "valueChanged", true ) )
+							}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+								"gridx": 1
+								"gridy": 3
+								"weightx": 2.0
+							} )
+						}, new FormLayoutConstraints( class java.lang.String ) {
+							"value": "Center"
+						} )
+					}, new FormLayoutConstraints( class java.lang.String ) {
+						"value": "right"
+					} )
+				}, new FormLayoutConstraints( class java.lang.String ) {
+					"value": "right"
+				} )
+			}, new FormLayoutConstraints( class java.lang.String ) {
+				"value": "Center"
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 0 )
+			"size": new java.awt.Dimension( 400, 300 )
+		} )
+	}
+}

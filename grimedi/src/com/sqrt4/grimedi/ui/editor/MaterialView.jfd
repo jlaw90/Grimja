@@ -1,0 +1,86 @@
+JFDML JFormDesigner: "5.1.0.2.64" Java: "1.7.0_09" encoding: "UTF-8"
+
+new FormModel {
+	contentType: "form/swing"
+	root: new FormRoot {
+		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+			name: "this"
+			add( new FormContainer( "javax.swing.JSplitPane", new FormLayoutManager( class javax.swing.JSplitPane ) ) {
+				name: "panel3"
+				"orientation": 0
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+					name: "panel4"
+					add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+						name: "panel1"
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "preview"
+							"horizontalAlignment": 0
+						} )
+					}, new FormLayoutConstraints( class java.lang.String ) {
+						"value": "Center"
+					} )
+					add( new FormComponent( "javax.swing.JComboBox" ) {
+						name: "colorMapSelector"
+						"prototypeDisplayValue": "Color Map"
+						"editable": true
+						auxiliary() {
+							"JavaCodeGenerator.customCreate": true
+						}
+						addEvent( new FormEvent( "java.awt.event.ItemListener", "itemStateChanged", "colorMapSelected", true ) )
+					}, new FormLayoutConstraints( class java.lang.String ) {
+						"value": "South"
+					} )
+				}, new FormLayoutConstraints( class java.lang.String ) {
+					"value": "left"
+				} )
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+					name: "panel2"
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "playButton"
+						"action": new FormReference( "playAction" )
+					}, new FormLayoutConstraints( class java.lang.String ) {
+						"value": "North"
+					} )
+					add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+						name: "scrollPane1"
+						add( new FormComponent( "javax.swing.JList" ) {
+							name: "imageList"
+							"visibleRowCount": 0
+							"layoutOrientation": 2
+							addEvent( new FormEvent( "javax.swing.event.ListSelectionListener", "valueChanged", "imageSelected", true ) )
+						} )
+					}, new FormLayoutConstraints( class java.lang.String ) {
+						"value": "Center"
+					} )
+				}, new FormLayoutConstraints( class java.lang.String ) {
+					"value": "right"
+				} )
+			}, new FormLayoutConstraints( class java.lang.String ) {
+				"value": "Center"
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 0 )
+			"size": new java.awt.Dimension( 400, 300 )
+		} )
+		add( new FormNonVisual( "javax.swing.AbstractAction" ) {
+			name: "playAction"
+			"$action.Name": "Play"
+			"$action.ShortDescription": "Play animation"
+			auxiliary() {
+				"JavaCodeGenerator.className": "PlayAction"
+			}
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 310 )
+		} )
+		add( new FormNonVisual( "javax.swing.AbstractAction" ) {
+			name: "stopAction"
+			"$action.Name": "Stop"
+			"$action.ShortDescription": "Stop animating"
+			auxiliary() {
+				"JavaCodeGenerator.className": "StopAction"
+			}
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 362 )
+		} )
+	}
+}

@@ -1,0 +1,137 @@
+JFDML JFormDesigner: "5.1.0.2.64" Java: "1.7.0_09" encoding: "UTF-8"
+
+new FormModel {
+	contentType: "form/swing"
+	root: new FormRoot {
+		add( new FormWindow( "javax.swing.JFrame", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+			name: "this"
+			"title": "GrimEdi"
+			"defaultCloseOperation": 3
+			"$locationPolicy": 1
+			"$sizePolicy": 1
+			add( new FormContainer( "javax.swing.JSplitPane", new FormLayoutManager( class javax.swing.JSplitPane ) ) {
+				name: "splitPane1"
+				"resizeWeight": 0.1
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+					name: "panel1"
+					add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+						name: "scrollPane1"
+						add( new FormComponent( "javax.swing.JList" ) {
+							name: "fileList"
+							addEvent( new FormEvent( "javax.swing.event.ListSelectionListener", "valueChanged", "fileSelected", true ) )
+						} )
+					}, new FormLayoutConstraints( class java.lang.String ) {
+						"value": "Center"
+					} )
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.GridBagLayout ) {
+						"$columnSpecs": "0:1.0, 0:1.0, 0"
+						"$rowSpecs": "0:1.0, 0:1.0"
+						"$alignTop": true
+						"$alignLeft": true
+						"$hGap": 2
+						"$vGap": 2
+					} ) {
+						name: "panel2"
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "searchLabel"
+							"icon": new com.jformdesigner.model.SwingIcon( 0, "/tm_item_search.png" )
+							"labelFor": new FormReference( "searchField" )
+							"text": "Search:"
+							"enabled": false
+							"horizontalAlignment": 11
+						}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+							"weightx": 1.0
+						} )
+						add( new FormComponent( "javax.swing.JTextField" ) {
+							name: "searchField"
+							"enabled": false
+							addEvent( new FormEvent( "javax.swing.event.CaretListener", "caretUpdate", "fileSearch", true ) )
+						}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+							"gridwidth": 2
+							"gridx": 1
+							"weightx": 3.0
+						} )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "extLabel"
+							"text": "File types:"
+							"labelFor": new FormReference( "extFilter" )
+							"enabled": false
+							"horizontalAlignment": 11
+						}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+							"gridy": 1
+							"weightx": 1.0
+						} )
+						add( new FormComponent( "javax.swing.JComboBox" ) {
+							name: "extFilter"
+							"enabled": false
+							addEvent( new FormEvent( "java.awt.event.ItemListener", "itemStateChanged", "extFiltered", true ) )
+						}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+							"gridy": 1
+							"gridwidth": 2
+							"gridx": 1
+							"weightx": 3.0
+						} )
+					}, new FormLayoutConstraints( class java.lang.String ) {
+						"value": "North"
+					} )
+				}, new FormLayoutConstraints( class java.lang.String ) {
+					"value": "left"
+				} )
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+					name: "editorPane"
+				}, new FormLayoutConstraints( class java.lang.String ) {
+					"value": "right"
+				} )
+			}, new FormLayoutConstraints( class java.lang.String ) {
+				"value": "Center"
+			} )
+			menuBar: new FormContainer( "javax.swing.JMenuBar", new FormLayoutManager( class javax.swing.JMenuBar ) ) {
+				name: "menuBar1"
+				add( new FormContainer( "javax.swing.JMenu", new FormLayoutManager( class javax.swing.JMenu ) ) {
+					name: "menu1"
+					"text": "File"
+					add( new FormComponent( "javax.swing.JMenuItem" ) {
+						name: "menuItem1"
+						"action": new FormReference( "openAction" )
+						"mnemonic": 79
+					} )
+					add( new FormComponent( "javax.swing.JMenuItem" ) {
+						name: "menuItem2"
+						"action": new FormReference( "closeAction" )
+					} )
+					add( new FormComponent( "javax.swing.JSeparator" ) {
+						name: "separator1"
+					} )
+					add( new FormComponent( "javax.swing.JMenuItem" ) {
+						name: "menuItem3"
+						"text": "Exit"
+					} )
+				} )
+			}
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 0 )
+			"size": new java.awt.Dimension( 800, 600 )
+		} )
+		add( new FormNonVisual( "javax.swing.AbstractAction" ) {
+			name: "openAction"
+			"$action.Name": "Open"
+			"$action.ShortDescription": "Open a LAB file"
+			"$action.AcceleratorKey": static javax.swing.KeyStroke getKeyStroke( 79, 130, false )
+			auxiliary() {
+				"JavaCodeGenerator.className": "OpenAction"
+			}
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 310 )
+		} )
+		add( new FormNonVisual( "javax.swing.AbstractAction" ) {
+			name: "closeAction"
+			"$action.Name": "Close"
+			"$action.ShortDescription": "Close the current LAB file"
+			auxiliary() {
+				"JavaCodeGenerator.className": "CloseAction"
+			}
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 362 )
+		} )
+	}
+}
