@@ -8,15 +8,22 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class LabFile {
+    public final LabFile main;
+
     private RandomAccessFile source;
     private List<EntryDataProvider> _entries = new LinkedList<EntryDataProvider>();
     public final List<EntryDataProvider> entries = Collections.unmodifiableList(_entries);
 
     public LabFile() throws IOException {
+        main = null;
     }
 
     private LabFile(File path) throws IOException {
         // Todo: endianness would be better handled with NIO, but reading and writing would not be so pretty
+        if(path.getName().toLowerCase().endsWith("data000.lab"))
+            main = this;
+        else
+            main = new LabFile(new File(path.getParentFile(), "DATA000.LAB"));
         long fLen = path.length();
         try {
             source = new RandomAccessFile(path, "rw");
@@ -62,6 +69,8 @@ public class LabFile {
                 return CodecMapper.codecForProvider(edp).read(edp);
             }
         }
+        if(main != this)
+            return main.getEntry(name);
         return null;
     }
 

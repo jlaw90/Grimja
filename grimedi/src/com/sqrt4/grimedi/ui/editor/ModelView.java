@@ -23,8 +23,11 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import com.sqrt4.grimedi.ui.component.*;
+import jogamp.graph.math.MathFloat;
 
 /**
  * @author James Lawrence
@@ -35,12 +38,11 @@ public class ModelView extends EditorPanel<GrimModel> {
     float rot = 0f;
     private boolean _drawTextures = false, _drawWireframe = true;
     private Vector3f target;
-    private Vector3f camDir = new Vector3f(0, 1, 0);
-    private float camDistance = 1f;
+    private float camDistance = 1f, theta, phi;
+    private boolean mouseUpdate;
+    private Lock mouseLock = new ReentrantLock();
+    private int oldX, oldY, rX, rY;
     private GLU glu = new GLU();
-    private GL2 gl2;
-    private Point mousePress, mousePos;
-    private Vector3f mouseLast;
 
     public ModelView() {
         initComponents();
@@ -95,11 +97,10 @@ public class ModelView extends EditorPanel<GrimModel> {
                 textures.clear();
                 _regenerateTextures = true;
                 GL2 gl = glAutoDrawable.getGL().getGL2();
-                gl2 = gl;
                 gl.glEnable(GL.GL_DEPTH_TEST);
                 gl.glEnable(GL2.GL_LIGHTING);
                 gl.glEnable(GL2.GL_LIGHT0);
-                gl.glEnable(GL2.GL_CULL_FACE);
+                //gl.glEnable(GL2.GL_CULL_FACE);
                 gl.glDepthFunc(GL2.GL_LEQUAL);
                 gl.glColorMaterial(GL2.GL_FRONT_AND_BACK, GL2.GL_AMBIENT_AND_DIFFUSE);
                 gl.glEnable(GL2.GL_COLOR_MATERIAL);
@@ -108,67 +109,61 @@ public class ModelView extends EditorPanel<GrimModel> {
             public void dispose(GLAutoDrawable glAutoDrawable) {
             }
 
-            private FloatBuffer _camPosBuf = FloatBuffer.allocate(4), _spotDirBuf = FloatBuffer.allocate(4);
-            private void processMouse() {
-                if(mousePress != null) {
-                    mouseLast = toWorld(mousePress.x, mousePress.y);
-                    mousePress = null;
-                }
-                if(mousePos != null) {
-                    Vector3f pos = toWorld(mousePos.x, mousePos.y);
-                    mousePos = null;
-                    Vector3f dif = pos.sub(mouseLast);
-                    target = target.add(dif);
-                    System.out.println(dif.x + ", " + dif.y + ", " + dif.z);
-                    mouseLast = pos;
-                }
-            }
+            private FloatBuffer _camPosBuf = FloatBuffer.allocate(4)
+                    ,
+                    _spotDirBuf = FloatBuffer.allocate(4);
 
             public void display(GLAutoDrawable glAutoDrawable) {
-                Vector3f camPos = target.add(camDir.mult(camDistance));
-                gl2 = glAutoDrawable.getGL().getGL2();
+                Vector3f rot = new Vector3f(camDistance * MathFloat.cos(theta),
+                        camDistance * MathFloat.cos(phi) * MathFloat.sin(theta),
+                        camDistance * MathFloat.sin(phi) * MathFloat.sin(theta));
+                //rot = new Vector3f(0, 1, 0);
+                Vector3f cam = target.add(rot);
+                GL2 gl2 = glAutoDrawable.getGL().getGL2();
                 gl2.glLoadIdentity();
+                if (mouseUpdate && mouseLock.tryLock()) {
+                    Vector3f orig = toWorld(gl2, oldX, oldY);
+                    Vector3f n = toWorld(gl2, oldX+rX, oldY+rY);
+                    Vector3f delta = n.sub(orig);
+                    theta += delta.x;
+                    phi += delta.y;
+                    // Todo: clamp..
+                    rX = rY = 0;
+                    mouseUpdate = false;
+                    mouseLock.unlock();
+                }
                 _camPosBuf.position(0);
                 _spotDirBuf.position(0);
-                gl2.glLightfv(GL2.GL_LIGHT0, GL2.GL_POSITION, _camPosBuf.put(camPos.x).put(camPos.y).put(camPos.z).put(0f));
-                gl2.glLightfv(GL2.GL_LIGHT0, GL2.GL_SPOT_DIRECTION, _spotDirBuf.put(camDir.x).put(camDir.y).put(camDir.z).put(0f));
-                glu.gluLookAt(camPos.x, camPos.y, camPos.z, target.x, target.y, target.z, 0, 0, 1);
+                //gl2.glLightfv(GL2.GL_LIGHT0, GL2.GL_POSITION, _camPosBuf.put(camPos.x).put(camPos.y).put(camPos.z).put(0f));
+                //gl2.glLightfv(GL2.GL_LIGHT0, GL2.GL_SPOT_DIRECTION, _spotDirBuf.put(camDir.x).put(camDir.y).put(camDir.z).put(0f));
+                glu.gluLookAt(cam.x, cam.y, cam.z, target.x, target.y, target.z, 0, 0, 1);
                 gl2.glPushMatrix();
                 gl2.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
-                renderNode( data.hierarchy.get(0), new Vector3f(0, 0, 0));
-                processMouse();
+                for (ModelNode node : data.hierarchy)
+                    renderNode(gl2, node);
                 gl2.glPopMatrix();
                 if (_drawTextures)
                     _regenerateTextures = false;
             }
 
-            private void renderNode(ModelNode node, Vector3f off) {
-                // The mesh is offset by the pivot
-                Vector3f col = new Vector3f(1, 1, 1);
+            private void renderNode(GL2 gl2, ModelNode node) {
+                if (node.mesh == null)
+                    return;
                 ModelNode selected = null;
                 if (boneTree.getSelectionPath() != null)
                     selected = (ModelNode) boneTree.getSelectionPath().getLastPathComponent();
-                if (selected != null && selected == node)
-                    col = new Vector3f(1, 0, 0);
-
-                gl2.glPushMatrix();
+                boolean isSelected = selected == node;
 
                 // Render
-                if (node.sibling != null)
-                    renderNode(node.sibling, off);
-                gl2.glTranslatef(node.pos.x, node.pos.y, node.pos.z);
-                gl2.glRotatef(node.roll, 0.0f, 0.0f, 1.0f);
-                gl2.glRotatef(node.yaw, 0.0f, 1.0f, 0.0f);
-                gl2.glRotatef(node.pitch, 1.0f, 0.0f, 0.0f);
-                if (node.child != null)
-                    renderNode( node.child, off.add(node.pos));
-                if (node.mesh == null) {
-                    gl2.glPopMatrix();
-                    return;
+                gl2.glPushMatrix();
+                for (ModelNode n = node; n != null; n = n.parent) {
+                    gl2.glTranslatef(n.pos.x, n.pos.y, n.pos.z);
+                    gl2.glRotatef((float) Math.toRadians(n.roll), 0.0f, 0.0f, 1.0f);
+                    gl2.glRotatef((float) Math.toRadians(n.yaw), 0.0f, 1.0f, 0.0f);
+                    gl2.glRotatef((float) Math.toRadians(n.pitch), 1.0f, 0.0f, 0.0f);
                 }
 
                 gl2.glTranslatef(node.pivot.x, node.pivot.y, node.pivot.z);
-                gl2.glColor3f(col.x, col.y, col.z);
                 gl2.glAlphaFunc(GL.GL_GREATER, 0.5f);
                 gl2.glEnable(GL2.GL_ALPHA_TEST);
                 for (MeshFace face : node.mesh.faces) {
@@ -187,6 +182,7 @@ public class ModelView extends EditorPanel<GrimModel> {
 
                     // Draw the shape (if we're not wireframing, draw solid, if we're texturing then draw under the wireframe...)
                     if (!_drawWireframe || _drawTextures) {
+                        gl2.glColor3f(1, 1, 1);
                         switch (face.vertices.size()) {
                             case 3:
                                 gl2.glBegin(GL.GL_TRIANGLES);
@@ -204,6 +200,7 @@ public class ModelView extends EditorPanel<GrimModel> {
                             if (tex != null) {
                                 Vector2f uv = face.uv.get(i);
                                 uv = new Vector2f(uv.x, -uv.y).div(texDims);
+                                // Model stores the tex coords backwards...
                                 gl2.glTexCoord2f(uv.x, 1f - uv.y);
                             }
                             gl2.glNormal3f(normal.x, normal.y, normal.z);
@@ -215,8 +212,11 @@ public class ModelView extends EditorPanel<GrimModel> {
                     }
 
                     // Draw wireframe if need be
-                    if (_drawWireframe) {
-                        gl2.glColor3f(col.x, col.y, col.z);
+                    if (_drawWireframe || isSelected) {
+                        if (isSelected)
+                            gl2.glColor3f(1, 0, 0);
+                        else
+                            gl2.glColor3f(1, 1, 1);
                         gl2.glBegin(GL2.GL_LINE_STRIP);
                         List<Vector3f> vertices = face.vertices;
                         for (int i = 0; i < vertices.size(); i++) {
@@ -248,7 +248,7 @@ public class ModelView extends EditorPanel<GrimModel> {
                 gl2.glLoadIdentity();
             }
 
-            private Vector3f toWorld(int x, int y) {
+            private Vector3f toWorld(GL2 gl2, int x, int y) {
                 viewport.clear();
                 modelview.clear();
                 projview.clear();
@@ -265,17 +265,31 @@ public class ModelView extends EditorPanel<GrimModel> {
                 float px = result.get(0);
                 float py = result.get(1);
                 float pz = result.get(2);
-                return new Vector3f(px, py, 0);
+                return new Vector3f(px, py, pz);
             }
         });
 
         MouseAdapter mad = new MouseAdapter() {
+            private boolean rotate;
+
             public void mousePressed(MouseEvent e) {
-                mousePress = e.getPoint();
+                mouseLock.lock();
+                oldX = e.getX();
+                oldY = e.getY();
+                rotate = e.getButton() == 1;
+                mouseLock.unlock();
             }
 
             public void mouseDragged(MouseEvent e) {
-                mousePos = e.getPoint();
+                int x = e.getX();
+                int y = e.getY();
+                mouseLock.lock();
+                rX = x - oldX;
+                rY = y - oldY;
+                oldX = x;
+                oldY = y;
+                mouseUpdate = true;
+                mouseLock.unlock();
             }
 
             public void mouseWheelMoved(MouseWheelEvent e) {
@@ -363,17 +377,17 @@ public class ModelView extends EditorPanel<GrimModel> {
                     {
                         panel4.setBorder(new TitledBorder("Render options"));
                         panel4.setLayout(new GridBagLayout());
-                        ((GridBagLayout)panel4.getLayout()).columnWidths = new int[] {0, 0, 0, 0, 0};
-                        ((GridBagLayout)panel4.getLayout()).rowHeights = new int[] {0, 0};
-                        ((GridBagLayout)panel4.getLayout()).columnWeights = new double[] {0.0, 0.0, 0.0, 0.0, 1.0E-4};
-                        ((GridBagLayout)panel4.getLayout()).rowWeights = new double[] {1.0, 1.0E-4};
+                        ((GridBagLayout) panel4.getLayout()).columnWidths = new int[]{0, 0, 0, 0, 0};
+                        ((GridBagLayout) panel4.getLayout()).rowHeights = new int[]{0, 0};
+                        ((GridBagLayout) panel4.getLayout()).columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 1.0E-4};
+                        ((GridBagLayout) panel4.getLayout()).rowWeights = new double[]{1.0, 1.0E-4};
 
                         //---- label1 ----
                         label1.setText("Color map:");
                         label1.setLabelFor(colorMapSelector);
                         panel4.add(label1, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-                            new Insets(0, 0, 0, 0), 0, 0));
+                                GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
+                                new Insets(0, 0, 0, 0), 0, 0));
 
                         //---- colorMapSelector ----
                         colorMapSelector.addChangeListener(new ChangeListener() {
@@ -383,21 +397,21 @@ public class ModelView extends EditorPanel<GrimModel> {
                             }
                         });
                         panel4.add(colorMapSelector, new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-                            new Insets(0, 0, 0, 0), 0, 0));
+                                GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
+                                new Insets(0, 0, 0, 0), 0, 0));
 
                         //---- toggleTextures ----
                         toggleTextures.setAction(toggleTextureAction);
                         toggleTextures.setSelected(true);
                         panel4.add(toggleTextures, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-                            new Insets(0, 0, 0, 0), 0, 0));
+                                GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
+                                new Insets(0, 0, 0, 0), 0, 0));
 
                         //---- toggleWireframe ----
                         toggleWireframe.setAction(toggleWireframeAction);
                         panel4.add(toggleWireframe, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-                            new Insets(0, 0, 0, 0), 0, 0));
+                                GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
+                                new Insets(0, 0, 0, 0), 0, 0));
                     }
                     panel2.add(panel4, BorderLayout.NORTH);
                 }
@@ -439,8 +453,11 @@ public class ModelView extends EditorPanel<GrimModel> {
     }
 
     public void onNewData() {
+        theta = phi = 0;
+        camDistance = 1;
         colorMapSelector.setLabFile(data.container);
-        target = data.getBounds().center();
+        Bounds3d bounds = data.getBounds();
+        target = bounds == null ? Vector3f.zero : bounds.center();
         DefaultTreeCellRenderer r = (DefaultTreeCellRenderer) boneTree.getCellRenderer();
         r.setOpenIcon(r.getLeafIcon());
         r.setClosedIcon(r.getLeafIcon());

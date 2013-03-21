@@ -31,7 +31,7 @@ public class ColorMapSelector extends JPanel {
     }
 
     public void setLabFile(LabFile container) {
-        if(container == _last)
+        if (container == _last)
             return;
         _last = container;
         final java.util.List<EntryDataProvider> colorMaps = new ArrayList<EntryDataProvider>();
@@ -41,6 +41,14 @@ public class ColorMapSelector extends JPanel {
                 continue;
             colorMaps.add(prov);
         }
+        if (container != container.main) {
+            for (EntryDataProvider prov : container.main.entries) {
+                EntryCodec<?> codec = CodecMapper.codecForProvider(prov);
+                if (codec == null || codec.getEntryClass() != ColorMap.class)
+                    continue;
+                colorMaps.add(prov);
+            }
+        }
         Collections.sort(colorMaps, new Comparator<EntryDataProvider>() {
             public int compare(EntryDataProvider o1, EntryDataProvider o2) {
                 return o1.getName().compareTo(o2.getName());
@@ -48,9 +56,9 @@ public class ColorMapSelector extends JPanel {
         });
         colorMapSelector.setModel(new SpinnerListModel(colorMaps) {
             public void setValue(Object elt) {
-                if(elt instanceof String) {
-                    for(EntryDataProvider cm: colorMaps) {
-                        if(cm.getName().equals(elt)) {
+                if (elt instanceof String) {
+                    for (EntryDataProvider cm : colorMaps) {
+                        if (cm.getName().equals(elt)) {
                             super.setValue(cm);
                             return;
                         }

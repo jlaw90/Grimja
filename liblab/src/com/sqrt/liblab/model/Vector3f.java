@@ -2,6 +2,7 @@ package com.sqrt.liblab.model;
 
 public class Vector3f implements Comparable<Vector3f> {
     public final float x, y, z;
+    public static final Vector3f zero = new Vector3f(0, 0, 0);
 
     public Vector3f(float x, float y, float z) {
         this.x = x;

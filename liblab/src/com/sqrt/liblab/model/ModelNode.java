@@ -11,6 +11,8 @@ public class ModelNode {
     public float yaw, pitch, roll;
     public int flags, type, depth;
     public int childIdx = -1, siblingIdx = -1, parentIdx = -1;
+    public Vector3f animPos;
+    public float animYaw, animPitch, animRoll;
 
     public String toString() {
         return name;
