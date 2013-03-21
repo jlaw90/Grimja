@@ -14,14 +14,12 @@ public class Texture {
     }
 
     public BufferedImage render(ColorMap colorMap) {
-        if(colorMap == null)
+        if (colorMap == null)
             return null;
-        int[] pix = new int[width*height];
-        for(int i = 0; i < indices.length; i++) {
-            int p = colorMap.colors[indices[i] & 0xff];
-            if(!hasAlpha)
-                p |= (0xff << 24);
-            pix[i] = p;
+        int[] pix = new int[width * height];
+        for (int i = 0; i < indices.length; i++) {
+            int idx = indices[i] & 0xff;
+            pix[i] = hasAlpha && idx == 0 ? 0 : colorMap.colors[idx] | (0xff << 24);
         }
         BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         bi.setRGB(0, 0, width, height, pix, 0, width);

@@ -6,8 +6,8 @@ import com.sqrt.liblab.model.Texture;
 
 import java.io.IOException;
 
-public class MaterialCodec implements EntryCodec<Material> {
-    public Material read(EntryDataProvider source) throws IOException {
+public class MaterialCodec extends EntryCodec<Material> {
+    public Material _read(EntryDataProvider source) throws IOException {
         if(source.readInt() != (('M' << 24) | ('A' << 16) | ('T' << 8) | ' '))
             throw new IOException("Invalid material header");
         source.seek(12);

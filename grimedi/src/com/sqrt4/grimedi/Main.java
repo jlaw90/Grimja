@@ -12,6 +12,7 @@ public class Main {
         } catch(Exception e) {
 
         }
+        System.setProperty("sun.java2d.opengl","True");
         MainWindow mw = new MainWindow();
         mw.setVisible(true);
     }

@@ -35,52 +35,62 @@ public final class CodecMapper {
     }
 
     public static EntryCodec<?> codecForMagic(EntryDataProvider provider) {
-        for (EntryCodec<?> ec : codecs) {
-            if (ec.getFileHeaders() == null)
-                continue;
-            hLoop:
-            for (byte[] header : ec.getFileHeaders()) {
-                try {
-                    provider.seek(0);
-                    if (header == null)
-                        continue;
+        try {
+            for (EntryCodec<?> ec : codecs) {
+                if (ec.getFileHeaders() == null)
+                    continue;
+                hLoop:
+                for (byte[] header : ec.getFileHeaders()) {
+                    try {
+                        provider.seek(0);
+                        if (header == null)
+                            continue;
 
-                    if (provider.available() < header.length)
-                        continue;
-                    byte[] read = new byte[header.length];
-                    provider.reset();
-                    provider.readFully(read);
-                    for (int i = 0; i < header.length; i++)
-                        if (read[i] != header[i])
-                            continue hLoop;
-                    provider.seek(0);
-                    return ec;
-                } catch (IOException ioe) {
-                    ioe.printStackTrace();
+                        if (provider.available() < header.length)
+                            continue;
+                        byte[] read = new byte[header.length];
+                        provider.reset();
+                        provider.readFully(read);
+                        for (int i = 0; i < header.length; i++)
+                            if (read[i] != header[i])
+                                continue hLoop;
+                        return ec;
+                    } catch (IOException ioe) {
+                        ioe.printStackTrace();
+                    }
                 }
             }
-        }
-        try {
-            provider.seek(0);
-        } catch (IOException e) {
+            return null;
+        } finally {
+            try {
+                provider.seek(0);
+            } catch (IOException e) {
             /**/
+            }
         }
-        return null;
     }
 
     public static EntryCodec<?> codecForProvider(EntryDataProvider provider) {
-        // First try by extension...
-        String name = provider.getName();
-        if (name != null) {
-            int idx = name.lastIndexOf('.');
-            if (idx != -1) {
-                EntryCodec<?> codec = codecForExtension(name.substring(idx + 1));
-                if (codec != null)
-                    return codec;
+        try {
+            // First try by extension...
+            String name = provider.getName();
+            if (name != null) {
+                int idx = name.lastIndexOf('.');
+                if (idx != -1) {
+                    EntryCodec<?> codec = codecForExtension(name.substring(idx + 1));
+                    if (codec != null)
+                        return codec;
+                }
+            }
+            // Then try by "magic" (e.g. 'LABN' at the start of the file...)
+            return codecForMagic(provider);
+        } finally {
+            try {
+                provider.seek(0);
+            } catch (IOException e) {
+            /**/
             }
         }
-        // Then try by "magic" (e.g. 'LABN' at the start of the file...)
-        return codecForMagic(provider);
     }
 
     public static void registerCodec(EntryCodec<?> codec) {
@@ -96,6 +106,7 @@ public final class CodecMapper {
         CodecMapper.registerCodec(new BitmapCodec());
         CodecMapper.registerCodec(new ColorMapCodec());
         CodecMapper.registerCodec(new MaterialCodec());
+        CodecMapper.registerCodec(new ModelCodec());
         // Todo .key (keyframe)
         // Todo .cos (costume)
         // Todo .lip (lip sync)

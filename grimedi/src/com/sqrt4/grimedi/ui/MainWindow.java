@@ -41,35 +41,30 @@ public class MainWindow extends JFrame {
     private void fileSelected(ListSelectionEvent e) {
         // Todo: lookup view and apply
         // (for now just show hexview)
-        if(e.getValueIsAdjusting())
+        if (e.getValueIsAdjusting())
             return;
         editorPane.removeAll();
 
         EntryDataProvider selected = (EntryDataProvider) fileList.getSelectedValue();
-        if(selected == null)
+        if (selected == null)
             return;
-        try {
-            selected.seek(0);
-        } catch (IOException e1) {
-            /**/
-        }
 
         EntryCodec<?> codec = CodecMapper.codecForProvider(selected);
         boolean fallback = true;
-        EditorPanel panel = EditorMapper.editorPanelForProvider(selected);
-        if(panel != null) {
-            try {
-                LabEntry data = codec.read(selected);
-                if(data != null) {
-                    panel.setData(data);
-                    fallback = false;
-                    editorPane.add(panel);
-                }
-            } catch (IOException e1) {
-                e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            }
+        LabEntry data = null;
+        try {
+            if (codec != null)
+                data = codec.read(selected);
+        } catch (IOException e1) {
+            e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
-        if(fallback)
+        EditorPanel panel = EditorMapper.editorPanelForProvider(selected);
+        if (data != null && panel != null) {
+            panel.setData(data);
+            fallback = false;
+            editorPane.add(panel);
+        }
+        if (fallback)
             editorPane.add(new HexView((EntryDataProvider) (fileList.getSelectedValue())));
         editorPane.invalidate();
         editorPane.revalidate();
@@ -78,7 +73,7 @@ public class MainWindow extends JFrame {
 
     private void extFiltered(ItemEvent e) {
         filterableEntries.removeFilter(extPredicate);
-        if(extFilter.getSelectedIndex() <= 0) {
+        if (extFilter.getSelectedIndex() <= 0) {
             filterableEntries.applyFilters();
             return;
         }
@@ -95,7 +90,7 @@ public class MainWindow extends JFrame {
 
     private void fileSearch(CaretEvent e) {
         filterableEntries.removeFilter(searchPredicate);
-        if(searchField.getText().isEmpty()) {
+        if (searchField.getText().isEmpty()) {
             filterableEntries.applyFilters();
             return;
         }
@@ -186,10 +181,10 @@ public class MainWindow extends JFrame {
                 //======== panel2 ========
                 {
                     panel2.setLayout(new GridBagLayout());
-                    ((GridBagLayout)panel2.getLayout()).columnWidths = new int[] {0, 0, 0, 0};
-                    ((GridBagLayout)panel2.getLayout()).rowHeights = new int[] {0, 0, 0};
-                    ((GridBagLayout)panel2.getLayout()).columnWeights = new double[] {1.0, 1.0, 0.0, 1.0E-4};
-                    ((GridBagLayout)panel2.getLayout()).rowWeights = new double[] {1.0, 1.0, 1.0E-4};
+                    ((GridBagLayout) panel2.getLayout()).columnWidths = new int[]{0, 0, 0, 0};
+                    ((GridBagLayout) panel2.getLayout()).rowHeights = new int[]{0, 0, 0};
+                    ((GridBagLayout) panel2.getLayout()).columnWeights = new double[]{1.0, 1.0, 0.0, 1.0E-4};
+                    ((GridBagLayout) panel2.getLayout()).rowWeights = new double[]{1.0, 1.0, 1.0E-4};
 
                     //---- searchLabel ----
                     searchLabel.setIcon(new ImageIcon(getClass().getResource("/tm_item_search.png")));
@@ -198,8 +193,8 @@ public class MainWindow extends JFrame {
                     searchLabel.setEnabled(false);
                     searchLabel.setHorizontalAlignment(SwingConstants.TRAILING);
                     panel2.add(searchLabel, new GridBagConstraints(0, 0, 1, 1, 1.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 2, 2), 0, 0));
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 2, 2), 0, 0));
 
                     //---- searchField ----
                     searchField.setEnabled(false);
@@ -210,8 +205,8 @@ public class MainWindow extends JFrame {
                         }
                     });
                     panel2.add(searchField, new GridBagConstraints(1, 0, 2, 1, 3.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 2, 0), 0, 0));
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 2, 0), 0, 0));
 
                     //---- extLabel ----
                     extLabel.setText("File types:");
@@ -219,8 +214,8 @@ public class MainWindow extends JFrame {
                     extLabel.setEnabled(false);
                     extLabel.setHorizontalAlignment(SwingConstants.TRAILING);
                     panel2.add(extLabel, new GridBagConstraints(0, 1, 1, 1, 1.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 0, 2), 0, 0));
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 0, 2), 0, 0));
 
                     //---- extFilter ----
                     extFilter.setEnabled(false);
@@ -231,8 +226,8 @@ public class MainWindow extends JFrame {
                         }
                     });
                     panel2.add(extFilter, new GridBagConstraints(1, 1, 2, 1, 3.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 0, 0), 0, 0));
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 0, 0), 0, 0));
                 }
                 panel1.add(panel2, BorderLayout.NORTH);
             }
@@ -254,20 +249,20 @@ public class MainWindow extends JFrame {
         fileList.setModel(filterableEntries = new FilterableListModel(context.entries));
         fileList.setCellRenderer(new LabEntryRenderer());
         Set<String> exts = new TreeSet<String>();
-        for(EntryDataProvider edp: context.entries) {
+        for (EntryDataProvider edp : context.entries) {
             String name = edp.getName();
-            if(name == null)
+            if (name == null)
                 continue;
             int eidx = name.lastIndexOf('.');
-            if(eidx == -1)
+            if (eidx == -1)
                 continue;
-            String ext = name.substring(eidx+1).toLowerCase();
+            String ext = name.substring(eidx + 1).toLowerCase();
             exts.add(ext);
         }
-        String[] arr = new String[exts.size()+1];
+        String[] arr = new String[exts.size() + 1];
         arr[0] = "All entries";
         int off = 1;
-        for(String s: exts)
+        for (String s : exts)
             arr[off++] = s + " entries";
         extFilter.setModel(new DefaultComboBoxModel(arr));
         extFilter.setSelectedIndex(0);
@@ -318,6 +313,8 @@ public class MainWindow extends JFrame {
         }
     }
 
+    JFileChooser jfc = new JFileChooser(".");
+
     private class OpenAction extends AbstractAction {
         private OpenAction() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
@@ -328,7 +325,6 @@ public class MainWindow extends JFrame {
         }
 
         public void actionPerformed(ActionEvent e) {
-            JFileChooser jfc = new JFileChooser();
             if (jfc.showOpenDialog(MainWindow.this) != JFileChooser.APPROVE_OPTION)
                 return;
             File f = jfc.getSelectedFile();

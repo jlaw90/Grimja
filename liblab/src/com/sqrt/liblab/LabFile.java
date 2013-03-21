@@ -1,5 +1,7 @@
 package com.sqrt.liblab;
 
+import com.sqrt.liblab.codec.CodecMapper;
+
 import java.io.*;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -52,6 +54,15 @@ public class LabFile {
 
     public static LabFile open(File path) throws IOException {
         return new LabFile(path);
+    }
+
+    public LabEntry getEntry(String name) throws IOException {
+        for(EntryDataProvider edp: entries) {
+            if(edp.getName().equalsIgnoreCase(name)) {
+                return CodecMapper.codecForProvider(edp).read(edp);
+            }
+        }
+        return null;
     }
 
     // Only works for labfiles loaded from disk

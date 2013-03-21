@@ -4,23 +4,17 @@
 
 package com.sqrt4.grimedi.ui.editor;
 
-import java.awt.event.*;
-
 import com.sqrt.liblab.EntryDataProvider;
 import com.sqrt.liblab.LabFile;
 import com.sqrt.liblab.codec.CodecMapper;
 import com.sqrt.liblab.codec.EntryCodec;
 import com.sqrt.liblab.model.ColorMap;
-import com.sqrt.liblab.model.GrimBitmap;
 import com.sqrt.liblab.model.Material;
 import com.sqrt.liblab.model.Texture;
-import com.sqrt4.grimedi.util.CachedPredicate;
-import com.sqrt4.grimedi.util.FilterableComboBoxModel;
-import com.sqrt4.grimedi.util.Predicate;
+import com.sqrt4.grimedi.ui.component.*;
 
 import javax.swing.*;
 import javax.swing.event.*;
-import javax.swing.plaf.basic.BasicComboBoxEditor;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
@@ -31,69 +25,32 @@ import java.util.*;
  * @author James Lawrence
  */
 public class MaterialView extends EditorPanel<Material> {
-    private LabFile _container;
-    private boolean playAnimation;
-    private Thread animationThread;
-    private FilterableComboBoxModel<ColorMap> colorMapModel;
-    private Predicate<ColorMap> colorMapNameFilter;
-
     public MaterialView() {
         initComponents();
     }
 
     private void updatePreview() {
         preview.setIcon(null);
-        if (imageList.getSelectedValue() == null || colorMapSelector.getSelectedItem() == null || colorMapSelector.getSelectedItem() instanceof String)
+        if (imageList.getSelectedValue() == null || colorMapSelector.getSelected() == null)
             return;
-        preview.setIcon(new ImageIcon(((Texture) imageList.getSelectedValue()).render((ColorMap) colorMapSelector.getSelectedItem())));
+        preview.setIcon(new ImageIcon(((Texture) imageList.getSelectedValue()).render(colorMapSelector.getSelected())));
     }
 
     private void imageSelected(ListSelectionEvent e) {
         updatePreview();
     }
 
-    private void colorMapSelected(ItemEvent e) {
+    private void colorMapSelected(ChangeEvent e) {
         ListCellRenderer rend = imageList.getCellRenderer();
         if (!(rend instanceof OurCellRenderer))
             return;
         ((OurCellRenderer) rend).cache.clear();
         updatePreview();
+        imageList.repaint();
     }
 
     private void createUIComponents() {
-        colorMapSelector = new JComboBox();
-        colorMapSelector.setEditable(true);
-        ComboBoxEditor editor = colorMapSelector.getEditor();
-        if(editor instanceof BasicComboBoxEditor) {
-            BasicComboBoxEditor bcb = (BasicComboBoxEditor) editor;
-            final JTextField jtf = (JTextField) bcb.getEditorComponent();
-            jtf.addCaretListener(new CaretListener() {
-                private String lastFilter;
-                public void caretUpdate(CaretEvent e) {
-                    if(colorMapSelector.getSelectedItem() != null) {
-                        ColorMap cur = (ColorMap) colorMapModel.getSelectedItem();
-                        if(cur.getName().equals(jtf.getText()))
-                            return;
-                    }
-                    if(!colorMapSelector.isPopupVisible())
-                        colorMapSelector.setPopupVisible(true);
-                    final String filter = jtf.getText();
-                    if(filter.equals(lastFilter))
-                        return;
-                    colorMapModel.removeFilter(colorMapNameFilter);
-                    colorMapNameFilter = null;
-                    if(!filter.isEmpty()) {
-                        colorMapModel.addFilter(colorMapNameFilter = new CachedPredicate<ColorMap>(new Predicate<ColorMap>() {
-                            public boolean accept(ColorMap colorMap) {
-                                return colorMap.getName().toLowerCase().contains(filter);
-                            }
-                        }));
-                    }
-                    lastFilter = filter;
-                    colorMapModel.applyFilters();
-                }
-            });
-        }
+        colorMapSelector = new ColorMapSelector();
     }
 
     private void initComponents() {
@@ -105,10 +62,8 @@ public class MaterialView extends EditorPanel<Material> {
         panel1 = new JScrollPane();
         preview = new JLabel();
         panel2 = new JPanel();
-        playButton = new JButton();
         scrollPane1 = new JScrollPane();
         imageList = new JList();
-        playAction = new PlayAction();
 
         //======== this ========
         setLayout(new BorderLayout());
@@ -131,11 +86,9 @@ public class MaterialView extends EditorPanel<Material> {
                 panel4.add(panel1, BorderLayout.CENTER);
 
                 //---- colorMapSelector ----
-                colorMapSelector.setPrototypeDisplayValue("Color Map");
-                colorMapSelector.setEditable(true);
-                colorMapSelector.addItemListener(new ItemListener() {
+                colorMapSelector.addChangeListener(new ChangeListener() {
                     @Override
-                    public void itemStateChanged(ItemEvent e) {
+                    public void stateChanged(ChangeEvent e) {
                         colorMapSelected(e);
                     }
                 });
@@ -146,10 +99,6 @@ public class MaterialView extends EditorPanel<Material> {
             //======== panel2 ========
             {
                 panel2.setLayout(new BorderLayout());
-
-                //---- playButton ----
-                playButton.setAction(playAction);
-                panel2.add(playButton, BorderLayout.NORTH);
 
                 //======== scrollPane1 ========
                 {
@@ -174,30 +123,7 @@ public class MaterialView extends EditorPanel<Material> {
     }
 
     public void onNewData() {
-        if (data.container != _container) {
-            _container = data.container;
-            java.util.List<ColorMap> colorMaps = new ArrayList<ColorMap>();
-            for (EntryDataProvider prov : data.container.entries) {
-                EntryCodec<?> codec = CodecMapper.codecForProvider(prov);
-                if (codec == null || codec.getEntryClass() != ColorMap.class)
-                    continue;
-                try {
-                    prov.seek(0);
-                    ColorMap cm = ((EntryCodec<ColorMap>) codec).read(prov);
-                    if (cm == null)
-                        continue;
-                    colorMaps.add(cm);
-                } catch (IOException ignore) {
-                }
-            }
-            Collections.sort(colorMaps, new Comparator<ColorMap>() {
-                public int compare(ColorMap o1, ColorMap o2) {
-                    return o1.getName().compareTo(o2.getName());
-                }
-            });
-            colorMapSelector.setModel(colorMapModel = new FilterableComboBoxModel<ColorMap>(colorMaps));
-            colorMapSelector.setSelectedIndex(0);
-        }
+        colorMapSelector.setLabFile(data.container);
         imageList.setModel(new ListModel() {
             public int getSize() {
                 return data.textures.size();
@@ -227,7 +153,7 @@ public class MaterialView extends EditorPanel<Material> {
             if (cache.containsKey(t))
                 label = cache.get(t);
             else {
-                BufferedImage bi = t.render((ColorMap) colorMapSelector.getSelectedItem());
+                BufferedImage bi = t.render(colorMapSelector.getSelected());
                 if(bi == null)
                     return new JLabel("Invalid colormodel");
                 label = new JLabel();
@@ -264,73 +190,9 @@ public class MaterialView extends EditorPanel<Material> {
     private JPanel panel4;
     private JScrollPane panel1;
     private JLabel preview;
-    private JComboBox colorMapSelector;
+    private ColorMapSelector colorMapSelector;
     private JPanel panel2;
-    private JButton playButton;
     private JScrollPane scrollPane1;
     private JList imageList;
-    private PlayAction playAction;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
-
-    private class PlayAction extends AbstractAction {
-        private PlayAction() {
-            // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-            putValue(NAME, "Play");
-            putValue(SHORT_DESCRIPTION, "Play animation");
-            // JFormDesigner - End of action initialization  //GEN-END:initComponents
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            playAction.setEnabled(false);
-            stopAction.setEnabled(true);
-            playButton.setAction(stopAction);
-            imageList.setEnabled(false);
-            if (animationThread != null)
-                return;
-            animationThread = new Thread() {
-                public void run() {
-                    playAnimation = true;
-                    while (MaterialView.this.isVisible() && playAnimation) {
-                        imageList.setSelectedIndex((imageList.getSelectedIndex() + 1) % data.textures.size());
-                        try {
-                            Thread.sleep(125);
-                        } catch (Exception e) {
-                            /**/
-                        }
-                    }
-                }
-            };
-            animationThread.setPriority(1);
-            animationThread.setDaemon(true);
-            animationThread.start();
-        }
-    }
-
-    private StopAction stopAction = new StopAction();
-
-    private class StopAction extends AbstractAction {
-
-        private StopAction() {
-            // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-            putValue(NAME, "Stop");
-            putValue(SHORT_DESCRIPTION, "Stop animating");
-            // JFormDesigner - End of action initialization  //GEN-END:initComponents
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            if (animationThread == null)
-                return;
-            try {
-                playAnimation = false;
-                animationThread.join();
-            } catch (InterruptedException ie) {
-                /**/
-            }
-            animationThread = null;
-            playAction.setEnabled(true);
-            stopAction.setEnabled(false);
-            playButton.setAction(playAction);
-            imageList.setEnabled(true);
-        }
-    }
 }

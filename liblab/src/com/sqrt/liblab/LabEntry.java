@@ -13,6 +13,10 @@ public abstract class LabEntry {
         return name;
     }
 
+    public int hashCode() {
+        return name.hashCode();
+    }
+
     public final void setName(String name) {
         this.name = name;
     }

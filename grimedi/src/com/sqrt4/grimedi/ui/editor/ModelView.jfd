@@ -1,0 +1,121 @@
+JFDML JFormDesigner: "5.1.0.2.64" Java: "1.7.0_09" encoding: "UTF-8"
+
+new FormModel {
+	contentType: "form/swing"
+	root: new FormRoot {
+		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+			name: "this"
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+				name: "panel3"
+				add( new FormContainer( "javax.swing.JSplitPane", new FormLayoutManager( class javax.swing.JSplitPane ) ) {
+					name: "panel1"
+					"resizeWeight": 0.8
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+						name: "panel2"
+						add( new FormComponent( "javax.media.opengl.awt.GLJPanel" ) {
+							name: "preview"
+							auxiliary() {
+								"JavaCodeGenerator.customCreate": true
+							}
+						}, new FormLayoutConstraints( class java.lang.String ) {
+							"value": "Center"
+						} )
+						add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.GridBagLayout ) {
+							"$columnSpecs": "0, 0, 0, 0"
+							"$rowSpecs": "center:0:1.0"
+							"$alignTop": true
+							"$alignLeft": true
+						} ) {
+							name: "panel4"
+							"border": new javax.swing.border.TitledBorder( "Render options" )
+							add( new FormComponent( "javax.swing.JLabel" ) {
+								name: "label1"
+								"text": "Color map:"
+								"labelFor": new FormReference( "colorMapSelector" )
+							}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) )
+							add( new FormComponent( "com.sqrt4.grimedi.ui.component.ColorMapSelector" ) {
+								name: "colorMapSelector"
+								auxiliary() {
+									"JavaCodeGenerator.customCreate": true
+								}
+								addEvent( new FormEvent( "javax.swing.event.ChangeListener", "stateChanged", "colorMapSelected", true ) )
+							}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+								"gridx": 1
+								"weightx": 1.0
+							} )
+							add( new FormComponent( "javax.swing.JCheckBox" ) {
+								name: "toggleTextures"
+								"action": new FormReference( "toggleTextureAction" )
+								"selected": true
+							}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+								"gridx": 2
+							} )
+							add( new FormComponent( "javax.swing.JCheckBox" ) {
+								name: "toggleWireframe"
+								"action": new FormReference( "toggleWireframeAction" )
+							}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+								"gridx": 3
+							} )
+						}, new FormLayoutConstraints( class java.lang.String ) {
+							"value": "North"
+						} )
+					}, new FormLayoutConstraints( class java.lang.String ) {
+						"value": "left"
+					} )
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+						name: "panel5"
+						add( new FormContainer( "javax.swing.JSplitPane", new FormLayoutManager( class javax.swing.JSplitPane ) ) {
+							name: "splitPane1"
+							"orientation": 0
+							"resizeWeight": 1.0
+							add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+								name: "scrollPane1"
+								add( new FormComponent( "javax.swing.JTree" ) {
+									name: "boneTree"
+									"border": new javax.swing.border.TitledBorder( "Bones" )
+								} )
+							}, new FormLayoutConstraints( class java.lang.String ) {
+								"value": "left"
+							} )
+							add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+								name: "panel6"
+								"border": new javax.swing.border.TitledBorder( "Bone Properties" )
+							}, new FormLayoutConstraints( class java.lang.String ) {
+								"value": "right"
+							} )
+						}, new FormLayoutConstraints( class java.lang.String ) {
+							"value": "Center"
+						} )
+					}, new FormLayoutConstraints( class java.lang.String ) {
+						"value": "right"
+					} )
+				}, new FormLayoutConstraints( class java.lang.String ) {
+					"value": "Center"
+				} )
+			}, new FormLayoutConstraints( class java.lang.String ) {
+				"value": "Center"
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 0 )
+			"size": new java.awt.Dimension( 400, 300 )
+		} )
+		add( new FormNonVisual( "javax.swing.AbstractAction" ) {
+			name: "toggleTextureAction"
+			"$action.Name": "Draw textures"
+			auxiliary() {
+				"JavaCodeGenerator.className": "ToggleTextures"
+			}
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 310 )
+		} )
+		add( new FormNonVisual( "javax.swing.AbstractAction" ) {
+			name: "toggleWireframeAction"
+			"$action.Name": "Draw wireframe"
+			auxiliary() {
+				"JavaCodeGenerator.className": "ToggleWireframe"
+			}
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 362 )
+		} )
+	}
+}

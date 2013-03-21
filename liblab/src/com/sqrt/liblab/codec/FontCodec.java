@@ -9,8 +9,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FontCodec implements EntryCodec<GrimFont> {
-    public GrimFont read(EntryDataProvider e) throws IOException {
+public class FontCodec extends EntryCodec<GrimFont> {
+    public GrimFont _read(EntryDataProvider e) throws IOException {
         int numChars = e.readIntLE();
         long dataSize = e.readUIntLE();
         int height = e.readIntLE();

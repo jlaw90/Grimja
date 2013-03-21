@@ -27,6 +27,16 @@ public abstract class EntryDataProvider extends InputStream {
 
     public abstract void seek(long pos) throws IOException;
 
+    public String readString(int maxLen) throws IOException {
+        byte[] data = new byte[maxLen];
+        readFully(data);
+        String s = new String(data);
+        int idx = s.indexOf(0);
+        if(idx != -1)
+            s = s.substring(0, idx);
+        return s;
+    }
+
     public void readFully(byte[] b, int off, int len) throws IOException {
         while (len > 0) {
             int read = read(b, off, len);
@@ -88,5 +98,9 @@ public abstract class EntryDataProvider extends InputStream {
 
     public int readUShortLE() throws IOException {
         return Short.reverseBytes(readShort()) & 0xffff;
+    }
+
+    public String toString() {
+        return name;
     }
 }

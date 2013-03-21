@@ -10,8 +10,8 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.nio.BufferOverflowException;
 
-public class BitmapCodec implements EntryCodec<GrimBitmap> {
-    public GrimBitmap read(EntryDataProvider source) throws IOException {
+public class BitmapCodec extends EntryCodec<GrimBitmap> {
+    public GrimBitmap _read(EntryDataProvider source) throws IOException {
         int tag = source.readInt();
         switch(tag) {
             case ('B' << 24) | ('M' << 16) | (' ' << 8) | ' ':
