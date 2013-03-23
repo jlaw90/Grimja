@@ -1,5 +1,6 @@
 package com.sqrt.liblab;
 
+import com.sqrt.liblab.codec.CodecMapper;
 import com.sqrt.liblab.threed.Angle;
 import com.sqrt.liblab.threed.Vector2;
 import com.sqrt.liblab.threed.Vector3;
@@ -30,6 +31,8 @@ public abstract class EntryDataProvider extends InputStream {
     }
 
     public abstract void seek(long pos) throws IOException;
+
+    public abstract long getPosition();
 
     public String readString(int maxLen) throws IOException {
         byte[] data = new byte[maxLen];
@@ -119,6 +122,4 @@ public abstract class EntryDataProvider extends InputStream {
     public String toString() {
         return name;
     }
-
-    public abstract long getPosition();
 }

@@ -5,12 +5,15 @@
 package com.sqrt4.grimedi.ui;
 
 import javax.swing.event.*;
+import javax.swing.tree.*;
 
+import com.sqrt.liblab.LabCollection;
 import com.sqrt.liblab.LabEntry;
 import com.sqrt.liblab.codec.EntryCodec;
 import com.sqrt.liblab.EntryDataProvider;
 import com.sqrt.liblab.LabFile;
 import com.sqrt.liblab.codec.CodecMapper;
+import com.sqrt4.grimedi.ui.component.BusyDialog;
 import com.sqrt4.grimedi.ui.editor.EditorMapper;
 import com.sqrt4.grimedi.ui.editor.EditorPanel;
 import com.sqrt4.grimedi.ui.editor.HexView;
@@ -25,67 +28,22 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import javax.swing.*;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeCellRenderer;
+import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreePath;
 
 /**
  * @author James Lawrence
  */
 public class MainWindow extends JFrame {
-    public LabFile context;
+    public LabCollection context;
     private FilterableListModel<EntryDataProvider> filterableEntries;
-    private Predicate<EntryDataProvider> extPredicate, searchPredicate;
+    private Predicate<EntryDataProvider> searchPredicate;
+    private BusyDialog _busy;
 
     public MainWindow() {
         initComponents();
-    }
-
-    private void fileSelected(ListSelectionEvent e) {
-        // Todo: lookup view and apply
-        // (for now just show hexview)
-        if (e.getValueIsAdjusting())
-            return;
-        editorPane.removeAll();
-
-        EntryDataProvider selected = (EntryDataProvider) fileList.getSelectedValue();
-        if (selected == null)
-            return;
-
-        EntryCodec<?> codec = CodecMapper.codecForProvider(selected);
-        boolean fallback = true;
-        LabEntry data = null;
-        try {
-            if (codec != null)
-                data = codec.read(selected);
-        } catch (IOException e1) {
-            e1.printStackTrace();
-        }
-        EditorPanel panel = EditorMapper.editorPanelForProvider(selected);
-        if (data != null && panel != null) {
-            panel.setData(data);
-            fallback = false;
-            editorPane.add(panel);
-        }
-        if (fallback)
-            editorPane.add(new HexView((EntryDataProvider) (fileList.getSelectedValue())));
-        editorPane.invalidate();
-        editorPane.revalidate();
-        editorPane.repaint();
-    }
-
-    private void extFiltered(ItemEvent e) {
-        filterableEntries.removeFilter(extPredicate);
-        if (extFilter.getSelectedIndex() <= 0) {
-            filterableEntries.applyFilters();
-            return;
-        }
-        String ex = (String) extFilter.getSelectedItem();
-        final String ext = ex.substring(0, ex.length() - 8);
-        extPredicate = new CachedPredicate<EntryDataProvider>(new Predicate<EntryDataProvider>() {
-            public boolean accept(EntryDataProvider entryDataProvider) {
-                return entryDataProvider.getName().toLowerCase().endsWith("." + ext);
-            }
-        });
-        filterableEntries.addFilter(extPredicate);
-        filterableEntries.applyFilters();
     }
 
     private void fileSearch(CaretEvent e) {
@@ -104,6 +62,74 @@ public class MainWindow extends JFrame {
         filterableEntries.applyFilters();
     }
 
+    private void showBusyDialog(String title, String message) {
+        try {
+            if (_busy == null)
+                _busy = new BusyDialog(this);
+            _busy.setTitle(title);
+            _busy.setMessage(message);
+            _busy.pack();
+            _busy.setVisible(true);
+        } catch (Throwable t) {
+            if (_busy != null) {
+                _busy.setVisible(false);
+                _busy = null;
+            }
+        }
+    }
+
+    private void hideBusyDialog() {
+        if (_busy == null || !_busy.isVisible())
+            return;
+        _busy.setVisible(false);
+        _busy = null;
+    }
+
+    private void fileSelected(TreeSelectionEvent e) {
+        if (fileList.getSelectionPath() == null)
+            return;
+        Object selObj = fileList.getSelectionPath().getLastPathComponent();
+        if (selObj == null || !(selObj instanceof EntryDataProvider))
+            return;
+        final EntryDataProvider selected = (EntryDataProvider) selObj;
+
+        new Thread() {
+            public void run() {
+                editorPane.removeAll();
+                try {
+                    while (_busy == null || !_busy.isVisible())
+                        Thread.sleep(100); // race condition...
+                    EntryCodec<?> codec = CodecMapper.codecForProvider(selected);
+                    boolean fallback = true;
+                    LabEntry data = null;
+                    try {
+                        if (codec != null)
+                            data = codec.read(selected);
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                    EditorPanel panel = EditorMapper.editorPanelForProvider(selected);
+                    if (data != null && panel != null) {
+                        panel.setData(data);
+                        fallback = false;
+                        editorPane.add(panel);
+                    }
+                    if (fallback)
+                        editorPane.add(new HexView(selected));
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                } finally {
+                    hideBusyDialog();
+                }
+                editorPane.invalidate();
+                editorPane.revalidate();
+                editorPane.repaint();
+            }
+        }.start();
+
+        showBusyDialog("Please wait...", "Loading " + selected.getName());
+    }
+
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         menuBar1 = new JMenuBar();
@@ -115,12 +141,10 @@ public class MainWindow extends JFrame {
         splitPane1 = new JSplitPane();
         panel1 = new JPanel();
         scrollPane1 = new JScrollPane();
-        fileList = new JList();
+        fileList = new JTree();
         panel2 = new JPanel();
         searchLabel = new JLabel();
         searchField = new JTextField();
-        extLabel = new JLabel();
-        extFilter = new JComboBox();
         editorPane = new JPanel();
         openAction = new OpenAction();
         closeAction = new CloseAction();
@@ -168,9 +192,11 @@ public class MainWindow extends JFrame {
                 {
 
                     //---- fileList ----
-                    fileList.addListSelectionListener(new ListSelectionListener() {
+                    fileList.setShowsRootHandles(true);
+                    fileList.setRootVisible(false);
+                    fileList.addTreeSelectionListener(new TreeSelectionListener() {
                         @Override
-                        public void valueChanged(ListSelectionEvent e) {
+                        public void valueChanged(TreeSelectionEvent e) {
                             fileSelected(e);
                         }
                     });
@@ -207,27 +233,6 @@ public class MainWindow extends JFrame {
                     panel2.add(searchField, new GridBagConstraints(1, 0, 2, 1, 3.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                             new Insets(0, 0, 2, 0), 0, 0));
-
-                    //---- extLabel ----
-                    extLabel.setText("File types:");
-                    extLabel.setLabelFor(extFilter);
-                    extLabel.setEnabled(false);
-                    extLabel.setHorizontalAlignment(SwingConstants.TRAILING);
-                    panel2.add(extLabel, new GridBagConstraints(0, 1, 1, 1, 1.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 0, 2), 0, 0));
-
-                    //---- extFilter ----
-                    extFilter.setEnabled(false);
-                    extFilter.addItemListener(new ItemListener() {
-                        @Override
-                        public void itemStateChanged(ItemEvent e) {
-                            extFiltered(e);
-                        }
-                    });
-                    panel2.add(extFilter, new GridBagConstraints(1, 1, 2, 1, 3.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 0, 0), 0, 0));
                 }
                 panel1.add(panel2, BorderLayout.NORTH);
             }
@@ -246,39 +251,54 @@ public class MainWindow extends JFrame {
     }
 
     private void onOpen() {
-        Collections.sort(context.entries, new Comparator<EntryDataProvider>() {
-            public int compare(EntryDataProvider o1, EntryDataProvider o2) {
-                return o1.getName().compareTo(o2.getName());
+        fileList.setModel(new TreeModel() {
+            public Object getRoot() {
+                return context;
+            }
+
+            public Object getChild(Object parent, int index) {
+                if (parent == context)
+                    return context.labs.get(index);
+                else if (parent instanceof LabFile)
+                    return ((LabFile) parent).entries.get(index);
+                return null;
+            }
+
+            public int getChildCount(Object parent) {
+                if (parent == context)
+                    return context.labs.size();
+                else if (parent instanceof LabFile)
+                    return ((LabFile) parent).entries.size();
+                return 0;
+            }
+
+            public boolean isLeaf(Object node) {
+                return getChildCount(node) == 0;
+            }
+
+            public void valueForPathChanged(TreePath path, Object newValue) {
+            }
+
+            public int getIndexOfChild(Object parent, Object child) {
+                if (parent == context)
+                    return context.labs.indexOf(child);
+                else if (parent instanceof LabFile)
+                    return ((LabFile) parent).entries.indexOf(child);
+                return -1;
+            }
+
+            public void addTreeModelListener(TreeModelListener l) {
+                //To change body of implemented methods use File | Settings | File Templates.
+            }
+
+            public void removeTreeModelListener(TreeModelListener l) {
+                //To change body of implemented methods use File | Settings | File Templates.
             }
         });
-        fileList.setModel(filterableEntries = new FilterableListModel(context.entries));
-        fileList.setCellRenderer(new LabEntryRenderer());
-        java.util.List<String> exts = new LinkedList<String>();
-        for (EntryDataProvider edp : context.entries) {
-            String name = edp.getName();
-            if (name == null)
-                continue;
-            int eidx = name.lastIndexOf('.');
-            if (eidx == -1)
-                continue;
-            String ext = name.substring(eidx + 1).toLowerCase();
-            if(!exts.contains(ext))
-                exts.add(ext);
-        }
-        Collections.sort(exts);
-        String[] arr = new String[exts.size() + 1];
-        arr[0] = "All entries";
-        int off = 1;
-        for (String s : exts)
-            arr[off++] = s + " entries";
-        extFilter.setModel(new DefaultComboBoxModel(arr));
-        extFilter.setSelectedIndex(0);
         searchField.setText("");
-        extPredicate = searchPredicate = null;
+        searchPredicate = null;
         searchField.setEnabled(true);
         searchLabel.setEnabled(true);
-        extFilter.setEnabled(true);
-        extLabel.setEnabled(true);
     }
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
@@ -291,34 +311,14 @@ public class MainWindow extends JFrame {
     private JSplitPane splitPane1;
     private JPanel panel1;
     private JScrollPane scrollPane1;
-    private JList fileList;
+    private JTree fileList;
     private JPanel panel2;
     private JLabel searchLabel;
     private JTextField searchField;
-    private JLabel extLabel;
-    private JComboBox extFilter;
     private JPanel editorPane;
     private OpenAction openAction;
     private CloseAction closeAction;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
-
-    private class LabEntryRenderer implements ListCellRenderer<EntryDataProvider> {
-        public Component getListCellRendererComponent(JList<? extends EntryDataProvider> list, EntryDataProvider value, int index, boolean isSelected, boolean cellHasFocus) {
-            // Todo: cache or something...
-            // Todo: icons, tooltips and other niceties :)
-            JLabel jl = new JLabel();
-            jl.setOpaque(true);
-            if (isSelected) {
-                jl.setBackground(list.getSelectionBackground());
-                jl.setForeground(list.getSelectionForeground());
-            } else {
-                jl.setBackground(list.getBackground());
-                jl.setForeground(list.getForeground());
-            }
-            jl.setText(value.getName());
-            return jl;
-        }
-    }
 
     JFileChooser jfc = new JFileChooser(".");
 
@@ -332,11 +332,12 @@ public class MainWindow extends JFrame {
         }
 
         public void actionPerformed(ActionEvent e) {
+            jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             if (jfc.showOpenDialog(MainWindow.this) != JFileChooser.APPROVE_OPTION)
                 return;
             File f = jfc.getSelectedFile();
             try {
-                context = LabFile.open(f);
+                context = LabCollection.open(f);
                 onOpen();
             } catch (IOException e1) {
                 e1.printStackTrace();

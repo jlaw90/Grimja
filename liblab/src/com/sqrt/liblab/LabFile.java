@@ -1,27 +1,29 @@
 package com.sqrt.liblab;
 
 import com.sqrt.liblab.codec.CodecMapper;
+import com.sqrt.liblab.codec.EntryCodec;
 
 import java.io.*;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
 public class LabFile {
-    public final LabFile main;
-
+    public final LabCollection container;
     private RandomAccessFile source;
+    private String name;
     public final List<EntryDataProvider> entries = new LinkedList<EntryDataProvider>();
 
-    public LabFile() throws IOException {
-        main = null;
+    LabFile(LabCollection container) {
+        this.container = container;
+        name = "New";
     }
 
-    private LabFile(File path) throws IOException {
+    LabFile(LabCollection container, File path) throws IOException {
+        this(container);
+        name = path.getName().toUpperCase();
         // Todo: endianness would be better handled with NIO, but reading and writing would not be so pretty
-        if(path.getName().toLowerCase().endsWith("data000.lab"))
-            main = this;
-        else
-            main = new LabFile(new File(path.getParentFile(), "DATA000.LAB"));
         try {
             source = new RandomAccessFile(path, "rw");
         } catch (IOException ioe) {
@@ -55,20 +57,34 @@ public class LabFile {
             String name = sb.toString(); // huzzah
             this.entries.add(new EntryDiskDataProvider(this, name, start, size));
         }
+
+        // Sort them for convenience...
+        Collections.sort(this.entries, new Comparator<EntryDataProvider>() {
+            public int compare(EntryDataProvider o1, EntryDataProvider o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
     }
 
-    public static LabFile open(File path) throws IOException {
-        return new LabFile(path);
+    public <T extends LabEntry> List<EntryDataProvider> findByType(Class<T> type) {
+        List<EntryDataProvider> res = new LinkedList<EntryDataProvider>();
+        for (EntryDataProvider edp : entries) {
+            EntryCodec<?> codec = CodecMapper.codecForProvider(edp);
+            if (codec == null || codec.getEntryClass() != type)
+                continue;
+            res.add(edp);
+        }
+        if (res.isEmpty())
+            return null;
+        return res;
     }
 
-    public LabEntry getEntry(String name) throws IOException {
-        for(EntryDataProvider edp: entries) {
-            if(edp.getName().equalsIgnoreCase(name)) {
+    public LabEntry findByName(String name) throws IOException {
+        for (EntryDataProvider edp : entries) {
+            if (edp.getName().equalsIgnoreCase(name)) {
                 return CodecMapper.codecForProvider(edp).read(edp);
             }
         }
-        if(main != this)
-            return main.getEntry(name);
         return null;
     }
 
@@ -138,5 +154,9 @@ public class LabFile {
         public boolean markSupported() {
             return true;
         }
+    }
+
+    public String toString() {
+        return name;
     }
 }

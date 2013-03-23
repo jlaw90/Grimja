@@ -16,9 +16,11 @@ new FormModel {
 					name: "panel1"
 					add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
 						name: "scrollPane1"
-						add( new FormComponent( "javax.swing.JList" ) {
+						add( new FormComponent( "javax.swing.JTree" ) {
 							name: "fileList"
-							addEvent( new FormEvent( "javax.swing.event.ListSelectionListener", "valueChanged", "fileSelected", true ) )
+							"showsRootHandles": true
+							"rootVisible": false
+							addEvent( new FormEvent( "javax.swing.event.TreeSelectionListener", "valueChanged", "fileSelected", true ) )
 						} )
 					}, new FormLayoutConstraints( class java.lang.String ) {
 						"value": "Center"
@@ -47,26 +49,6 @@ new FormModel {
 							"enabled": false
 							addEvent( new FormEvent( "javax.swing.event.CaretListener", "caretUpdate", "fileSearch", true ) )
 						}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
-							"gridwidth": 2
-							"gridx": 1
-							"weightx": 3.0
-						} )
-						add( new FormComponent( "javax.swing.JLabel" ) {
-							name: "extLabel"
-							"text": "File types:"
-							"labelFor": new FormReference( "extFilter" )
-							"enabled": false
-							"horizontalAlignment": 11
-						}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
-							"gridy": 1
-							"weightx": 1.0
-						} )
-						add( new FormComponent( "javax.swing.JComboBox" ) {
-							name: "extFilter"
-							"enabled": false
-							addEvent( new FormEvent( "java.awt.event.ItemListener", "itemStateChanged", "extFiltered", true ) )
-						}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
-							"gridy": 1
 							"gridwidth": 2
 							"gridx": 1
 							"weightx": 3.0

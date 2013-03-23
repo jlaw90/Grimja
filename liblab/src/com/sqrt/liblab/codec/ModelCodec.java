@@ -19,7 +19,7 @@ public class ModelCodec extends EntryCodec<GrimModel> {
         Material[] materials = new Material[numMaterials];
         for (int i = 0; i < numMaterials; i++) {
             String name = source.readString(32);
-            materials[i] = (Material) source.container.getEntry(name);
+            materials[i] = (Material) source.container.container.findByName(name);
             if(materials[i] == null) {
                 System.out.println("No material named: " + name);
             }

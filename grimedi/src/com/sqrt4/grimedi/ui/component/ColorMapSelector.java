@@ -7,7 +7,6 @@ package com.sqrt4.grimedi.ui.component;
 import com.sqrt.liblab.EntryDataProvider;
 import com.sqrt.liblab.LabFile;
 import com.sqrt.liblab.codec.CodecMapper;
-import com.sqrt.liblab.codec.EntryCodec;
 import com.sqrt.liblab.entry.model.ColorMap;
 
 import java.awt.*;
@@ -30,25 +29,7 @@ public class ColorMapSelector extends JPanel {
             return;
         _last = container;
         Vector<EntryDataProvider> colorMaps = new Vector<EntryDataProvider>();
-        for (EntryDataProvider prov : container.entries) {
-            EntryCodec<?> codec = CodecMapper.codecForProvider(prov);
-            if (codec == null || codec.getEntryClass() != ColorMap.class)
-                continue;
-            colorMaps.add(prov);
-        }
-        if (container != container.main) {
-            for (EntryDataProvider prov : container.main.entries) {
-                EntryCodec<?> codec = CodecMapper.codecForProvider(prov);
-                if (codec == null || codec.getEntryClass() != ColorMap.class)
-                    continue;
-                colorMaps.add(prov);
-            }
-        }
-        Collections.sort(colorMaps, new Comparator<EntryDataProvider>() {
-            public int compare(EntryDataProvider o1, EntryDataProvider o2) {
-                return o1.getName().compareTo(o2.getName());
-            }
-        });
+        colorMaps.addAll(container.container.findByType(ColorMap.class));
         colorMapSelector.setModel(new DefaultComboBoxModel(colorMaps));
     }
 

@@ -35,7 +35,13 @@ public class ModelRenderer extends JPanel {
     private GrimModel model;
     private java.util.List<Texture> textures = new LinkedList<Texture>();
     private boolean _regenerateTextures;
-    private boolean _drawTextures = true, _drawWireframe, _drawNormals, _smoothShading = true;
+    public boolean drawTextures = true;
+    public boolean drawWireframe;
+    public boolean drawNormals;
+    public boolean smoothShading = true;
+    public boolean drawPlane = true;
+    public float planeWidth = 0.5f;
+    public float planeExtent = 5f;
     private Vector3 target;
     private float camDistance = 1f, theta, phi;
     private boolean mouseUpdate;
@@ -49,10 +55,10 @@ public class ModelRenderer extends JPanel {
 
     public ModelRenderer() {
         initComponents();
-        toggleTextures.setSelected(_drawTextures);
-        toggleWireframe.setSelected(_drawWireframe);
-        toggleNormals.setSelected(_drawNormals);
-        toggleSmooth.setSelected(_smoothShading);
+        toggleTextures.setSelected(drawTextures);
+        toggleWireframe.setSelected(drawWireframe);
+        toggleNormals.setSelected(drawNormals);
+        toggleSmooth.setSelected(smoothShading);
     }
 
     public int getViewportWidth() {
@@ -112,7 +118,6 @@ public class ModelRenderer extends JPanel {
                 GL2 gl = glAutoDrawable.getGL().getGL2();
                 gl.glClearColor(0.5f, 0.5f, 0.5f, 1);
                 gl.glEnable(GL.GL_DEPTH_TEST);
-                gl.glEnable(GL2.GL_LIGHTING);
                 gl.glEnable(GL2.GL_LIGHT0);
                 gl.glAlphaFunc(GL.GL_GREATER, 0.5f);
                 gl.glEnable(GL2.GL_ALPHA_TEST);
@@ -156,8 +161,23 @@ public class ModelRenderer extends JPanel {
                 //gl2.glLightfv(GL2.GL_LIGHT0, GL2.GL_POSITION, _camPosBuf.put(camPos.x).put(camPos.y).put(camPos.z).put(0f));
                 //gl2.glLightfv(GL2.GL_LIGHT0, GL2.GL_SPOT_DIRECTION, _spotDirBuf.put(camDir.x).put(camDir.y).put(camDir.z).put(0f));
                 glu.gluLookAt(cam.x, cam.y, cam.z, target.x, target.y, target.z, 0, 0, 1);
+
+
+                // Draw floor plane...
+                if (drawPlane) {
+                    gl2.glColor3f(0.7f, 0.7f, 0.7f);
+                    gl2.glBegin(GL2.GL_LINES);
+                    for(float x = -planeExtent; x <= planeExtent; x += planeWidth) {
+                        gl2.glVertex3f(x, -planeExtent, 0);
+                        gl2.glVertex3f(x, planeExtent, 0); // left-to-right
+                        gl2.glVertex3f(-planeExtent, x, 0);
+                        gl2.glVertex3f(planeExtent, x, 0); // top-to-bottom
+                    }
+                    gl2.glEnd();
+                }
+
                 renderNode(gl2, model.hierarchy.get(0));
-                if (_drawTextures)
+                if (drawTextures)
                     _regenerateTextures = false;
                 if (callback != null)
                     callback.postDisplay(gl2);
@@ -192,7 +212,7 @@ public class ModelRenderer extends JPanel {
 
                             gl2.glEnable(GL2.GL_LIGHTING);
                             // Load the texture if needed...
-                            if (_drawTextures && face.texture != null) {
+                            if (drawTextures && face.texture != null) {
                                 tex = face.texture;
                                 texId = _regenerateTextures ? genTexture(gl2, tex) : getTexture(tex);
                                 gl2.glEnable(GL2.GL_TEXTURE_2D);
@@ -200,7 +220,7 @@ public class ModelRenderer extends JPanel {
                             }
 
                             // Draw the shape (if we're not wireframing, draw solid, if we're texturing then draw under the wireframe...)
-                            if (!_drawWireframe || _drawTextures) {
+                            if (!drawWireframe || drawTextures) {
                                 gl2.glColor3f(1, 1, 1);
                                 switch (face.vertices.size()) {
                                     case 3:
@@ -215,7 +235,7 @@ public class ModelRenderer extends JPanel {
                                 }
                                 for (int i = 0; i < face.vertices.size(); i++) {
                                     Vector3 vertex = face.vertices.get(i);
-                                    Vector3 normal = _smoothShading ? face.normals.get(i) : face.normal;
+                                    Vector3 normal = smoothShading ? face.normals.get(i) : face.normal;
                                     if (tex != null) {
                                         Vector2 uv = face.uv.get(i);
                                         // Model stores the tex coords backwards...
@@ -230,7 +250,7 @@ public class ModelRenderer extends JPanel {
                             }
 
                             // Draw wireframe if need be
-                            if (_drawWireframe || isSelected) {
+                            if (drawWireframe || isSelected) {
                                 if (isSelected)
                                     gl2.glColor3f(1, 0, 0);
                                 else
@@ -239,18 +259,18 @@ public class ModelRenderer extends JPanel {
                                 List<Vector3> vertices = face.vertices;
                                 for (int i = 0; i < vertices.size(); i++) {
                                     Vector3 v = vertices.get(i);
-                                    Vector3 normal = _smoothShading ? face.normals.get(i) : face.normal;
+                                    Vector3 normal = smoothShading ? face.normals.get(i) : face.normal;
                                     gl2.glNormal3f(normal.x, normal.y, normal.z);
                                     gl2.glVertex3f(v.x, v.y, v.z);
                                 }
                                 Vector3 v = face.vertices.get(0);
-                                Vector3 normal = _smoothShading ? face.normals.get(0) : face.normal;
+                                Vector3 normal = smoothShading ? face.normals.get(0) : face.normal;
                                 gl2.glNormal3f(normal.x, normal.y, normal.z);
                                 gl2.glVertex3f(v.x, v.y, v.z);
                                 gl2.glEnd();
                             }
 
-                            if (_drawNormals) {
+                            if (drawNormals) {
                                 final float normalLength = 0.01f * camDistance;
                                 if (isSelected)
                                     gl2.glColor3f(0, 1, 0);
@@ -285,6 +305,7 @@ public class ModelRenderer extends JPanel {
 
                 if (node.sibling != null)
                     renderNode(gl2, node.sibling);
+                gl2.glDisable(GL2.GL_LIGHTING);
             }
 
             public void reshape(GLAutoDrawable glAutoDrawable, int x, int y, int width, int height) {
@@ -503,7 +524,7 @@ public class ModelRenderer extends JPanel {
         }
 
         public void actionPerformed(ActionEvent e) {
-            _smoothShading = toggleSmooth.isSelected();
+            smoothShading = toggleSmooth.isSelected();
         }
     }
 
@@ -516,7 +537,7 @@ public class ModelRenderer extends JPanel {
         }
 
         public void actionPerformed(ActionEvent e) {
-            _drawNormals = toggleNormals.isSelected();
+            drawNormals = toggleNormals.isSelected();
         }
     }
 
@@ -529,7 +550,7 @@ public class ModelRenderer extends JPanel {
         }
 
         public void actionPerformed(ActionEvent e) {
-            _drawTextures = toggleTextures.isSelected();
+            drawTextures = toggleTextures.isSelected();
         }
     }
 
@@ -542,7 +563,7 @@ public class ModelRenderer extends JPanel {
         }
 
         public void actionPerformed(ActionEvent e) {
-            _drawWireframe = toggleWireframe.isSelected();
+            drawWireframe = toggleWireframe.isSelected();
         }
     }
 }
@@ -559,8 +580,8 @@ class OurAnimator implements GLAnimatorControl {
                     try {
                         long start = System.currentTimeMillis();
                         if (isAnimating()) {
-                            for (int i = 0; i < drawables.size(); i++) {
-                                drawables.get(i).display();
+                            for (GLAutoDrawable drawable : drawables) {
+                                drawable.display();
                             }
                         }
                         long delta = System.currentTimeMillis() - start;
@@ -574,10 +595,6 @@ class OurAnimator implements GLAnimatorControl {
             }
         }
     });
-
-    protected String getBaseName(String s) {
-        return null;
-    }
 
     public boolean isStarted() {
         return started;
@@ -647,7 +664,6 @@ class OurAnimator implements GLAnimatorControl {
     }
 
     public void resetFPSCounter() {
-        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     public int getUpdateFPSFrames() {

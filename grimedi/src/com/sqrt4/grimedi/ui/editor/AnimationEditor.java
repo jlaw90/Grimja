@@ -64,16 +64,12 @@ public class AnimationEditor extends EditorPanel<Animation> {
     public void onNewData() {
         if (_container != data.container) {
             Vector<EntryDataProvider> allModels = new Vector<EntryDataProvider>();
+            allModels.addAll(data.container.container.findByType(GrimModel.class));
             _container = data.container;
-            for (EntryDataProvider e : _container.entries) {
-                EntryCodec<?> c = CodecMapper.codecForProvider(e);
-                if (c == null || c.getEntryClass() != GrimModel.class)
-                    continue;
-                allModels.add(e);
-            }
             modelSelector.setModel(new DefaultComboBoxModel(allModels));
             modelSelected(null);
         }
+        renderer.setModel(renderer.getModel()); // Forces the renderer to reset the view...
         stopAction.actionPerformed(null);
 
         frameSlider.setMaximum(data.numFrames - 1);
@@ -140,18 +136,10 @@ public class AnimationEditor extends EditorPanel<Animation> {
                 roll = roll.add(last.droll.mult(dt));
             }
 
-            float fade = 1f;
-
-            mn.animPos = pos.sub(mn.pos);//mn.animPos.add(pos.sub(mn.pos).mult(fade));
-
-            //Angle dpitch = pitch.sub(mn.pitch);
-            mn.animPitch = pitch.add(mn.animPitch);//mn.animPitch.add(dpitch.normalize(-180).mult(fade));
-
-            //Angle dyaw = yaw.sub(mn.yaw);
-            mn.animYaw = yaw.add(mn.animYaw);//mn.animYaw.add(dyaw.normalize(-180).mult(fade));
-
-            //Angle droll = roll.sub(mn.roll);
-            mn.animRoll = roll.add(mn.animRoll);//mn.animRoll.add(droll.normalize(-180).mult(fade));
+            mn.animPos = pos.sub(mn.pos);
+            mn.animPitch = pitch.sub(mn.pitch).normalize(-180);
+            mn.animYaw = yaw.sub(mn.yaw).normalize(-180);
+            mn.animRoll = roll.sub(mn.roll).normalize(-180);
         }
     }
 
