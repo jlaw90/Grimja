@@ -1,0 +1,141 @@
+JFDML JFormDesigner: "5.1.0.2.64" Java: "1.7.0_09" encoding: "UTF-8"
+
+new FormModel {
+	contentType: "form/swing"
+	root: new FormRoot {
+		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+			name: "this"
+			add( new FormContainer( "javax.swing.JSplitPane", new FormLayoutManager( class javax.swing.JSplitPane ) ) {
+				name: "panel2"
+				"orientation": 0
+				"resizeWeight": 0.7
+				add( new FormComponent( "com.sqrt4.grimedi.ui.component.ModelRenderer" ) {
+					name: "renderer"
+				}, new FormLayoutConstraints( class java.lang.String ) {
+					"value": "left"
+				} )
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.GridBagLayout ) {
+					"$columnSpecs": "0, 0:1.0, 0:1.0"
+					"$rowSpecs": "0, 0:1.0, 0"
+					"$alignTop": true
+					"$alignLeft": true
+				} ) {
+					name: "panel3"
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "label1"
+						"text": "Target model: "
+						"horizontalAlignment": 11
+					}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+						"gridx": 1
+					} )
+					add( new FormComponent( "javax.swing.JComboBox" ) {
+						name: "modelSelector"
+						addEvent( new FormEvent( "java.awt.event.ItemListener", "itemStateChanged", "modelSelected", true ) )
+					}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+						"gridx": 2
+					} )
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.GridBagLayout ) {
+						"$columnSpecs": "0, 0:1.0"
+						"$rowSpecs": "0:1.0, 0, 0"
+						"$alignTop": true
+						"$alignLeft": true
+					} ) {
+						name: "panel4"
+						"border": new javax.swing.border.TitledBorder( "Anim control" )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label2"
+							"text": "Frame: "
+							"horizontalAlignment": 11
+						}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) )
+						add( new FormComponent( "javax.swing.JSlider" ) {
+							name: "frameSlider"
+							"snapToTicks": true
+							"majorTickSpacing": 1
+							"maximum": 50
+							"paintTicks": true
+							"value": 0
+							addEvent( new FormEvent( "javax.swing.event.ChangeListener", "stateChanged", "changeFrame", true ) )
+						}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+							"weightx": 1.0
+							"gridx": 1
+						} )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label3"
+							"text": "FPS: "
+							"horizontalAlignment": 11
+						}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+							"gridy": 1
+						} )
+						add( new FormComponent( "javax.swing.JSpinner" ) {
+							name: "spinner1"
+						}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+							"gridy": 1
+							"gridx": 1
+						} )
+						add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.FlowLayout ) ) {
+							name: "panel1"
+							add( new FormComponent( "javax.swing.JButton" ) {
+								name: "playButton"
+								"action": new FormReference( "playAction" )
+							} )
+							add( new FormComponent( "javax.swing.JButton" ) {
+								name: "button1"
+								"text": "text"
+								"action": new FormReference( "stopAction" )
+								"enabled": false
+							} )
+							add( new FormComponent( "javax.swing.JButton" ) {
+								name: "button2"
+								"action": new FormReference( "exportGif" )
+							} )
+						}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+							"gridy": 2
+							"gridx": 1
+						} )
+					}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+						"gridy": 1
+						"gridwidth": 2
+						"gridx": 1
+					} )
+				}, new FormLayoutConstraints( class java.lang.String ) {
+					"value": "right"
+				} )
+			}, new FormLayoutConstraints( class java.lang.String ) {
+				"value": "Center"
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 0 )
+			"size": new java.awt.Dimension( 630, 550 )
+		} )
+		add( new FormNonVisual( "javax.swing.AbstractAction" ) {
+			name: "playAction"
+			"$action.Name": "Play"
+			"$action.ShortDescription": "play animation"
+			auxiliary() {
+				"JavaCodeGenerator.className": "PlayAction"
+			}
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 560 )
+		} )
+		add( new FormNonVisual( "javax.swing.AbstractAction" ) {
+			name: "stopAction"
+			"$action.Name": "Stop"
+			"$action.ShortDescription": "stop animation"
+			auxiliary() {
+				"JavaCodeGenerator.className": "StopAction"
+			}
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 605 )
+		} )
+		add( new FormNonVisual( "javax.swing.AbstractAction" ) {
+			name: "exportGif"
+			"$action.Name": "Export GIF"
+			"$action.ShortDescription": "exports the current animation as a GIF (from the current viewpoint)"
+			auxiliary() {
+				"JavaCodeGenerator.className": "ExportGIFAction"
+			}
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 657 )
+		} )
+	}
+}

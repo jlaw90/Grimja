@@ -1,4 +1,4 @@
-package com.sqrt.liblab.model;
+package com.sqrt.liblab.entry.model;
 
 import com.sqrt.liblab.LabEntry;
 import com.sqrt.liblab.LabFile;

@@ -7,8 +7,8 @@ package com.sqrt4.grimedi.ui.editor;
 import java.beans.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
-import com.sqrt.liblab.model.FontGlyph;
-import com.sqrt.liblab.model.GrimFont;
+import com.sqrt.liblab.entry.graphics.FontGlyph;
+import com.sqrt.liblab.entry.graphics.GrimFont;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -42,6 +42,7 @@ public class FontView extends EditorPanel<GrimFont> {
                 g = data.getGlyph('?');
             width += g.charWidth;
         }
+        // Todo: move all this stuff into the font model
         if(width == 0)
             width = 1; // so bufferedimage doesn't bitch...
         BufferedImage result = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);

@@ -1,7 +1,7 @@
 package com.sqrt.liblab.codec;
 
 import com.sqrt.liblab.EntryDataProvider;
-import com.sqrt.liblab.model.GrimBitmap;
+import com.sqrt.liblab.entry.graphics.GrimBitmap;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;

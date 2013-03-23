@@ -4,7 +4,12 @@ import com.sqrt.liblab.LabEntry;
 import com.sqrt.liblab.codec.EntryCodec;
 import com.sqrt.liblab.EntryDataProvider;
 import com.sqrt.liblab.codec.CodecMapper;
-import com.sqrt.liblab.model.*;
+import com.sqrt.liblab.entry.graphics.GrimBitmap;
+import com.sqrt.liblab.entry.graphics.GrimFont;
+import com.sqrt.liblab.entry.model.ColorMap;
+import com.sqrt.liblab.entry.model.GrimModel;
+import com.sqrt.liblab.entry.model.Material;
+import com.sqrt.liblab.entry.model.anim.Animation;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,6 +33,7 @@ public class EditorMapper {
         map(ColorMap.class, new ColorMapView());
         map(Material.class, new MaterialView());
         map(GrimModel.class, new ModelView());
+        map(Animation.class, new AnimationEditor());
     }
 
     public static EditorPanel editorPanelForProvider(EntryDataProvider selected) {

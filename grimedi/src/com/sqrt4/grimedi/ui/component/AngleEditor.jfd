@@ -1,0 +1,33 @@
+JFDML JFormDesigner: "5.1.0.2.64" Java: "1.7.0_09" encoding: "UTF-8"
+
+new FormModel {
+	contentType: "form/swing"
+	root: new FormRoot {
+		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+			name: "this"
+			add( new FormComponent( "javax.swing.JSlider" ) {
+				name: "angleslider"
+				"maximum": 360
+				"paintTicks": true
+				"majorTickSpacing": 45
+				"value": 0
+				addEvent( new FormEvent( "javax.swing.event.ChangeListener", "stateChanged", "angleSliderChanged", true ) )
+			}, new FormLayoutConstraints( class java.lang.String ) {
+				"value": "Center"
+			} )
+			add( new FormComponent( "javax.swing.JFormattedTextField" ) {
+				name: "angleDisplay"
+				addEvent( new FormEvent( "java.beans.PropertyChangeListener", "propertyChange", "angleDisplayChanged", true, "value" ) )
+			}, new FormLayoutConstraints( class java.lang.String ) {
+				"value": "South"
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 0 )
+			"size": new java.awt.Dimension( 400, 300 )
+		} )
+		addBindingGroup( new FormBindingGroup( class org.jdesktop.beansbinding.BindingGroup ) {
+			"name": "bindingGroup"
+			addBinding( new FormBinding( "this", "angle", "angleslider", "value_IGNORE_ADJUSTING" ) )
+		} )
+	}
+}

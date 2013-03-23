@@ -24,7 +24,7 @@ new FormModel {
 						auxiliary() {
 							"JavaCodeGenerator.customCreate": true
 						}
-						addEvent( new FormEvent( "javax.swing.event.ChangeListener", "stateChanged", "colorMapSelected", true ) )
+						addEvent( new FormEvent( "java.awt.event.ItemListener", "itemStateChanged", "colorMapSelected", true ) )
 					}, new FormLayoutConstraints( class java.lang.String ) {
 						"value": "South"
 					} )

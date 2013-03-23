@@ -4,7 +4,7 @@
 
 package com.sqrt4.grimedi.ui.editor;
 
-import com.sqrt.liblab.model.ColorMap;
+import com.sqrt.liblab.entry.model.ColorMap;
 
 import java.awt.*;
 import javax.swing.*;

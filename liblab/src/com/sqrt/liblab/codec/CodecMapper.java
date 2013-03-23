@@ -107,7 +107,7 @@ public final class CodecMapper {
         CodecMapper.registerCodec(new ColorMapCodec());
         CodecMapper.registerCodec(new MaterialCodec());
         CodecMapper.registerCodec(new ModelCodec());
-        // Todo .key (keyframe)
+        CodecMapper.registerCodec(new KeyFrameCodec());
         // Todo .cos (costume)
         // Todo .lip (lip sync)
         // Todo .snm (movie)

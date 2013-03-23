@@ -4,21 +4,15 @@
 
 package com.sqrt4.grimedi.ui.editor;
 
-import com.sqrt.liblab.EntryDataProvider;
-import com.sqrt.liblab.LabFile;
-import com.sqrt.liblab.codec.CodecMapper;
-import com.sqrt.liblab.codec.EntryCodec;
-import com.sqrt.liblab.model.ColorMap;
-import com.sqrt.liblab.model.Material;
-import com.sqrt.liblab.model.Texture;
+import java.awt.event.*;
+import com.sqrt.liblab.entry.model.Material;
+import com.sqrt.liblab.entry.model.Texture;
 import com.sqrt4.grimedi.ui.component.*;
 
 import javax.swing.*;
 import javax.swing.event.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.util.*;
 
 /**
@@ -40,17 +34,17 @@ public class MaterialView extends EditorPanel<Material> {
         updatePreview();
     }
 
-    private void colorMapSelected(ChangeEvent e) {
+    private void createUIComponents() {
+        colorMapSelector = new ColorMapSelector();
+    }
+
+    private void colorMapSelected(ItemEvent e) {
         ListCellRenderer rend = imageList.getCellRenderer();
         if (!(rend instanceof OurCellRenderer))
             return;
         ((OurCellRenderer) rend).cache.clear();
         updatePreview();
         imageList.repaint();
-    }
-
-    private void createUIComponents() {
-        colorMapSelector = new ColorMapSelector();
     }
 
     private void initComponents() {
@@ -86,9 +80,9 @@ public class MaterialView extends EditorPanel<Material> {
                 panel4.add(panel1, BorderLayout.CENTER);
 
                 //---- colorMapSelector ----
-                colorMapSelector.addChangeListener(new ChangeListener() {
+                colorMapSelector.addItemListener(new ItemListener() {
                     @Override
-                    public void stateChanged(ChangeEvent e) {
+                    public void itemStateChanged(ItemEvent e) {
                         colorMapSelected(e);
                     }
                 });

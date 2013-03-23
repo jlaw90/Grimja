@@ -1,9 +1,5 @@
-package com.sqrt.liblab.model;
+package com.sqrt.liblab.entry.graphics;
 
-import com.sqrt.liblab.LabEntry;
-import com.sqrt.liblab.LabFile;
-
-import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public class FontGlyph {

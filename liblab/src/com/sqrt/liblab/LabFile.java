@@ -3,7 +3,6 @@ package com.sqrt.liblab;
 import com.sqrt.liblab.codec.CodecMapper;
 
 import java.io.*;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -11,8 +10,7 @@ public class LabFile {
     public final LabFile main;
 
     private RandomAccessFile source;
-    private List<EntryDataProvider> _entries = new LinkedList<EntryDataProvider>();
-    public final List<EntryDataProvider> entries = Collections.unmodifiableList(_entries);
+    public final List<EntryDataProvider> entries = new LinkedList<EntryDataProvider>();
 
     public LabFile() throws IOException {
         main = null;
@@ -24,7 +22,6 @@ public class LabFile {
             main = this;
         else
             main = new LabFile(new File(path.getParentFile(), "DATA000.LAB"));
-        long fLen = path.length();
         try {
             source = new RandomAccessFile(path, "rw");
         } catch (IOException ioe) {
@@ -33,9 +30,10 @@ public class LabFile {
         int magic;
         if ((magic = source.readInt()) != (('L' << 24) | ('A' << 16) | ('B' << 8) | ('N')))
             throw new IOException(String.format("Invalid LAB file, magic: %08x", magic));
-        int ver = Integer.reverseBytes(source.readInt());
+        source.skipBytes(4); // version
         int entries = Integer.reverseBytes(source.readInt()); // should be uint but the chances of there being over 2147483647 entries is, I assume: slim
-        int stringTableSize = Integer.reverseBytes(source.readInt());
+        source.skipBytes(4); // string table size
+        Integer.reverseBytes(source.readInt());
         int stringTableOffset = 16 * (entries + 1);
 
         for (int i = 0; i < entries; i++) {
@@ -55,7 +53,7 @@ public class LabFile {
                 sb.append((char) ch);
             }
             String name = sb.toString(); // huzzah
-            this._entries.add(new EntryDiskDataProvider(this, name, start, size));
+            this.entries.add(new EntryDiskDataProvider(this, name, start, size));
         }
     }
 
@@ -107,6 +105,10 @@ public class LabFile {
             if (pos >= len)
                 throw new IOException();
             _off = off + pos;
+        }
+
+        public long getPosition() {
+            return _off - off;
         }
 
         public long skip(long n) throws IOException {

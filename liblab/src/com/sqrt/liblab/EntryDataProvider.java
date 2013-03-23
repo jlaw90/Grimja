@@ -1,5 +1,9 @@
 package com.sqrt.liblab;
 
+import com.sqrt.liblab.threed.Angle;
+import com.sqrt.liblab.threed.Vector2;
+import com.sqrt.liblab.threed.Vector3;
+
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -92,15 +96,29 @@ public abstract class EntryDataProvider extends InputStream {
         return Short.reverseBytes(readShort());
     }
 
-    public int readUShort() throws IOException {
-        return readShort() & 0xffff;
-    }
-
     public int readUShortLE() throws IOException {
         return Short.reverseBytes(readShort()) & 0xffff;
+    }
+
+    public float readFloat() throws IOException {
+        return Float.intBitsToFloat(readIntLE());
+    }
+
+    public Angle readAngle() throws IOException {
+        return new Angle(readFloat());
+    }
+
+    public Vector2 readVector2() throws IOException {
+        return new Vector2(readFloat(), readFloat());
+    }
+
+    public Vector3 readVector3() throws IOException {
+        return new Vector3(readFloat(), readFloat(), readFloat());
     }
 
     public String toString() {
         return name;
     }
+
+    public abstract long getPosition();
 }

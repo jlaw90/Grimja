@@ -7,9 +7,7 @@ package com.sqrt4.grimedi.ui.editor;
 import java.awt.event.*;
 import javax.swing.event.*;
 
-import com.sqrt.liblab.LabFile;
-import com.sqrt.liblab.model.GrimBitmap;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import com.sqrt.liblab.entry.graphics.GrimBitmap;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;

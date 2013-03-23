@@ -1,8 +1,8 @@
 package com.sqrt.liblab.codec;
 
 import com.sqrt.liblab.EntryDataProvider;
-import com.sqrt.liblab.model.FontGlyph;
-import com.sqrt.liblab.model.GrimFont;
+import com.sqrt.liblab.entry.graphics.FontGlyph;
+import com.sqrt.liblab.entry.graphics.GrimFont;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;

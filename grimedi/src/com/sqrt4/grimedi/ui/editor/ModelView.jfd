@@ -10,55 +10,8 @@ new FormModel {
 				add( new FormContainer( "javax.swing.JSplitPane", new FormLayoutManager( class javax.swing.JSplitPane ) ) {
 					name: "panel1"
 					"resizeWeight": 0.8
-					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
-						name: "panel2"
-						add( new FormComponent( "javax.media.opengl.awt.GLJPanel" ) {
-							name: "preview"
-							auxiliary() {
-								"JavaCodeGenerator.customCreate": true
-							}
-						}, new FormLayoutConstraints( class java.lang.String ) {
-							"value": "Center"
-						} )
-						add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.GridBagLayout ) {
-							"$columnSpecs": "0, 0, 0, 0"
-							"$rowSpecs": "center:0:1.0"
-							"$alignTop": true
-							"$alignLeft": true
-						} ) {
-							name: "panel4"
-							"border": new javax.swing.border.TitledBorder( "Render options" )
-							add( new FormComponent( "javax.swing.JLabel" ) {
-								name: "label1"
-								"text": "Color map:"
-								"labelFor": new FormReference( "colorMapSelector" )
-							}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) )
-							add( new FormComponent( "com.sqrt4.grimedi.ui.component.ColorMapSelector" ) {
-								name: "colorMapSelector"
-								auxiliary() {
-									"JavaCodeGenerator.customCreate": true
-								}
-								addEvent( new FormEvent( "javax.swing.event.ChangeListener", "stateChanged", "colorMapSelected", true ) )
-							}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
-								"gridx": 1
-								"weightx": 1.0
-							} )
-							add( new FormComponent( "javax.swing.JCheckBox" ) {
-								name: "toggleTextures"
-								"action": new FormReference( "toggleTextureAction" )
-								"selected": true
-							}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
-								"gridx": 2
-							} )
-							add( new FormComponent( "javax.swing.JCheckBox" ) {
-								name: "toggleWireframe"
-								"action": new FormReference( "toggleWireframeAction" )
-							}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
-								"gridx": 3
-							} )
-						}, new FormLayoutConstraints( class java.lang.String ) {
-							"value": "North"
-						} )
+					add( new FormComponent( "com.sqrt4.grimedi.ui.component.ModelRenderer" ) {
+						name: "renderer"
 					}, new FormLayoutConstraints( class java.lang.String ) {
 						"value": "left"
 					} )
@@ -73,13 +26,97 @@ new FormModel {
 								add( new FormComponent( "javax.swing.JTree" ) {
 									name: "boneTree"
 									"border": new javax.swing.border.TitledBorder( "Bones" )
+									addEvent( new FormEvent( "javax.swing.event.TreeSelectionListener", "valueChanged", "boneSelected", true ) )
 								} )
 							}, new FormLayoutConstraints( class java.lang.String ) {
 								"value": "left"
 							} )
-							add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+							add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.GridBagLayout ) {
+								"$columnSpecs": "0:1.0, 0"
+								"$rowSpecs": "0, 0, 0, 0:1.0, 0, 0, 0, 0"
+								"$alignTop": true
+								"$alignLeft": true
+							} ) {
 								name: "panel6"
 								"border": new javax.swing.border.TitledBorder( "Bone Properties" )
+								add( new FormComponent( "javax.swing.JLabel" ) {
+									name: "label5"
+									"text": "Position: "
+									"horizontalAlignment": 11
+								}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) )
+								add( new FormComponent( "com.sqrt4.grimedi.ui.component.Vector3Editor" ) {
+									name: "bonePos"
+									"enabled": false
+									addEvent( new FormEvent( "javax.swing.event.ChangeListener", "stateChanged", "boneChanged", true ) )
+								}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+									"gridx": 1
+								} )
+								add( new FormComponent( "javax.swing.JLabel" ) {
+									name: "label6"
+									"text": "Pivot: "
+									"horizontalAlignment": 11
+								}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+									"gridy": 1
+								} )
+								add( new FormComponent( "com.sqrt4.grimedi.ui.component.Vector3Editor" ) {
+									name: "bonePivot"
+									"enabled": false
+									addEvent( new FormEvent( "javax.swing.event.ChangeListener", "stateChanged", "boneChanged", true ) )
+								}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+									"gridx": 1
+									"gridy": 1
+								} )
+								add( new FormComponent( "javax.swing.JLabel" ) {
+									name: "label2"
+									"text": "Yaw: "
+									"labelFor": new FormReference( "boneYaw" )
+									"horizontalAlignment": 11
+								}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+									"gridy": 2
+								} )
+								add( new FormComponent( "com.sqrt4.grimedi.ui.component.AngleEditor" ) {
+									name: "boneYaw"
+									"enabled": false
+									addEvent( new FormEvent( "java.beans.PropertyChangeListener", "propertyChange", "boneChanged", true ) )
+								}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+									"gridx": 1
+									"weightx": 1.0
+									"gridy": 2
+								} )
+								add( new FormComponent( "javax.swing.JLabel" ) {
+									name: "label3"
+									"text": "Pitch: "
+									"labelFor": new FormReference( "bonePitch" )
+									"horizontalAlignment": 11
+								}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+									"gridy": 3
+								} )
+								add( new FormComponent( "com.sqrt4.grimedi.ui.component.AngleEditor" ) {
+									name: "bonePitch"
+									"enabled": false
+									addEvent( new FormEvent( "java.beans.PropertyChangeListener", "propertyChange", "boneChanged", true ) )
+								}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+									"gridx": 1
+									"gridy": 3
+									"weightx": 1.0
+								} )
+								add( new FormComponent( "javax.swing.JLabel" ) {
+									name: "label4"
+									"text": "Roll: "
+									"horizontalAlignment": 11
+									"labelFor": new FormReference( "boneRoll" )
+								}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+									"gridy": 4
+								} )
+								add( new FormComponent( "com.sqrt4.grimedi.ui.component.AngleEditor" ) {
+									name: "boneRoll"
+									"enabled": false
+									addEvent( new FormEvent( "java.beans.PropertyChangeListener", "propertyChange", "boneChanged", true ) )
+								}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+									"gridx": 1
+									"gridy": 4
+									"weightx": 1.0
+								} )
 							}, new FormLayoutConstraints( class java.lang.String ) {
 								"value": "right"
 							} )
@@ -97,25 +134,7 @@ new FormModel {
 			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 0, 0 )
-			"size": new java.awt.Dimension( 400, 300 )
-		} )
-		add( new FormNonVisual( "javax.swing.AbstractAction" ) {
-			name: "toggleTextureAction"
-			"$action.Name": "Draw textures"
-			auxiliary() {
-				"JavaCodeGenerator.className": "ToggleTextures"
-			}
-		}, new FormLayoutConstraints( null ) {
-			"location": new java.awt.Point( 0, 310 )
-		} )
-		add( new FormNonVisual( "javax.swing.AbstractAction" ) {
-			name: "toggleWireframeAction"
-			"$action.Name": "Draw wireframe"
-			auxiliary() {
-				"JavaCodeGenerator.className": "ToggleWireframe"
-			}
-		}, new FormLayoutConstraints( null ) {
-			"location": new java.awt.Point( 0, 362 )
+			"size": new java.awt.Dimension( 635, 455 )
 		} )
 	}
 }

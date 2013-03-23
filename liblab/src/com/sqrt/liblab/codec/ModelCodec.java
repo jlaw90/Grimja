@@ -1,15 +1,16 @@
 package com.sqrt.liblab.codec;
 
 import com.sqrt.liblab.EntryDataProvider;
-import com.sqrt.liblab.model.*;
+import com.sqrt.liblab.entry.model.*;
+import com.sqrt.liblab.threed.Vector2;
+import com.sqrt.liblab.threed.Vector3;
 
 import java.io.*;
-import java.util.*;
 
 public class ModelCodec extends EntryCodec<GrimModel> {
     public GrimModel _read(EntryDataProvider source) throws IOException {
         if (source.readIntLE() != (('M' << 24) | ('O' << 16) | ('D' << 8) | 'L'))
-            throw new IOException("Invalid model format (text format W.I.P)");
+            throw new IOException("Invalid model format (text format W.I.P)"); // Todo
         return loadBinary(source);
     }
 
@@ -41,9 +42,9 @@ public class ModelCodec extends EntryCodec<GrimModel> {
             if(node.siblingIdx >= 0)
                 node.sibling = model.hierarchy.get(node.siblingIdx);
         }
-        model.radius = readFloat(source);
+        model.radius = source.readFloat();
         source.skip(36);
-        model.off = readVector3(source);
+        model.off = source.readVector3();
         return model;
     }
 
@@ -60,11 +61,11 @@ public class ModelCodec extends EntryCodec<GrimModel> {
         int numChildren = source.readIntLE();
         int childPtr = source.readIntLE();
         int siblingPtr = source.readIntLE();
-        node.pivot = readVector3(source);
-        node.pos = readVector3(source);
-        node.pitch = readFloat(source);
-        node.yaw = readFloat(source);
-        node.roll = readFloat(source);
+        node.pivot = source.readVector3();
+        node.pos = source.readVector3();
+        node.pitch = source.readAngle();
+        node.yaw = source.readAngle();
+        node.roll = source.readAngle();
 
         source.skip(48);
         ModelNode parent, sibling, child;
@@ -96,22 +97,22 @@ public class ModelCodec extends EntryCodec<GrimModel> {
         int numTextureVerts = source.readIntLE();
         int numFaces = source.readIntLE();
 
-        Vector3f[] vertices = new Vector3f[numVertices];
+        Vector3[] vertices = new Vector3[numVertices];
         float[] verticesI = new float[numVertices];
-        Vector3f[] normals = new Vector3f[numVertices];
-        Vector2f[] textureVerts = new Vector2f[numTextureVerts];
+        Vector3[] normals = new Vector3[numVertices];
+        Vector2[] textureVerts = new Vector2[numTextureVerts];
         for (int i = 0; i < numVertices; i++)
-            vertices[i] = readVector3(source);
+            vertices[i] =source.readVector3();
         for (int i = 0; i < numTextureVerts; i++)
-            textureVerts[i] = readVector2(source);
+            textureVerts[i] = source.readVector2();
         for (int i = 0; i < numVertices; i++)
-            verticesI[i] = readFloat(source);
+            verticesI[i] = source.readFloat();
         source.skip(numVertices * 4);
         int[][] normalTemp = new int[numFaces][];
         for (int i = 0; i < numFaces; i++)
             m.faces.add(loadMeshFaceBinary(source, materials, vertices, normalTemp, i, textureVerts));
         for (int i = 0; i < numVertices; i++)
-            normals[i] = readVector3(source);
+            normals[i] = source.readVector3();
         for (int i = 0; i < numFaces; i++) {
             MeshFace mf = m.faces.get(i);
             for (int index : normalTemp[i])
@@ -119,15 +120,15 @@ public class ModelCodec extends EntryCodec<GrimModel> {
         }
         m.shadow = source.readIntLE();
         source.skip(4);
-        m.radius = readFloat(source);
+        m.radius = source.readFloat();
         source.skip(24);
 
         return m;
     }
 
     private MeshFace loadMeshFaceBinary(EntryDataProvider source, Material[] materials,
-                                        Vector3f[] vertexTable, int[][] normalTemp, int normalOff,
-                                        Vector2f[] texVertexTable) throws IOException {
+                                        Vector3[] vertexTable, int[][] normalTemp, int normalOff,
+                                        Vector2[] texVertexTable) throws IOException {
         source.skip(4);
         int type = source.readIntLE();
         int geo = source.readIntLE();
@@ -139,9 +140,9 @@ public class ModelCodec extends EntryCodec<GrimModel> {
         int texPtr = source.readIntLE();
         int materialPtr = source.readIntLE();
         source.skip(12);
-        float extraLight = readFloat(source);
+        float extraLight = source.readFloat();
         source.skip(12);
-        Vector3f normal = readVector3(source);
+        Vector3 normal = source.readVector3();
         MeshFace mf = new MeshFace();
         for (int i = 0; i < numVertices; i++) {
             int vid = source.readIntLE();
@@ -166,29 +167,16 @@ public class ModelCodec extends EntryCodec<GrimModel> {
         return mf;
     }
 
-    private static Vector2f readVector2(EntryDataProvider source) throws IOException {
-        return new Vector2f(readFloat(source), readFloat(source));
-    }
-
-    private static Vector3f readVector3(EntryDataProvider source) throws IOException {
-        float x = readFloat(source), y = readFloat(source), z = readFloat(source);
-        return new Vector3f(x, y, z);
-    }
-
-    private static float readFloat(EntryDataProvider source) throws IOException {
-        return Float.intBitsToFloat(source.readIntLE()); // Todo: is this right?
-    }
-
     private void exportWavefront(File f, GrimModel model) throws FileNotFoundException {
         PrintStream ps = new PrintStream(f);
         _vertexOff = 1;
-        printNode(model, model.hierarchy.get(0), new Vector3f(0, 0, 0), ps);
+        printNode(model, model.hierarchy.get(0), new Vector3(0, 0, 0), ps);
         // Todo: export MTL
         ps.close();
     }
 
-    private void printNode(GrimModel model, ModelNode node, Vector3f offset, PrintStream ps) {
-        Vector3f nodeOffset = offset.add(node.pos);
+    private void printNode(GrimModel model, ModelNode node, Vector3 offset, PrintStream ps) {
+        Vector3 nodeOffset = offset.add(node.pos);
         // The mesh is offset by the pivot
         if(node.mesh != null)
             printMesh(model, node.mesh, nodeOffset.add(node.pivot), ps);
@@ -199,7 +187,7 @@ public class ModelCodec extends EntryCodec<GrimModel> {
     }
 
     private int _vertexOff;
-    private void printMesh(GrimModel model, Mesh mesh, Vector3f offset, PrintStream ps) {
+    private void printMesh(GrimModel model, Mesh mesh, Vector3 offset, PrintStream ps) {
         ps.println("g " + mesh.name);
 
         for(MeshFace face: mesh.faces) {
@@ -207,12 +195,12 @@ public class ModelCodec extends EntryCodec<GrimModel> {
             if(face.texture != null)
                 tex = face.texture;
             for (int i = 0; i < face.vertices.size(); i++) {
-                Vector3f v = face.vertices.get(i);
-                Vector3f n = face.normals.get(i);
-                Vector2f t = face.uv.get(i);
-                t = new Vector2f(t.x, -t.y);
+                Vector3 v = face.vertices.get(i);
+                Vector3 n = face.normals.get(i);
+                Vector2 t = face.uv.get(i);
+                t = new Vector2(t.x, -t.y);
                 if(tex != null)
-                    t = t.div(new Vector2f(tex.width, tex.height)); // map to 0-1 range...
+                    t = t.div(new Vector2(tex.width, tex.height)); // map to 0-1 range...
                 v = v.add(offset);
                 ps.println("v " + v.x + " " + v.y + " " + v.z);
                 ps.println("vn " + n.x + " " + n.y + " " + n.z);

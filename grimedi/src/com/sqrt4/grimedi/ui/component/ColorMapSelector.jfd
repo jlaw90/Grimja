@@ -5,7 +5,7 @@ new FormModel {
 	root: new FormRoot {
 		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
 			name: "this"
-			add( new FormComponent( "javax.swing.JSpinner" ) {
+			add( new FormComponent( "javax.swing.JComboBox" ) {
 				name: "colorMapSelector"
 				auxiliary() {
 					"JavaCodeGenerator.customCreate": true

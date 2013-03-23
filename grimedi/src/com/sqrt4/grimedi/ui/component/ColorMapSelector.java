@@ -8,15 +8,15 @@ import com.sqrt.liblab.EntryDataProvider;
 import com.sqrt.liblab.LabFile;
 import com.sqrt.liblab.codec.CodecMapper;
 import com.sqrt.liblab.codec.EntryCodec;
-import com.sqrt.liblab.model.ColorMap;
+import com.sqrt.liblab.entry.model.ColorMap;
 
 import java.awt.*;
+import java.awt.event.ItemListener;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Vector;
 import javax.swing.*;
-import javax.swing.event.*;
 
 public class ColorMapSelector extends JPanel {
     private LabFile _last;
@@ -25,16 +25,11 @@ public class ColorMapSelector extends JPanel {
         initComponents();
     }
 
-    public ColorMapSelector(LabFile container) {
-        this();
-        setLabFile(container);
-    }
-
     public void setLabFile(LabFile container) {
         if (container == _last)
             return;
         _last = container;
-        final java.util.List<EntryDataProvider> colorMaps = new ArrayList<EntryDataProvider>();
+        Vector<EntryDataProvider> colorMaps = new Vector<EntryDataProvider>();
         for (EntryDataProvider prov : container.entries) {
             EntryCodec<?> codec = CodecMapper.codecForProvider(prov);
             if (codec == null || codec.getEntryClass() != ColorMap.class)
@@ -54,32 +49,19 @@ public class ColorMapSelector extends JPanel {
                 return o1.getName().compareTo(o2.getName());
             }
         });
-        colorMapSelector.setModel(new SpinnerListModel(colorMaps) {
-            public void setValue(Object elt) {
-                if (elt instanceof String) {
-                    for (EntryDataProvider cm : colorMaps) {
-                        if (cm.getName().equals(elt)) {
-                            super.setValue(cm);
-                            return;
-                        }
-                    }
-                    throw new IllegalArgumentException();
-                }
-                super.setValue(elt);
-            }
-        });
+        colorMapSelector.setModel(new DefaultComboBoxModel(colorMaps));
     }
 
-    public void addChangeListener(ChangeListener listener) {
-        colorMapSelector.addChangeListener(listener);
+    public void addItemListener(ItemListener listener) {
+        colorMapSelector.addItemListener(listener);
     }
 
-    public void removeChangeListener(ChangeListener listener) {
-        colorMapSelector.removeChangeListener(listener);
+    public void removeItemListener(ItemListener listener) {
+        colorMapSelector.removeItemListener(listener);
     }
 
     public ColorMap getSelected() {
-        EntryDataProvider edp = (EntryDataProvider) colorMapSelector.getValue();
+        EntryDataProvider edp = (EntryDataProvider) colorMapSelector.getSelectedItem();
         try {
             return (ColorMap) CodecMapper.codecForProvider(edp).read(edp);
         } catch (IOException e) {
@@ -88,8 +70,13 @@ public class ColorMapSelector extends JPanel {
         }
     }
 
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        colorMapSelector.setEnabled(enabled);
+    }
+
     private void createUIComponents() {
-        colorMapSelector = new JSpinner();
+        colorMapSelector = new JComboBox();
     }
 
     private void initComponents() {
@@ -104,6 +91,6 @@ public class ColorMapSelector extends JPanel {
     }
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
-    private JSpinner colorMapSelector;
+    private JComboBox colorMapSelector;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 }

@@ -19,11 +19,11 @@ import com.sqrt4.grimedi.util.FilterableListModel;
 import com.sqrt4.grimedi.util.Predicate;
 
 import java.awt.*;
+import java.awt.List;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import javax.swing.*;
 
 /**
@@ -56,7 +56,7 @@ public class MainWindow extends JFrame {
             if (codec != null)
                 data = codec.read(selected);
         } catch (IOException e1) {
-            e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e1.printStackTrace();
         }
         EditorPanel panel = EditorMapper.editorPanelForProvider(selected);
         if (data != null && panel != null) {
@@ -246,9 +246,14 @@ public class MainWindow extends JFrame {
     }
 
     private void onOpen() {
+        Collections.sort(context.entries, new Comparator<EntryDataProvider>() {
+            public int compare(EntryDataProvider o1, EntryDataProvider o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
         fileList.setModel(filterableEntries = new FilterableListModel(context.entries));
         fileList.setCellRenderer(new LabEntryRenderer());
-        Set<String> exts = new TreeSet<String>();
+        java.util.List<String> exts = new LinkedList<String>();
         for (EntryDataProvider edp : context.entries) {
             String name = edp.getName();
             if (name == null)
@@ -257,8 +262,10 @@ public class MainWindow extends JFrame {
             if (eidx == -1)
                 continue;
             String ext = name.substring(eidx + 1).toLowerCase();
-            exts.add(ext);
+            if(!exts.contains(ext))
+                exts.add(ext);
         }
+        Collections.sort(exts);
         String[] arr = new String[exts.size() + 1];
         arr[0] = "All entries";
         int off = 1;

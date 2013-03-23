@@ -1,7 +1,7 @@
 package com.sqrt.liblab.codec;
 
 import com.sqrt.liblab.EntryDataProvider;
-import com.sqrt.liblab.model.ColorMap;
+import com.sqrt.liblab.entry.model.ColorMap;
 
 import java.io.IOException;
 

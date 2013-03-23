@@ -1,8 +1,8 @@
 package com.sqrt.liblab.codec;
 
 import com.sqrt.liblab.EntryDataProvider;
-import com.sqrt.liblab.model.Material;
-import com.sqrt.liblab.model.Texture;
+import com.sqrt.liblab.entry.model.Material;
+import com.sqrt.liblab.entry.model.Texture;
 
 import java.io.IOException;
 
