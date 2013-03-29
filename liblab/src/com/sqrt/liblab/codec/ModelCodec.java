@@ -1,6 +1,6 @@
 package com.sqrt.liblab.codec;
 
-import com.sqrt.liblab.EntryDataProvider;
+import com.sqrt.liblab.io.DataSource;
 import com.sqrt.liblab.entry.model.*;
 import com.sqrt.liblab.threed.Vector2;
 import com.sqrt.liblab.threed.Vector3;
@@ -8,13 +8,13 @@ import com.sqrt.liblab.threed.Vector3;
 import java.io.*;
 
 public class ModelCodec extends EntryCodec<GrimModel> {
-    public GrimModel _read(EntryDataProvider source) throws IOException {
+    public GrimModel _read(DataSource source) throws IOException {
         if (source.readIntLE() != (('M' << 24) | ('O' << 16) | ('D' << 8) | 'L'))
             throw new IOException("Invalid model format (text format W.I.P)"); // Todo
         return loadBinary(source);
     }
 
-    private GrimModel loadBinary(EntryDataProvider source) throws IOException {
+    private GrimModel loadBinary(DataSource source) throws IOException {
         int numMaterials = source.readIntLE();
         Material[] materials = new Material[numMaterials];
         for (int i = 0; i < numMaterials; i++) {
@@ -42,13 +42,13 @@ public class ModelCodec extends EntryCodec<GrimModel> {
             if(node.siblingIdx >= 0)
                 node.sibling = model.hierarchy.get(node.siblingIdx);
         }
-        model.radius = source.readFloat();
+        model.radius = source.readFloatLE();
         source.skip(36);
         model.off = source.readVector3();
         return model;
     }
 
-    private ModelNode loadModelNodeBinary(EntryDataProvider source, Geoset geoset) throws IOException {
+    private ModelNode loadModelNodeBinary(DataSource source, Geoset geoset) throws IOException {
         ModelNode node = new ModelNode();
         node.name = source.readString(64);
         node.flags = source.readIntLE();
@@ -57,10 +57,10 @@ public class ModelCodec extends EntryCodec<GrimModel> {
         int meshNum = source.readIntLE();
         node.mesh = meshNum < 0? null: geoset.meshes.get(meshNum);
         node.depth = source.readIntLE();
-        int parentPtr = source.readIntLE();
+        boolean hasParent = source.readBoolean();
         int numChildren = source.readIntLE();
-        int childPtr = source.readIntLE();
-        int siblingPtr = source.readIntLE();
+        boolean hasChild = source.readBoolean();
+        boolean hasSibling = source.readBoolean();
         node.pivot = source.readVector3();
         node.pos = source.readVector3();
         node.pitch = source.readAngle();
@@ -69,16 +69,16 @@ public class ModelCodec extends EntryCodec<GrimModel> {
 
         source.skip(48);
         ModelNode parent, sibling, child;
-        if(parentPtr != 0)
+        if(hasParent)
             node.parentIdx = source.readIntLE();
-        if(childPtr != 0)
+        if(hasChild)
             node.childIdx = source.readIntLE();
-        if(siblingPtr != 0)
+        if(hasSibling)
             node.siblingIdx = source.readIntLE();
         return node;
     }
 
-    private Geoset loadGeosetBinary(EntryDataProvider source, Material[] materials) throws IOException {
+    private Geoset loadGeosetBinary(DataSource source, Material[] materials) throws IOException {
         Geoset g = new Geoset();
         int numMeshes = source.readIntLE();
         for (int i = 0; i < numMeshes; i++)
@@ -86,7 +86,7 @@ public class ModelCodec extends EntryCodec<GrimModel> {
         return g;
     }
 
-    private Mesh loadMeshBinary(EntryDataProvider source, Material[] materials) throws IOException {
+    private Mesh loadMeshBinary(DataSource source, Material[] materials) throws IOException {
         Mesh m = new Mesh();
         m.name = source.readString(32);
         source.skip(4);
@@ -106,7 +106,7 @@ public class ModelCodec extends EntryCodec<GrimModel> {
         for (int i = 0; i < numTextureVerts; i++)
             textureVerts[i] = source.readVector2();
         for (int i = 0; i < numVertices; i++)
-            verticesI[i] = source.readFloat();
+            verticesI[i] = source.readFloatLE();
         source.skip(numVertices * 4);
         int[][] normalTemp = new int[numFaces][];
         for (int i = 0; i < numFaces; i++)
@@ -120,13 +120,13 @@ public class ModelCodec extends EntryCodec<GrimModel> {
         }
         m.shadow = source.readIntLE();
         source.skip(4);
-        m.radius = source.readFloat();
+        m.radius = source.readFloatLE();
         source.skip(24);
 
         return m;
     }
 
-    private MeshFace loadMeshFaceBinary(EntryDataProvider source, Material[] materials,
+    private MeshFace loadMeshFaceBinary(DataSource source, Material[] materials,
                                         Vector3[] vertexTable, int[][] normalTemp, int normalOff,
                                         Vector2[] texVertexTable) throws IOException {
         source.skip(4);
@@ -137,10 +137,10 @@ public class ModelCodec extends EntryCodec<GrimModel> {
         int numVertices = source.readIntLE();
         normalTemp[normalOff] = new int[numVertices];
         source.skip(4);
-        int texPtr = source.readIntLE();
-        int materialPtr = source.readIntLE();
+        boolean hasTexture = source.readBoolean();
+        boolean hasMaterial = source.readBoolean();
         source.skip(12);
-        float extraLight = source.readFloat();
+        float extraLight = source.readFloatLE();
         source.skip(12);
         Vector3 normal = source.readVector3();
         MeshFace mf = new MeshFace();
@@ -149,11 +149,11 @@ public class ModelCodec extends EntryCodec<GrimModel> {
             mf.vertices.add(vertexTable[vid]);
             normalTemp[normalOff][i] = vid;
         }
-        if (texPtr != 0) {
+        if (hasTexture) {
             for (int i = 0; i < numVertices; i++)
                 mf.uv.add(texVertexTable[source.readIntLE()]);
         }
-        if (materialPtr != 0) {
+        if (hasMaterial) {
             int matIdx = source.readIntLE();
             Material mat = materials[matIdx];
             if(tex >= 0)
@@ -215,16 +215,12 @@ public class ModelCodec extends EntryCodec<GrimModel> {
         }
     }
 
-    public EntryDataProvider write(GrimModel source) throws IOException {
+    public DataSource write(GrimModel source) throws IOException {
         throw new UnsupportedOperationException();
     }
 
     public String[] getFileExtensions() {
         return new String[]{"3do"};
-    }
-
-    public byte[][] getFileHeaders() {
-        return new byte[][]{{'L', 'D', 'O', 'M'}};
     }
 
     public Class<GrimModel> getEntryClass() {

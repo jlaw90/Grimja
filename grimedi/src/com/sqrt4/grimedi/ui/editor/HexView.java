@@ -4,46 +4,32 @@
 
 package com.sqrt4.grimedi.ui.editor;
 
-import com.sqrt.liblab.EntryDataProvider;
+import com.sqrt.liblab.io.DataSource;
 import sun.swing.SwingUtilities2;
 
-import java.awt.*;
-import java.awt.event.MouseEvent;
-import java.io.IOException;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelListener;
-import javax.swing.table.JTableHeader;
 import javax.swing.table.TableModel;
+import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.io.IOException;
 
 /**
  * @author James Lawrence
  */
 public class HexView extends JPanel {
     private Font fixedWidth = new Font("Monospaced", Font.PLAIN, 12);
-    private EntryDataProvider source;
-    private byte[] data;
+    private DataSource source;
 
     private HexView() {
         initComponents();
     }
 
-    public HexView(EntryDataProvider source) {
+    public HexView(DataSource source) {
         this();
         this.source = source;
-        try {
-            data = new byte[source.available()];// Todo: this is nasty
-        } catch (IOException e) {
-            e.printStackTrace();
-            return;
-        }
-        try {
-            this.source.close();
-            this.source.readFully(data);
-        } catch (IOException e) {
-            return;
-        }
         //hexTable.revalidate();
         //JTableHeader rowHeader = new JTableHeader(hexTable.getColumnModel());
         //rowHeader.setTable(hexTable);
@@ -57,14 +43,14 @@ public class HexView extends JPanel {
 
                 // Locate the renderer under the event location
                 int col = columnAtPoint(p);
-                if(col == 16)
+                if (col == 16)
                     return null;
-                if(col > 16)
+                if (col > 16)
                     col -= 17;
                 int row = rowAtPoint(p);
-                if(col == -1 || row == -1)
+                if (col == -1 || row == -1)
                     return null;
-                int idx = row*16+col;
+                int idx = row * 16 + col;
                 StringBuilder sb = new StringBuilder("<html>");
                 try {
                     source.close();
@@ -82,9 +68,9 @@ public class HexView extends JPanel {
                     StringBuilder str = new StringBuilder();
                     int slen = 0;
                     boolean cleanString = false;
-                    while(source.available() > 0 && slen < 32) {
+                    while (source.available() > 0 && slen < 32) {
                         byte o = source.readByte();
-                        if(o == 0) {
+                        if (o == 0) {
                             cleanString = true;
                             break;
                         }
@@ -92,14 +78,14 @@ public class HexView extends JPanel {
                         str.append((char) o);
                     }
                     sb.append(String.format("Offset: %06x<br/>", idx));
-                    sb.append(String.format("Byte: hex: %02x, s: %d, u: %d<br/>", b, b, b&0xff));
-                    sb.append(String.format("Short (BE): hex: %04x, s: %d, u: %d<br/>", s, s, s&0xffff));
-                    sb.append(String.format("Short (LE): hex: %04x, s: %d, u: %d<br/>", sle, sle, sle&0xffff));
-                    sb.append(String.format("Int (BE): hex: %08x, s: %d, u: %d<br/>", i, i, i&0xffffffffL));
-                    sb.append(String.format("Int (LE): hex: %08x, s: %d, u: %d<br/>", ile, ile, ile&0xffffffffL));
+                    sb.append(String.format("Byte: hex: %02x, s: %d, u: %d<br/>", b, b, b & 0xff));
+                    sb.append(String.format("Short (BE): hex: %04x, s: %d, u: %d<br/>", s, s, s & 0xffff));
+                    sb.append(String.format("Short (LE): hex: %04x, s: %d, u: %d<br/>", sle, sle, sle & 0xffff));
+                    sb.append(String.format("Int (BE): hex: %08x, s: %d, u: %d<br/>", i, i, i & 0xffffffffL));
+                    sb.append(String.format("Int (LE): hex: %08x, s: %d, u: %d<br/>", ile, ile, ile & 0xffffffffL));
                     String string = str.toString();
                     string = string.replace("<", "&lt;").replace(">", "&gt;");
-                    if(slen == 32)
+                    if (slen == 32)
                         string += "...";
                     sb.append("String: ").append(string);
                 } catch (IOException e) {
@@ -115,26 +101,26 @@ public class HexView extends JPanel {
         hexTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION); // cbf'd with the hassle of selecting the same ascii as selected hex etc. TODO
         ListSelectionListener listener = new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
-                if(e.getValueIsAdjusting())
+                if (e.getValueIsAdjusting())
                     return;
                 ListSelectionModel colSelModel = hexTable.getColumnModel().getSelectionModel();
                 int lead = colSelModel.getLeadSelectionIndex();
                 int anchor = colSelModel.getAnchorSelectionIndex();
-                for(int col: hexTable.getSelectedColumns()) {
-                    for(int row: hexTable.getSelectedRows()) {
-                        if(col == 16)
+                for (int col : hexTable.getSelectedColumns()) {
+                    for (int row : hexTable.getSelectedRows()) {
+                        if (col == 16)
                             continue;
-                        if(col > 16)
+                        if (col > 16)
                             col -= 17;
-                        int idx = (row*16)+col;
-                        int linkCol = col+17;
-                        if(!colSelModel.isSelectedIndex(col))
+                        int idx = (row * 16) + col;
+                        int linkCol = col + 17;
+                        if (!colSelModel.isSelectedIndex(col))
                             colSelModel.addSelectionInterval(col, col);
-                        if(!colSelModel.isSelectedIndex(linkCol))
+                        if (!colSelModel.isSelectedIndex(linkCol))
                             colSelModel.addSelectionInterval(linkCol, linkCol);
                     }
                 }
-                if(colSelModel.getAnchorSelectionIndex() != anchor || colSelModel.getLeadSelectionIndex() != lead)
+                if (colSelModel.getAnchorSelectionIndex() != anchor || colSelModel.getLeadSelectionIndex() != lead)
                     SwingUtilities2.setLeadAnchorWithoutSelection(colSelModel, anchor, lead);
             }
         };
@@ -150,7 +136,7 @@ public class HexView extends JPanel {
 
         hexTable.setModel(new TableModel() {
             public int getRowCount() {
-                return data.length/16;
+                return (int) (source.getLength() / 16);
             }
 
             public int getColumnCount() {
@@ -158,7 +144,7 @@ public class HexView extends JPanel {
             }
 
             public String getColumnName(int columnIndex) {
-                return columnIndex < 16? String.format("%02x", columnIndex): null;
+                return columnIndex < 16 ? String.format("%02x", columnIndex) : null;
             }
 
             public Class<?> getColumnClass(int columnIndex) {
@@ -170,13 +156,18 @@ public class HexView extends JPanel {
             }
 
             public Object getValueAt(int rowIndex, int columnIndex) {
-                if(columnIndex == 16)
+                if (columnIndex == 16)
                     return null;
-                boolean ascii = columnIndex > 16;
-                if(ascii)
-                    columnIndex-=17;
-                int b = data[rowIndex*16+columnIndex] &0xff;
-                return ascii? new String(new char[]{(char)b}): String.format("%02x", b);
+                try {
+                    boolean ascii = columnIndex > 16;
+                    if (ascii)
+                        columnIndex -= 17;
+                    source.seek(rowIndex * 16 + columnIndex);
+                    int b = source.read();
+                    return ascii ? new String(new char[]{(char) b}) : String.format("%02x", b);
+                } catch (IOException e) {
+                    return "xx";
+                }
             }
 
             public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
@@ -192,8 +183,8 @@ public class HexView extends JPanel {
             }
         });
 
-        for(int i = 0; i < 33; i++) {
-            hexTable.getColumnModel().getColumn(i).setPreferredWidth(i <= 16? hexWidth: asciiWidth);
+        for (int i = 0; i < 33; i++) {
+            hexTable.getColumnModel().getColumn(i).setPreferredWidth(i <= 16 ? hexWidth : asciiWidth);
         }
     }
 

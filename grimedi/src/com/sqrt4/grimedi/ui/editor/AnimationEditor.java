@@ -5,8 +5,7 @@
 package com.sqrt4.grimedi.ui.editor;
 
 import com.jogamp.opengl.util.awt.Screenshot;
-import com.sqrt.liblab.EntryDataProvider;
-import com.sqrt.liblab.LabFile;
+import com.sqrt.liblab.LabCollection;
 import com.sqrt.liblab.codec.CodecMapper;
 import com.sqrt.liblab.codec.EntryCodec;
 import com.sqrt.liblab.entry.model.GrimModel;
@@ -14,6 +13,7 @@ import com.sqrt.liblab.entry.model.ModelNode;
 import com.sqrt.liblab.entry.model.anim.Animation;
 import com.sqrt.liblab.entry.model.anim.AnimationNode;
 import com.sqrt.liblab.entry.model.anim.KeyFrame;
+import com.sqrt.liblab.io.DataSource;
 import com.sqrt.liblab.threed.Angle;
 import com.sqrt.liblab.threed.Vector3;
 import com.sqrt4.grimedi.ui.component.FrameCallback;
@@ -46,7 +46,7 @@ import java.util.Vector;
  * @author James Lawrence
  */
 public class AnimationEditor extends EditorPanel<Animation> {
-    private LabFile _container;
+    private LabCollection _container;
     private boolean _exporting;
     private Timer animTimer = new Timer(1000 / 15, new ActionListener() {
         public void actionPerformed(ActionEvent e) {
@@ -62,10 +62,10 @@ public class AnimationEditor extends EditorPanel<Animation> {
     }
 
     public void onNewData() {
-        if (_container != data.container) {
-            Vector<EntryDataProvider> allModels = new Vector<EntryDataProvider>();
+        if (_container != data.container.container) {
+            Vector<DataSource> allModels = new Vector<DataSource>();
             allModels.addAll(data.container.container.findByType(GrimModel.class));
-            _container = data.container;
+            _container = data.container.container;
             modelSelector.setModel(new DefaultComboBoxModel(allModels));
             modelSelected(null);
         }
@@ -77,9 +77,10 @@ public class AnimationEditor extends EditorPanel<Animation> {
     }
 
     private void modelSelected(ItemEvent e) {
-        EntryDataProvider selected = (EntryDataProvider) modelSelector.getSelectedItem();
-        EntryCodec<GrimModel> codec = (EntryCodec<GrimModel>) CodecMapper.codecForProvider(selected);
+        DataSource selected = (DataSource) modelSelector.getSelectedItem();
         try {
+            selected.seek(0);
+            EntryCodec<GrimModel> codec = (EntryCodec<GrimModel>) CodecMapper.codecForProvider(selected);
             renderer.setModel(codec.read(selected));
             frameSlider.setValue(0);
         } catch (IOException e1) {
@@ -141,6 +142,7 @@ public class AnimationEditor extends EditorPanel<Animation> {
             mn.animYaw = yaw.sub(mn.yaw).normalize(-180);
             mn.animRoll = roll.sub(mn.roll).normalize(-180);
         }
+        renderer.refreshModelCache();
     }
 
     private void initComponents() {
@@ -331,59 +333,64 @@ public class AnimationEditor extends EditorPanel<Animation> {
         }
 
         public void actionPerformed(ActionEvent e) {
-            stopAction.actionPerformed(null);
-            playAction.setEnabled(false);
-            exportGif.setEnabled(false);
-            frameSlider.setEnabled(false);
-            frameSlider.setValue(0);
-            final java.util.List<BufferedImage> images = new LinkedList<BufferedImage>();
-            renderer.setCallback(new FrameCallback() {
-                public void preDisplay(GL2 gl2) {
-                }
+            window.runAsyncWithPopup("Please wait...", "Rendering animation (frame 1/" + data.numFrames + ")", new Runnable() {
+                public void run() {
+                    final java.util.List<BufferedImage> images = new LinkedList<BufferedImage>();
+                    final Object lock = new Object();
+                    renderer.setCallback(new FrameCallback() {
+                        public void preDisplay(GL2 gl2) {
+                        }
 
-                public void postDisplay(GL2 gl2) {
-                    int frame = frameSlider.getValue();
+                        public void postDisplay(GL2 gl2) {
+                            int frame = frameSlider.getValue();
 
-                    images.add(Screenshot.readToBufferedImage(renderer.getViewportWidth(), renderer.getViewportHeight()));
-                    frameSlider.setValue(frameSlider.getValue() + 1);
+                            images.add(Screenshot.readToBufferedImage(renderer.getViewportWidth(), renderer.getViewportHeight()));
+                            frameSlider.setValue(frameSlider.getValue() + 1);
+                            window.setBusyMessage("Rendering animation (frame " + (frameSlider.getValue() + 1) + "/" + data.numFrames + ")");
 
-                    if (frame == data.numFrames - 1) {
-                        playAction.setEnabled(true);
-                        exportGif.setEnabled(true);
-                        frameSlider.setValue(0);
-                        frameSlider.setEnabled(true);
-                        renderer.setCallback(null);
-                        Thread t = new Thread() {
-                            public void run() {
-                                try {
-                                    Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("gif");
-                                    if (!writers.hasNext())
-                                        throw new IOException("Your system does not support writing GIFs");
-                                    ImageWriter w = writers.next();
-                                    File temp = File.createTempFile("anim", ".gif");
-                                    ImageOutputStream ios = ImageIO.createImageOutputStream(temp);
-                                    w.setOutput(ios);
-                                    w.prepareWriteSequence(null);
-                                    for (BufferedImage bi : images) {
-                                        IIOMetadata metadata = w.getDefaultImageMetadata(ImageTypeSpecifier.createFromRenderedImage(bi), w.getDefaultWriteParam());
-                                        IIOImage i = new IIOImage(bi, null, metadata);
-                                        w.writeToSequence(i, null);
-                                    }
-                                    w.endWriteSequence();
-                                    ios.close();
-                                    if(Desktop.isDesktopSupported())
-                                        Desktop.getDesktop().open(temp);
-                                } catch (IOException e1) {
-                                    e1.printStackTrace();
+                            if (frame == data.numFrames - 1) {
+                                renderer.setCallback(null);
+                                synchronized (lock) {
+                                    lock.notify();
                                 }
                             }
-                        };
-                        t.setPriority(1);
-                        t.setDaemon(true);
-                        t.start();
+                        }
+                    });
+                    // Wait for notify...
+                    synchronized (lock) {
+                        try {
+                            lock.wait();
+                        } catch (InterruptedException e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+                    window.setBusyMessage("Generating GIF (frame 1/" + data.numFrames + ")");
+                    try {
+                        Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("gif");
+                        if (!writers.hasNext())
+                            throw new IOException("Your system does not support writing GIFs");
+                        ImageWriter w = writers.next();
+                        File temp = File.createTempFile("anim", ".gif");
+                        ImageOutputStream ios = ImageIO.createImageOutputStream(temp);
+                        w.setOutput(ios);
+                        w.prepareWriteSequence(null);
+                        for (int i1 = 0; i1 < images.size(); i1++) {
+                            BufferedImage bi = images.get(i1);
+                            IIOMetadata metadata = w.getDefaultImageMetadata(ImageTypeSpecifier.createFromRenderedImage(bi), w.getDefaultWriteParam());
+                            IIOImage i = new IIOImage(bi, null, metadata);
+                            w.writeToSequence(i, null);
+                            window.setBusyMessage("Generating GIF (frame " + (i1 + 2) + "/" + data.numFrames + ")");
+                        }
+                        w.endWriteSequence();
+                        ios.close();
+                        if (Desktop.isDesktopSupported())
+                            Desktop.getDesktop().open(temp);
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                 }
             });
+
         }
     }
 }

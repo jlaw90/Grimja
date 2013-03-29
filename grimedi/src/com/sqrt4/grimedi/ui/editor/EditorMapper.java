@@ -1,9 +1,11 @@
 package com.sqrt4.grimedi.ui.editor;
 
+import com.sqrt.liblab.entry.video.Video;
+import com.sqrt.liblab.io.DataSource;
 import com.sqrt.liblab.LabEntry;
 import com.sqrt.liblab.codec.EntryCodec;
-import com.sqrt.liblab.EntryDataProvider;
 import com.sqrt.liblab.codec.CodecMapper;
+import com.sqrt.liblab.entry.audio.Audio;
 import com.sqrt.liblab.entry.graphics.GrimBitmap;
 import com.sqrt.liblab.entry.graphics.GrimFont;
 import com.sqrt.liblab.entry.model.ColorMap;
@@ -34,9 +36,11 @@ public class EditorMapper {
         map(Material.class, new MaterialView());
         map(GrimModel.class, new ModelView());
         map(Animation.class, new AnimationEditor());
+        map(Audio.class, new AudioEditor());
+        map(Video.class, new VideoViewer());
     }
 
-    public static EditorPanel editorPanelForProvider(EntryDataProvider selected) {
+    public static EditorPanel editorPanelForProvider(DataSource selected) {
         EntryCodec<?> codec = CodecMapper.codecForProvider(selected);
         if(codec == null)
             return null;

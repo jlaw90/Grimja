@@ -1,6 +1,6 @@
 package com.sqrt.liblab.codec;
 
-import com.sqrt.liblab.EntryDataProvider;
+import com.sqrt.liblab.io.DataSource;
 import com.sqrt.liblab.entry.graphics.FontGlyph;
 import com.sqrt.liblab.entry.graphics.GrimFont;
 
@@ -10,9 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FontCodec extends EntryCodec<GrimFont> {
-    public GrimFont _read(EntryDataProvider e) throws IOException {
+    public GrimFont _read(DataSource e) throws IOException {
         int numChars = e.readIntLE();
-        long dataSize = e.readUIntLE();
+        long dataSize = e.readUnsignedIntLE();
         int height = e.readIntLE();
         int yOffset = e.readIntLE();
         e.seek(24);
@@ -21,7 +21,7 @@ public class FontCodec extends EntryCodec<GrimFont> {
         int availableHeight = height - yOffset;
         int[] charIndices = new int[numChars];
         for (int i = 0; i < numChars; i++)
-            charIndices[i] = e.readUShortLE();
+            charIndices[i] = e.readUnsignedShortLE();
 
         List<FontGlyph> glyphs = new ArrayList<FontGlyph>(numChars);
         long[] offsets = new long[numChars];
@@ -30,7 +30,7 @@ public class FontCodec extends EntryCodec<GrimFont> {
         for (int i = 0; i < numChars; i++) {
             FontGlyph g = new FontGlyph();
             g.index = charIndices[i];
-            offsets[i] = e.readUIntLE();
+            offsets[i] = e.readUnsignedIntLE();
             g.charWidth = e.readByte();
             g.xOff = e.readByte();
             g.yOff = e.readByte();
@@ -61,16 +61,12 @@ public class FontCodec extends EntryCodec<GrimFont> {
         return new GrimFont(e.container, e.getName(), firstChar, lastChar, yOffset, height, glyphs);
     }
 
-    public EntryDataProvider write(GrimFont source) throws IOException {
+    public DataSource write(GrimFont source) throws IOException {
         throw new UnsupportedOperationException();
     }
 
     public String[] getFileExtensions() {
         return new String[]{"laf"};
-    }
-
-    public byte[][] getFileHeaders() {
-        return new byte[0][];
     }
 
     public Class<GrimFont> getEntryClass() {

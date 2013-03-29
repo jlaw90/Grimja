@@ -23,6 +23,11 @@ public class MaterialView extends EditorPanel<Material> {
         initComponents();
     }
 
+    ImageIcon icon = new ImageIcon(getClass().getResource("/material.png"));
+    public ImageIcon getIcon() {
+        return icon;
+    }
+
     private void updatePreview() {
         preview.setIcon(null);
         if (imageList.getSelectedValue() == null || colorMapSelector.getSelected() == null)

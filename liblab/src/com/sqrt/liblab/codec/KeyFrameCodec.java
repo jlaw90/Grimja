@@ -1,6 +1,6 @@
 package com.sqrt.liblab.codec;
 
-import com.sqrt.liblab.EntryDataProvider;
+import com.sqrt.liblab.io.DataSource;
 import com.sqrt.liblab.entry.model.anim.Animation;
 import com.sqrt.liblab.entry.model.anim.AnimationNode;
 import com.sqrt.liblab.entry.model.anim.KeyFrame;
@@ -9,7 +9,7 @@ import com.sqrt.liblab.entry.model.anim.Marker;
 import java.io.IOException;
 
 public class KeyFrameCodec extends EntryCodec<Animation> {
-    protected Animation _read(EntryDataProvider source) throws IOException {
+    protected Animation _read(DataSource source) throws IOException {
         if (source.readIntLE() == (('K' << 24) | ('E' << 16) | ('Y' << 8) | 'F'))
             return loadBinary(source);
         else {
@@ -19,7 +19,7 @@ public class KeyFrameCodec extends EntryCodec<Animation> {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    private Animation loadBinary(EntryDataProvider source) throws IOException {
+    private Animation loadBinary(DataSource source) throws IOException {
         Animation kf = new Animation(source.container, source.getName());
         source.seek(40);
         kf.flags = source.readIntLE();
@@ -33,7 +33,7 @@ public class KeyFrameCodec extends EntryCodec<Animation> {
         source.seek(72);
         for(int i = 0; i < numMarkers; i++) {
             Marker m = new Marker();
-            m.frame = source.readFloat();
+            m.frame = source.readFloatLE();
             kf.markers.add(m);
         }
         source.seek(104);
@@ -63,7 +63,7 @@ public class KeyFrameCodec extends EntryCodec<Animation> {
             source.skip(4);
             for(int j = 0; j < count; j++) {
                 KeyFrame kfe = new KeyFrame();
-                kfe.frame = source.readFloat();
+                kfe.frame = source.readFloatLE();
                 kfe.flags = source.readIntLE();
                 kfe.pos = source.readVector3();
                 kfe.pitch = source.readAngle();
@@ -80,16 +80,12 @@ public class KeyFrameCodec extends EntryCodec<Animation> {
         return kf;
     }
 
-    public EntryDataProvider write(Animation source) throws IOException {
+    public DataSource write(Animation source) throws IOException {
         throw new UnsupportedOperationException();
     }
 
     public String[] getFileExtensions() {
         return new String[]{"key"};
-    }
-
-    public byte[][] getFileHeaders() {
-        return new byte[][]{{'F', 'Y', 'E', 'K'}};
     }
 
     public Class<Animation> getEntryClass() {

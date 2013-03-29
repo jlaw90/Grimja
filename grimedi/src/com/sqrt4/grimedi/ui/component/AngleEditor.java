@@ -85,10 +85,11 @@ public class AngleEditor extends JPanel {
         setLayout(new BorderLayout());
 
         //---- angleslider ----
-        angleslider.setMaximum(360);
+        angleslider.setMaximum(180);
         angleslider.setPaintTicks(true);
         angleslider.setMajorTickSpacing(45);
         angleslider.setValue(0);
+        angleslider.setMinimum(-180);
         angleslider.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {

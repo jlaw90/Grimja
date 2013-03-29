@@ -1,9 +1,8 @@
 package com.sqrt.liblab.codec;
 
-import com.sqrt.liblab.EntryDataProvider;
 import com.sqrt.liblab.LabEntry;
+import com.sqrt.liblab.io.DataSource;
 
-import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -34,63 +33,19 @@ public final class CodecMapper {
         return null;
     }
 
-    public static EntryCodec<?> codecForMagic(EntryDataProvider provider) {
-        try {
-            for (EntryCodec<?> ec : codecs) {
-                if (ec.getFileHeaders() == null)
-                    continue;
-                hLoop:
-                for (byte[] header : ec.getFileHeaders()) {
-                    try {
-                        provider.seek(0);
-                        if (header == null)
-                            continue;
-
-                        if (provider.available() < header.length)
-                            continue;
-                        byte[] read = new byte[header.length];
-                        provider.reset();
-                        provider.readFully(read);
-                        for (int i = 0; i < header.length; i++)
-                            if (read[i] != header[i])
-                                continue hLoop;
-                        return ec;
-                    } catch (IOException ioe) {
-                        ioe.printStackTrace();
-                    }
-                }
-            }
-            return null;
-        } finally {
-            try {
-                provider.seek(0);
-            } catch (IOException e) {
-            /**/
+    public static EntryCodec<?> codecForProvider(DataSource provider) {
+        // First try by extension...
+        String name = provider.getName();
+        if (name != null) {
+            int idx = name.lastIndexOf('.');
+            if (idx != -1) {
+                EntryCodec<?> codec = codecForExtension(name.substring(idx + 1));
+                if (codec != null)
+                    return codec;
             }
         }
-    }
+        return null;
 
-    public static EntryCodec<?> codecForProvider(EntryDataProvider provider) {
-        try {
-            // First try by extension...
-            String name = provider.getName();
-            if (name != null) {
-                int idx = name.lastIndexOf('.');
-                if (idx != -1) {
-                    EntryCodec<?> codec = codecForExtension(name.substring(idx + 1));
-                    if (codec != null)
-                        return codec;
-                }
-            }
-            // Then try by "magic" (e.g. 'LABN' at the start of the file...)
-            return codecForMagic(provider);
-        } finally {
-            try {
-                provider.seek(0);
-            } catch (IOException e) {
-            /**/
-            }
-        }
     }
 
     public static void registerCodec(EntryCodec<?> codec) {
@@ -108,11 +63,11 @@ public final class CodecMapper {
         CodecMapper.registerCodec(new MaterialCodec());
         CodecMapper.registerCodec(new ModelCodec());
         CodecMapper.registerCodec(new KeyFrameCodec());
+        CodecMapper.registerCodec(new AudioCodec());
+        CodecMapper.registerCodec(new SmushCodec());
         // Todo .cos (costume)
         // Todo .lip (lip sync)
         // Todo .snm (movie)
-        // Todo .wav (audio)
-        // Todo .imu (iMuse)
         // Todo .lua
     }
 

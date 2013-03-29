@@ -27,6 +27,11 @@ public class ImageView extends EditorPanel<GrimBitmap> {
         initComponents();
     }
 
+    ImageIcon icon = new ImageIcon(getClass().getResource("/picture.png"));
+    public ImageIcon getIcon() {
+        return icon;
+    }
+
     private void updatePreview() {
         if(imageList.getSelectedValue() == null) {
             preview.setIcon(null);

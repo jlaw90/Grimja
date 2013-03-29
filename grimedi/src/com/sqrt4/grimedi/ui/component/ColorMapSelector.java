@@ -4,7 +4,8 @@
 
 package com.sqrt4.grimedi.ui.component;
 
-import com.sqrt.liblab.EntryDataProvider;
+import com.sqrt.liblab.io.DataSource;
+import com.sqrt.liblab.LabCollection;
 import com.sqrt.liblab.LabFile;
 import com.sqrt.liblab.codec.CodecMapper;
 import com.sqrt.liblab.entry.model.ColorMap;
@@ -12,23 +13,21 @@ import com.sqrt.liblab.entry.model.ColorMap;
 import java.awt.*;
 import java.awt.event.ItemListener;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Vector;
 import javax.swing.*;
 
 public class ColorMapSelector extends JPanel {
-    private LabFile _last;
+    private LabCollection _last;
 
     public ColorMapSelector() {
         initComponents();
     }
 
     public void setLabFile(LabFile container) {
-        if (container == _last)
+        if (container.container == _last)
             return;
-        _last = container;
-        Vector<EntryDataProvider> colorMaps = new Vector<EntryDataProvider>();
+        _last = container.container;
+        Vector<DataSource> colorMaps = new Vector<DataSource>();
         colorMaps.addAll(container.container.findByType(ColorMap.class));
         colorMapSelector.setModel(new DefaultComboBoxModel(colorMaps));
     }
@@ -42,8 +41,9 @@ public class ColorMapSelector extends JPanel {
     }
 
     public ColorMap getSelected() {
-        EntryDataProvider edp = (EntryDataProvider) colorMapSelector.getSelectedItem();
+        DataSource edp = (DataSource) colorMapSelector.getSelectedItem();
         try {
+            edp.seek(0);
             return (ColorMap) CodecMapper.codecForProvider(edp).read(edp);
         } catch (IOException e) {
             e.printStackTrace();

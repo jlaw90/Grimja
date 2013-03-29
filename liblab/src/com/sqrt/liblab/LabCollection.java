@@ -1,5 +1,7 @@
 package com.sqrt.liblab;
 
+import com.sqrt.liblab.io.DataSource;
+
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -24,17 +26,17 @@ public class LabCollection {
         return lf;
     }
 
-    public <T extends LabEntry> List<EntryDataProvider> findByType(Class<T> type) {
-        List<EntryDataProvider> res = new LinkedList<EntryDataProvider>();
+    public <T extends LabEntry> List<DataSource> findByType(Class<T> type) {
+        List<DataSource> res = new LinkedList<DataSource>();
         for (LabFile lf : labs) {
-            List<EntryDataProvider> r = lf.findByType(type);
+            List<DataSource> r = lf.findByType(type);
             if (r != null)
                 res.addAll(r);
         }
         if (res.isEmpty())
             return null;
-        Collections.sort(res, new Comparator<EntryDataProvider>() {
-            public int compare(EntryDataProvider o1, EntryDataProvider o2) {
+        Collections.sort(res, new Comparator<DataSource>() {
+            public int compare(DataSource o1, DataSource o2) {
                 return o1.getName().compareTo(o2.getName());
             }
         });

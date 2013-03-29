@@ -19,6 +19,11 @@ public class ColorMapView extends EditorPanel<ColorMap> {
         initComponents();
     }
 
+    ImageIcon icon = new ImageIcon(getClass().getResource("/speaker.png"));
+    public ImageIcon getIcon() {
+        return icon;
+    }
+
     public void onNewData() {
         colorList.setModel(new ListModel() {
             public int getSize() {

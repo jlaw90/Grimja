@@ -1,11 +1,8 @@
 package com.sqrt4.grimedi.util;
 
-import com.sqrt.liblab.EntryDataProvider;
-
 import javax.swing.*;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 

@@ -83,6 +83,7 @@ public class ModelView extends EditorPanel<GrimModel> {
         selected.pitch = new Angle(bonePitch.getAngle());
         selected.pos = bonePos.getValue();
         selected.pivot = bonePivot.getValue();
+        renderer.refreshModelCache();
     }
 
     private void boneChanged(PropertyChangeEvent e) {

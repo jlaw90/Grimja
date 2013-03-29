@@ -29,6 +29,11 @@ public class FontView extends EditorPanel<GrimFont> {
         initComponents();
     }
 
+    ImageIcon icon = new ImageIcon(getClass().getResource("/font.png"));
+    public ImageIcon getIcon() {
+        return icon;
+    }
+
     private void updatePreview() {
         int height = data.height;
         int width = 0;

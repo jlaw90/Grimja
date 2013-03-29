@@ -5,7 +5,7 @@ new FormModel {
 	root: new FormRoot {
 		add( new FormWindow( "javax.swing.JDialog", new FormLayoutManager( class java.awt.GridBagLayout ) {
 			"$columnSpecs": "0:1.0"
-			"$rowSpecs": "0, 0:1.0"
+			"$rowSpecs": "0, 0:1.0, 0"
 			"$alignTop": true
 			"$alignLeft": true
 		} ) {
@@ -17,6 +17,7 @@ new FormModel {
 			"$locationPolicy": 0
 			"$sizePolicy": 0
 			"modal": true
+			addEvent( new FormEvent( "java.awt.event.KeyListener", "keyPressed", "keyPressed", true ) )
 			add( new FormComponent( "javax.swing.JLabel" ) {
 				name: "label1"
 				"text": "text"
@@ -31,9 +32,29 @@ new FormModel {
 				"gridy": 1
 				"insets": new java.awt.Insets( 5, 5, 5, 5 )
 			} )
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.FlowLayout ) ) {
+				name: "panel1"
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "cancelButton"
+					"visible": false
+					"action": new FormReference( "cancelAction" )
+				} )
+			}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+				"gridy": 2
+			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 0, 0 )
-			"size": new java.awt.Dimension( 395, 95 )
+			"size": new java.awt.Dimension( 395, 145 )
+		} )
+		add( new FormNonVisual( "javax.swing.AbstractAction" ) {
+			name: "cancelAction"
+			"$action.Name": "Cancel"
+			"$action.ShortDescription": "Cancel this operation"
+			auxiliary() {
+				"JavaCodeGenerator.className": "CancelAction"
+			}
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 155 )
 		} )
 	}
 }

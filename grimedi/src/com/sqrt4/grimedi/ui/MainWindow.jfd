@@ -19,8 +19,12 @@ new FormModel {
 						add( new FormComponent( "javax.swing.JTree" ) {
 							name: "fileList"
 							"showsRootHandles": true
+							"model": new javax.swing.tree.DefaultTreeModel( new javax.swing.tree.DefaultMutableTreeNode {
+								userObject: "Nothing open"
+							} )
 							"rootVisible": false
 							addEvent( new FormEvent( "javax.swing.event.TreeSelectionListener", "valueChanged", "fileSelected", true ) )
+							addEvent( new FormEvent( "java.awt.event.MouseListener", "mousePressed", "fileListMousePressed", true ) )
 						} )
 					}, new FormLayoutConstraints( class java.lang.String ) {
 						"value": "Center"
@@ -94,6 +98,30 @@ new FormModel {
 			"location": new java.awt.Point( 0, 0 )
 			"size": new java.awt.Dimension( 800, 600 )
 		} )
+		add( new FormContainer( "javax.swing.JPopupMenu", new FormLayoutManager( class javax.swing.JPopupMenu ) ) {
+			name: "entryPopupMenu"
+			add( new FormComponent( "javax.swing.JMenuItem" ) {
+				name: "menuItem4"
+				"mnemonic": 69
+				"action": new FormReference( "extractEntryAction" )
+			} )
+			add( new FormComponent( "javax.swing.JMenuItem" ) {
+				name: "menuItem5"
+				"mnemonic": 68
+				"action": new FormReference( "deleteEntryAction" )
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 5, 620 )
+		} )
+		add( new FormContainer( "javax.swing.JPopupMenu", new FormLayoutManager( class javax.swing.JPopupMenu ) ) {
+			name: "labPopupMenu"
+			add( new FormComponent( "javax.swing.JMenuItem" ) {
+				name: "menuItem6"
+				"action": new FormReference( "extractAllAction" )
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 250, 665 )
+		} )
 		add( new FormNonVisual( "javax.swing.AbstractAction" ) {
 			name: "openAction"
 			"$action.Name": "Open"
@@ -114,6 +142,36 @@ new FormModel {
 			}
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 0, 362 )
+		} )
+		add( new FormNonVisual( "javax.swing.AbstractAction" ) {
+			name: "extractEntryAction"
+			"$action.Name": "Extract"
+			"$action.ShortDescription": "Extract this entry to a file"
+			auxiliary() {
+				"JavaCodeGenerator.className": "ExtractEntryAction"
+			}
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 680 )
+		} )
+		add( new FormNonVisual( "javax.swing.AbstractAction" ) {
+			name: "deleteEntryAction"
+			"$action.Name": "Delete"
+			"$action.ShortDescription": "Delete the entry from the LAB file"
+			auxiliary() {
+				"JavaCodeGenerator.className": "DeleteEntryAction"
+			}
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 732 )
+		} )
+		add( new FormNonVisual( "javax.swing.AbstractAction" ) {
+			name: "extractAllAction"
+			"$action.Name": "Extract all..."
+			"$action.ShortDescription": "Extract all the entries in this LAB file to the specified directory..."
+			auxiliary() {
+				"JavaCodeGenerator.className": "ExtractAllAction"
+			}
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 784 )
 		} )
 	}
 }

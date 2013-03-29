@@ -7,10 +7,11 @@ new FormModel {
 			name: "this"
 			add( new FormComponent( "javax.swing.JSlider" ) {
 				name: "angleslider"
-				"maximum": 360
+				"maximum": 180
 				"paintTicks": true
 				"majorTickSpacing": 45
 				"value": 0
+				"minimum": -180
 				addEvent( new FormEvent( "javax.swing.event.ChangeListener", "stateChanged", "angleSliderChanged", true ) )
 			}, new FormLayoutConstraints( class java.lang.String ) {
 				"value": "Center"
@@ -24,10 +25,6 @@ new FormModel {
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 0, 0 )
 			"size": new java.awt.Dimension( 400, 300 )
-		} )
-		addBindingGroup( new FormBindingGroup( class org.jdesktop.beansbinding.BindingGroup ) {
-			"name": "bindingGroup"
-			addBinding( new FormBinding( "this", "angle", "angleslider", "value_IGNORE_ADJUSTING" ) )
 		} )
 	}
 }

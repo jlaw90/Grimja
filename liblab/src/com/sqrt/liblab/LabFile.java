@@ -2,6 +2,8 @@ package com.sqrt.liblab;
 
 import com.sqrt.liblab.codec.CodecMapper;
 import com.sqrt.liblab.codec.EntryCodec;
+import com.sqrt.liblab.io.DataSource;
+import com.sqrt.liblab.io.DiskDataSource;
 
 import java.io.*;
 import java.util.Collections;
@@ -11,9 +13,8 @@ import java.util.List;
 
 public class LabFile {
     public final LabCollection container;
-    private RandomAccessFile source;
     private String name;
-    public final List<EntryDataProvider> entries = new LinkedList<EntryDataProvider>();
+    public final List<DataSource> entries = new LinkedList<DataSource>();
 
     LabFile(LabCollection container) {
         this.container = container;
@@ -23,7 +24,7 @@ public class LabFile {
     LabFile(LabCollection container, File path) throws IOException {
         this(container);
         name = path.getName().toUpperCase();
-        // Todo: endianness would be better handled with NIO, but reading and writing would not be so pretty
+        RandomAccessFile source;
         try {
             source = new RandomAccessFile(path, "rw");
         } catch (IOException ioe) {
@@ -54,21 +55,20 @@ public class LabFile {
                     break;
                 sb.append((char) ch);
             }
-            String name = sb.toString(); // huzzah
-            this.entries.add(new EntryDiskDataProvider(this, name, start, size));
+            this.entries.add(new DiskDataSource(this, sb.toString(), source, start, size));
         }
 
         // Sort them for convenience...
-        Collections.sort(this.entries, new Comparator<EntryDataProvider>() {
-            public int compare(EntryDataProvider o1, EntryDataProvider o2) {
+        Collections.sort(this.entries, new Comparator<DataSource>() {
+            public int compare(DataSource o1, DataSource o2) {
                 return o1.getName().compareTo(o2.getName());
             }
         });
     }
 
-    public <T extends LabEntry> List<EntryDataProvider> findByType(Class<T> type) {
-        List<EntryDataProvider> res = new LinkedList<EntryDataProvider>();
-        for (EntryDataProvider edp : entries) {
+    public <T extends LabEntry> List<DataSource> findByType(Class<T> type) {
+        List<DataSource> res = new LinkedList<DataSource>();
+        for (DataSource edp : entries) {
             EntryCodec<?> codec = CodecMapper.codecForProvider(edp);
             if (codec == null || codec.getEntryClass() != type)
                 continue;
@@ -80,80 +80,16 @@ public class LabFile {
     }
 
     public LabEntry findByName(String name) throws IOException {
-        for (EntryDataProvider edp : entries) {
+        for (DataSource edp : entries) {
             if (edp.getName().equalsIgnoreCase(name)) {
-                return CodecMapper.codecForProvider(edp).read(edp);
+                EntryCodec c = CodecMapper.codecForProvider(edp);
+                if(c == null)
+                    continue;
+                edp.seek(0);
+                return c.read(edp);
             }
         }
         return null;
-    }
-
-    // Only works for labfiles loaded from disk
-    private class EntryDiskDataProvider extends EntryDataProvider {
-        public final long off, len;
-        private long _off, _mark;
-
-        protected EntryDiskDataProvider(LabFile container, String name, long off, long len) {
-            super(container, name);
-            this.off = off;
-            this.len = len;
-            _off = off;
-            _mark = _off;
-        }
-
-        public int read() throws IOException {
-            if (_off >= off + len)
-                return -1;
-            container.source.seek(_off++);
-            return container.source.read();
-        }
-
-        public void close() throws IOException {
-            _off = off;
-            _mark = _off;
-        }
-
-        public int available() throws IOException {
-            return (int) ((off + len) - _off);
-        }
-
-        public void seek(long pos) throws IOException {
-            if (pos >= len)
-                throw new IOException();
-            _off = off + pos;
-        }
-
-        public long getPosition() {
-            return _off - off;
-        }
-
-        public long skip(long n) throws IOException {
-            long skip = Math.min((off + len) - 1, _off + n) - _off;
-            _off += skip;
-            return skip;
-        }
-
-        public int read(byte[] b, int _off, int _len) throws IOException {
-            if (this._off + _len > off + len)
-                _len = (int) (Math.max(0, (off + len) - this._off));
-            container.source.seek(this._off);
-            int read = container.source.read(b, _off, _len);
-            if (read != -1)
-                this._off += read;
-            return read;
-        }
-
-        public synchronized void mark(int readlimit) {
-            _mark = _off;
-        }
-
-        public synchronized void reset() throws IOException {
-            _off = _mark;
-        }
-
-        public boolean markSupported() {
-            return true;
-        }
     }
 
     public String toString() {

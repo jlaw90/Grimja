@@ -1,23 +1,25 @@
-package com.sqrt.liblab;
+package com.sqrt.liblab.io;
 
-import com.sqrt.liblab.codec.CodecMapper;
+import com.sqrt.liblab.LabFile;
 import com.sqrt.liblab.threed.Angle;
 import com.sqrt.liblab.threed.Vector2;
 import com.sqrt.liblab.threed.Vector3;
 
+import java.io.DataInput;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 
 // Todo: prettier name...
-/***
+
+/**
  * Provides an abstract way to handle data caching (e.g., read from disk originally, store in memory if modified, etc.)
  */
-public abstract class EntryDataProvider extends InputStream {
+public abstract class DataSource extends InputStream {
     public final LabFile container;
     private String name;
 
-    protected EntryDataProvider(LabFile container, String name) {
+    protected DataSource(LabFile container, String name) {
         this.container = container;
         this.name = name;
     }
@@ -32,14 +34,16 @@ public abstract class EntryDataProvider extends InputStream {
 
     public abstract void seek(long pos) throws IOException;
 
-    public abstract long getPosition();
+    public abstract long getPosition() throws IOException;
+
+    public abstract long getLength();
 
     public String readString(int maxLen) throws IOException {
         byte[] data = new byte[maxLen];
         readFully(data);
         String s = new String(data);
         int idx = s.indexOf(0);
-        if(idx != -1)
+        if (idx != -1)
             s = s.substring(0, idx);
         return s;
     }
@@ -65,7 +69,7 @@ public abstract class EntryDataProvider extends InputStream {
         return (byte) i;
     }
 
-    public int readUByte() throws IOException {
+    public int readUnsignedByte() throws IOException {
         return readByte() & 0xff;
     }
 
@@ -76,16 +80,16 @@ public abstract class EntryDataProvider extends InputStream {
         return (c1 << 24) | (c2 << 16) | (c3 << 8) | c4;
     }
 
+    public boolean readBoolean() throws IOException {
+        return readIntLE() != 0; // As grimE does it...
+    }
+
     public int readIntLE() throws IOException {
         return Integer.reverseBytes(readInt());
     }
 
-    public long readUInt() throws IOException {
-        return ((long) readInt()) & 0xffffffffL;
-    }
-
-    public long readUIntLE() throws IOException {
-        return (long) Integer.reverseBytes(readInt()) & 0xffffffffL;
+    public long readUnsignedIntLE() throws IOException {
+        return (long) readIntLE() & 0xffffffffL;
     }
 
     public short readShort() throws IOException {
@@ -95,28 +99,32 @@ public abstract class EntryDataProvider extends InputStream {
         return (short) ((c1 << 8) | c2);
     }
 
+    public int readUnsignedShort() throws IOException {
+        return readShort() & 0xffff;
+    }
+
     public short readShortLE() throws IOException {
         return Short.reverseBytes(readShort());
     }
 
-    public int readUShortLE() throws IOException {
-        return Short.reverseBytes(readShort()) & 0xffff;
+    public int readUnsignedShortLE() throws IOException {
+        return readShortLE() & 0xffff;
     }
 
-    public float readFloat() throws IOException {
+    public float readFloatLE() throws IOException {
         return Float.intBitsToFloat(readIntLE());
     }
 
     public Angle readAngle() throws IOException {
-        return new Angle(readFloat());
+        return new Angle(readFloatLE());
     }
 
     public Vector2 readVector2() throws IOException {
-        return new Vector2(readFloat(), readFloat());
+        return new Vector2(readFloatLE(), readFloatLE());
     }
 
     public Vector3 readVector3() throws IOException {
-        return new Vector3(readFloat(), readFloat(), readFloat());
+        return new Vector3(readFloatLE(), readFloatLE(), readFloatLE());
     }
 
     public String toString() {

@@ -4,6 +4,7 @@
 
 package com.sqrt4.grimedi.ui.component;
 
+import com.jogamp.common.nio.Buffers;
 import com.sqrt.liblab.entry.model.*;
 import com.sqrt.liblab.threed.Angle;
 import com.sqrt.liblab.threed.Bounds3;
@@ -12,12 +13,15 @@ import com.sqrt.liblab.threed.Vector3;
 import jogamp.graph.math.MathFloat;
 
 import javax.media.opengl.*;
+import javax.media.opengl.awt.GLCanvas;
 import javax.media.opengl.awt.GLJPanel;
 import javax.media.opengl.glu.GLU;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.AncestorListener;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.BufferedInputStream;
 import java.io.PrintStream;
 import java.nio.Buffer;
 import java.nio.FloatBuffer;
@@ -31,7 +35,7 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * @author James Lawrence
  */
-public class ModelRenderer extends JPanel {
+public class ModelRenderer extends JPanel implements GLEventListener {
     private GrimModel model;
     private java.util.List<Texture> textures = new LinkedList<Texture>();
     private boolean _regenerateTextures;
@@ -40,11 +44,13 @@ public class ModelRenderer extends JPanel {
     public boolean drawNormals;
     public boolean smoothShading = true;
     public boolean drawPlane = true;
+    public boolean useCallList = true;
     public float planeWidth = 0.5f;
     public float planeExtent = 5f;
     private Vector3 target;
     private float camDistance = 1f, theta, phi;
-    private boolean mouseUpdate;
+    private boolean mouseUpdate, rebuildList = true, builtList;
+    private int listId;
     private Lock mouseLock = new ReentrantLock();
     private int oldX, oldY, rX, rY;
     private GLU glu = new GLU();
@@ -71,6 +77,7 @@ public class ModelRenderer extends JPanel {
 
     public void setSelectedNode(ModelNode node) {
         selected = node;
+        rebuildList = true;
     }
 
     public ModelNode getSelectedNode() {
@@ -78,9 +85,11 @@ public class ModelRenderer extends JPanel {
     }
 
     public void setModel(GrimModel model) {
+        // Todo: remove and re-add GLJPanel, as there's a bug in JOGL if it's re-used
         this.model = model;
         selected = null;
         _regenerateTextures = true;
+        rebuildList = true;
         phi = 0;
         theta = -4.71f;
         camDistance = 1;
@@ -89,258 +98,277 @@ public class ModelRenderer extends JPanel {
         target = bounds == null ? Vector3.zero : bounds.center;
     }
 
-    public void setVisible(boolean aFlag) {
-        super.setVisible(aFlag);
-        preview.setRealized(aFlag);
-    }
-
     public void setCallback(FrameCallback fc) {
         this.callback = fc;
     }
 
+    private IntBuffer viewport = Buffers.newDirectIntBuffer(4);
+    private FloatBuffer modelview = Buffers.newDirectFloatBuffer(16);
+    private FloatBuffer projview = Buffers.newDirectFloatBuffer(16);
+    private FloatBuffer zBuf = Buffers.newDirectFloatBuffer(1);
+    private FloatBuffer result = Buffers.newDirectFloatBuffer(4);
+    private FloatBuffer _camPosBuf = Buffers.newDirectFloatBuffer(4),
+            _spotDirBuf = Buffers.newDirectFloatBuffer(4);
+
+    public void init(GLAutoDrawable glAutoDrawable) {
+        //glAutoDrawable.setGL(new DebugGL2(glAutoDrawable.getGL().getGL2()));
+        textures.clear();
+        _regenerateTextures = true;
+        GL2 gl = glAutoDrawable.getGL().getGL2();
+        gl.glClearColor(0.5f, 0.5f, 0.5f, 1);
+        gl.glEnable(GL.GL_DEPTH_TEST);
+        gl.glEnable(GL2.GL_LIGHT0);
+        gl.glAlphaFunc(GL.GL_GREATER, 0.5f);
+        gl.glEnable(GL2.GL_ALPHA_TEST);
+        gl.glDepthFunc(GL2.GL_LEQUAL);
+        gl.glColorMaterial(GL2.GL_FRONT_AND_BACK, GL2.GL_AMBIENT_AND_DIFFUSE);
+        gl.glEnable(GL2.GL_COLOR_MATERIAL);
+    }
+
+    public void dispose(GLAutoDrawable glAutoDrawable) {
+    }
+
+    public void display(GLAutoDrawable glAutoDrawable) {
+        GL2 gl2 = glAutoDrawable.getGL().getGL2();
+        gl2.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
+        if (model == null || target == null)
+            return;
+        if (callback != null)
+            callback.preDisplay(gl2);
+        Vector3 rot = new Vector3(camDistance * MathFloat.cos(theta),
+                camDistance * MathFloat.cos(phi) * MathFloat.sin(theta),
+                camDistance * MathFloat.sin(phi) * MathFloat.sin(theta));
+        Vector3 cam = target.add(rot);
+        gl2.glLoadIdentity();
+        if (mouseUpdate && mouseLock.tryLock()) {
+            Vector3 orig = toWorld(gl2, oldX, oldY);
+            Vector3 n = toWorld(gl2, oldX + rX, oldY + rY);
+            Vector3 delta = n.sub(orig);
+            theta += delta.x;
+            phi += delta.y;
+            // Todo: clamp..
+            rX = rY = 0;
+            mouseUpdate = false;
+            mouseLock.unlock();
+        }
+        _camPosBuf.position(0);
+        _spotDirBuf.position(0);
+        //gl2.glLightfv(GL2.GL_LIGHT0, GL2.GL_POSITION, _camPosBuf.put(camPos.x).put(camPos.y).put(camPos.z).put(0f));
+        //gl2.glLightfv(GL2.GL_LIGHT0, GL2.GL_SPOT_DIRECTION, _spotDirBuf.put(camDir.x).put(camDir.y).put(camDir.z).put(0f));
+        glu.gluLookAt(cam.x, cam.y, cam.z, target.x, target.y, target.z, 0, 0, 1);
+
+        if (useCallList && rebuildList) {
+            if (builtList)
+                gl2.glDeleteLists(listId, 1);
+            listId = gl2.glGenLists(1);
+            gl2.glNewList(listId, GL2.GL_COMPILE);
+            doRender(gl2);
+            gl2.glEndList();
+            builtList = true;
+            rebuildList = false;
+        }
+        if (!useCallList && builtList) {
+            rebuildList = true;
+            builtList = false;
+            gl2.glDeleteLists(listId, 1);
+        }
+
+        gl2.glCallList(listId);
+        if (drawTextures)
+            _regenerateTextures = false;
+        if (callback != null)
+            callback.postDisplay(gl2);
+    }
+
+    private void doRender(GL2 gl2) {
+        // Draw floor plane...
+        if (drawPlane) {
+            gl2.glColor3f(0.7f, 0.7f, 0.7f);
+            gl2.glBegin(GL2.GL_LINES);
+            for (float x = -planeExtent; x <= planeExtent; x += planeWidth) {
+                gl2.glVertex3f(x, -planeExtent, 0);
+                gl2.glVertex3f(x, planeExtent, 0); // left-to-right
+                gl2.glVertex3f(-planeExtent, x, 0);
+                gl2.glVertex3f(planeExtent, x, 0); // top-to-bottom
+            }
+            gl2.glEnd();
+        }
+
+        renderNode(gl2, model.hierarchy.get(0));
+    }
+
+    private void renderNode(GL2 gl2, ModelNode node) {
+        boolean isSelected = selected == node;
+        // -- translateViewport
+        Vector3 animPos = node.pos.add(node.animPos);
+        Angle animPitch = node.pitch.add(node.animPitch);
+        Angle animYaw = node.yaw.add(node.animYaw);
+        Angle animRoll = node.roll.add(node.animRoll);
+        // -- translateViewportStart
+        gl2.glMatrixMode(GL2.GL_MODELVIEW);
+        gl2.glPushMatrix();
+        // --
+        gl2.glTranslatef(animPos.x, animPos.y, animPos.z);
+        gl2.glRotatef(animYaw.degrees, 0, 0, 1);
+        gl2.glRotatef(animPitch.degrees, 1, 0, 0);
+        gl2.glRotatef(animRoll.degrees, 0, 1, 0);
+        // --
+        if (node.hierarchyVisible) {
+            gl2.glMatrixMode(GL2.GL_MODELVIEW);
+            gl2.glPushMatrix();
+            gl2.glTranslatef(node.pivot.x, node.pivot.y, node.pivot.z);
+
+            // Draw mesh...
+            if (node.mesh != null && node.meshVisible) {
+                for (MeshFace face : node.mesh.faces) {
+                    Texture tex = null;
+                    int texId;
+
+                    gl2.glEnable(GL2.GL_LIGHTING);
+                    // Load the texture if needed...
+                    if (drawTextures && face.texture != null) {
+                        tex = face.texture;
+                        texId = _regenerateTextures ? genTexture(gl2, tex) : getTexture(tex);
+                        gl2.glEnable(GL2.GL_TEXTURE_2D);
+                        gl2.glBindTexture(GL.GL_TEXTURE_2D, texId);
+                    }
+
+                    // Draw the shape (if we're not wireframing, draw solid, if we're texturing then draw under the wireframe...)
+                    if (!drawWireframe || drawTextures) {
+                        gl2.glColor3f(1, 1, 1);
+                        switch (face.vertices.size()) {
+                            case 3:
+                                gl2.glBegin(GL.GL_TRIANGLES);
+                                break;
+                            case 4:
+                                gl2.glBegin(GL2.GL_QUADS);
+                                break;
+                            default:
+                                gl2.glBegin(GL2.GL_POLYGON);
+                                break;
+                        }
+                        for (int i = 0; i < face.vertices.size(); i++) {
+                            Vector3 vertex = face.vertices.get(i);
+                            Vector3 normal = smoothShading ? face.normals.get(i) : face.normal;
+                            if (tex != null) {
+                                Vector2 uv = face.uv.get(i);
+                                // Model stores the tex coords backwards...
+                                gl2.glTexCoord2f(uv.x / tex.width, 1f + uv.y / tex.height);
+                            }
+                            gl2.glNormal3f(normal.x, normal.y, normal.z);
+                            gl2.glVertex3f(vertex.x, vertex.y, vertex.z);
+                        }
+
+                        gl2.glEnd();
+                        gl2.glDisable(GL2.GL_TEXTURE_2D);
+                    }
+
+                    // Draw wireframe if need be
+                    if (drawWireframe || isSelected) {
+                        if (isSelected)
+                            gl2.glColor3f(1, 0, 0);
+                        else
+                            gl2.glColor3f(1, 1, 1);
+                        gl2.glBegin(GL2.GL_LINE_STRIP);
+                        List<Vector3> vertices = face.vertices;
+                        for (int i = 0; i < vertices.size(); i++) {
+                            Vector3 v = vertices.get(i);
+                            Vector3 normal = smoothShading ? face.normals.get(i) : face.normal;
+                            gl2.glNormal3f(normal.x, normal.y, normal.z);
+                            gl2.glVertex3f(v.x, v.y, v.z);
+                        }
+                        Vector3 v = face.vertices.get(0);
+                        Vector3 normal = smoothShading ? face.normals.get(0) : face.normal;
+                        gl2.glNormal3f(normal.x, normal.y, normal.z);
+                        gl2.glVertex3f(v.x, v.y, v.z);
+                        gl2.glEnd();
+                    }
+
+                    if (drawNormals) {
+                        final float normalLength = 0.01f * camDistance;
+                        if (isSelected)
+                            gl2.glColor3f(0, 1, 0);
+                        else
+                            gl2.glColor3f(0, 0, 1);
+                        gl2.glDisable(GL2.GL_LIGHTING);
+                        gl2.glBegin(GL2.GL_LINES);
+                        Vector3 normal = face.normal;
+                        Vector3 center = face.getBounds(new Vector3(0, 0, 0)).center;
+                        gl2.glVertex3f(center.x, center.y, center.z);
+                        gl2.glVertex3f(center.x + normal.x * normalLength, center.y + normal.y * normalLength, center.z + normal.z * normalLength);
+                        List<Vector3> vertices = face.vertices;
+                        for (int i = 0; i < vertices.size(); i++) {
+                            Vector3 v = vertices.get(i);
+                            normal = face.normals.get(i);
+                            gl2.glVertex3f(v.x, v.y, v.z);
+                            gl2.glVertex3f(v.x + normal.x * normalLength, v.y + normal.y * normalLength, v.z + normal.z * normalLength);
+                        }
+                        gl2.glEnd();
+                    }
+                }
+            }
+            gl2.glMatrixMode(GL2.GL_MODELVIEW);
+            gl2.glPopMatrix();
+
+            if (node.child != null)
+                renderNode(gl2, node.child);
+
+        }
+        gl2.glMatrixMode(GL2.GL_MODELVIEW);
+        gl2.glPopMatrix();
+
+        if (node.sibling != null)
+            renderNode(gl2, node.sibling);
+        gl2.glDisable(GL2.GL_LIGHTING);
+    }
+
+    public void reshape(GLAutoDrawable glAutoDrawable, int x, int y, int width, int height) {
+        GL2 gl2 = glAutoDrawable.getGL().getGL2();
+        gl2.glMatrixMode(GL2.GL_PROJECTION);
+        gl2.glLoadIdentity();
+
+        GLU glu = new GLU();
+        float aspect = (float) width / (float) height;
+        glu.gluPerspective(45, aspect, 0.1f, 20f);
+        gl2.glMatrixMode(GL2.GL_MODELVIEW);
+        gl2.glLoadIdentity();
+        viewWidth = width;
+        viewHeight = height;
+    }
+
+    private Vector3 toWorld(GL2 gl2, int x, int y) {
+        viewport.clear();
+        modelview.clear();
+        projview.clear();
+        zBuf.clear();
+        result.clear();
+        gl2.glGetIntegerv(GL2.GL_VIEWPORT, viewport);
+        gl2.glGetFloatv(GL2.GL_MODELVIEW_MATRIX, modelview);
+        gl2.glGetFloatv(GL2.GL_PROJECTION_MATRIX, projview);
+        float winX = viewport.get(3) - x;
+        gl2.glReadPixels((int) winX, y, 1, 1, GL2.GL_DEPTH_COMPONENT, GL2.GL_FLOAT, zBuf);
+        float winZ = zBuf.get(0);
+        glu.gluUnProject(winX, y, winZ, modelview, projview, viewport, result);
+        float px = result.get(0);
+        float py = result.get(1);
+        float pz = result.get(2);
+        return new Vector3(px, py, pz);
+    }
+
+    public void refreshModelCache() {
+        rebuildList = true;
+    }
+
     private void createUIComponents() {
         colorMapSelector = new ColorMapSelector();
-        preview = new GLJPanel(new GLCapabilities(GLProfile.getGL2ES1()));
+        preview = new GLJPanel(new GLCapabilities(GLProfile.getGL2ES1())) {
+            protected void paintComponent(Graphics graphics) {
+                super.paintComponent(graphics);
+            }
+        };
         animator.add(preview);
         animator.start();
-        preview.addGLEventListener(new GLEventListener() {
-            private IntBuffer viewport = IntBuffer.allocate(4);
-            private FloatBuffer modelview = FloatBuffer.allocate(16);
-            private FloatBuffer projview = FloatBuffer.allocate(16);
-            private FloatBuffer zBuf = FloatBuffer.allocate(1);
-            private FloatBuffer result = FloatBuffer.allocate(4);
-
-            public void init(GLAutoDrawable glAutoDrawable) {
-                // Todo: disable debugging when it all works :)
-                glAutoDrawable.setGL(new DebugGL2(glAutoDrawable.getGL().getGL2()));
-                textures.clear();
-                _regenerateTextures = true;
-                GL2 gl = glAutoDrawable.getGL().getGL2();
-                gl.glClearColor(0.5f, 0.5f, 0.5f, 1);
-                gl.glEnable(GL.GL_DEPTH_TEST);
-                gl.glEnable(GL2.GL_LIGHT0);
-                gl.glAlphaFunc(GL.GL_GREATER, 0.5f);
-                gl.glEnable(GL2.GL_ALPHA_TEST);
-                gl.glDepthFunc(GL2.GL_LEQUAL);
-                gl.glColorMaterial(GL2.GL_FRONT_AND_BACK, GL2.GL_AMBIENT_AND_DIFFUSE);
-                gl.glEnable(GL2.GL_COLOR_MATERIAL);
-            }
-
-            public void dispose(GLAutoDrawable glAutoDrawable) {
-            }
-
-            private FloatBuffer _camPosBuf = FloatBuffer.allocate(4)
-                    ,
-                    _spotDirBuf = FloatBuffer.allocate(4);
-
-            public void display(GLAutoDrawable glAutoDrawable) {
-                GL2 gl2 = glAutoDrawable.getGL().getGL2();
-                gl2.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
-                if (model == null || target == null)
-                    return;
-                if (callback != null)
-                    callback.preDisplay(gl2);
-                Vector3 rot = new Vector3(camDistance * MathFloat.cos(theta),
-                        camDistance * MathFloat.cos(phi) * MathFloat.sin(theta),
-                        camDistance * MathFloat.sin(phi) * MathFloat.sin(theta));
-                Vector3 cam = target.add(rot);
-                gl2.glLoadIdentity();
-                if (mouseUpdate && mouseLock.tryLock()) {
-                    Vector3 orig = toWorld(gl2, oldX, oldY);
-                    Vector3 n = toWorld(gl2, oldX + rX, oldY + rY);
-                    Vector3 delta = n.sub(orig);
-                    theta += delta.x;
-                    phi += delta.y;
-                    // Todo: clamp..
-                    rX = rY = 0;
-                    mouseUpdate = false;
-                    mouseLock.unlock();
-                }
-                _camPosBuf.position(0);
-                _spotDirBuf.position(0);
-                //gl2.glLightfv(GL2.GL_LIGHT0, GL2.GL_POSITION, _camPosBuf.put(camPos.x).put(camPos.y).put(camPos.z).put(0f));
-                //gl2.glLightfv(GL2.GL_LIGHT0, GL2.GL_SPOT_DIRECTION, _spotDirBuf.put(camDir.x).put(camDir.y).put(camDir.z).put(0f));
-                glu.gluLookAt(cam.x, cam.y, cam.z, target.x, target.y, target.z, 0, 0, 1);
-
-
-                // Draw floor plane...
-                if (drawPlane) {
-                    gl2.glColor3f(0.7f, 0.7f, 0.7f);
-                    gl2.glBegin(GL2.GL_LINES);
-                    for(float x = -planeExtent; x <= planeExtent; x += planeWidth) {
-                        gl2.glVertex3f(x, -planeExtent, 0);
-                        gl2.glVertex3f(x, planeExtent, 0); // left-to-right
-                        gl2.glVertex3f(-planeExtent, x, 0);
-                        gl2.glVertex3f(planeExtent, x, 0); // top-to-bottom
-                    }
-                    gl2.glEnd();
-                }
-
-                renderNode(gl2, model.hierarchy.get(0));
-                if (drawTextures)
-                    _regenerateTextures = false;
-                if (callback != null)
-                    callback.postDisplay(gl2);
-            }
-
-            private void renderNode(GL2 gl2, ModelNode node) {
-                boolean isSelected = selected == node;
-                // -- translateViewport
-                Vector3 animPos = node.pos.add(node.animPos);
-                Angle animPitch = node.pitch.add(node.animPitch);
-                Angle animYaw = node.yaw.add(node.animYaw);
-                Angle animRoll = node.roll.add(node.animRoll);
-                // -- translateViewportStart
-                gl2.glMatrixMode(GL2.GL_MODELVIEW);
-                gl2.glPushMatrix();
-                // --
-                gl2.glTranslatef(animPos.x, animPos.y, animPos.z);
-                gl2.glRotatef(animYaw.degrees, 0, 0, 1);
-                gl2.glRotatef(animPitch.degrees, 1, 0, 0);
-                gl2.glRotatef(animRoll.degrees, 0, 1, 0);
-                // --
-                if (node.hierarchyVisible) {
-                    gl2.glMatrixMode(GL2.GL_MODELVIEW);
-                    gl2.glPushMatrix();
-                    gl2.glTranslatef(node.pivot.x, node.pivot.y, node.pivot.z);
-
-                    // Draw mesh...
-                    if (node.mesh != null && node.meshVisible) {
-                        for (MeshFace face : node.mesh.faces) {
-                            Texture tex = null;
-                            int texId;
-
-                            gl2.glEnable(GL2.GL_LIGHTING);
-                            // Load the texture if needed...
-                            if (drawTextures && face.texture != null) {
-                                tex = face.texture;
-                                texId = _regenerateTextures ? genTexture(gl2, tex) : getTexture(tex);
-                                gl2.glEnable(GL2.GL_TEXTURE_2D);
-                                gl2.glBindTexture(GL.GL_TEXTURE_2D, texId);
-                            }
-
-                            // Draw the shape (if we're not wireframing, draw solid, if we're texturing then draw under the wireframe...)
-                            if (!drawWireframe || drawTextures) {
-                                gl2.glColor3f(1, 1, 1);
-                                switch (face.vertices.size()) {
-                                    case 3:
-                                        gl2.glBegin(GL.GL_TRIANGLES);
-                                        break;
-                                    case 4:
-                                        gl2.glBegin(GL2.GL_QUADS);
-                                        break;
-                                    default:
-                                        gl2.glBegin(GL2.GL_POLYGON);
-                                        break;
-                                }
-                                for (int i = 0; i < face.vertices.size(); i++) {
-                                    Vector3 vertex = face.vertices.get(i);
-                                    Vector3 normal = smoothShading ? face.normals.get(i) : face.normal;
-                                    if (tex != null) {
-                                        Vector2 uv = face.uv.get(i);
-                                        // Model stores the tex coords backwards...
-                                        gl2.glTexCoord2f(uv.x / tex.width, 1f + uv.y / tex.height);
-                                    }
-                                    gl2.glNormal3f(normal.x, normal.y, normal.z);
-                                    gl2.glVertex3f(vertex.x, vertex.y, vertex.z);
-                                }
-
-                                gl2.glEnd();
-                                gl2.glDisable(GL2.GL_TEXTURE_2D);
-                            }
-
-                            // Draw wireframe if need be
-                            if (drawWireframe || isSelected) {
-                                if (isSelected)
-                                    gl2.glColor3f(1, 0, 0);
-                                else
-                                    gl2.glColor3f(1, 1, 1);
-                                gl2.glBegin(GL2.GL_LINE_STRIP);
-                                List<Vector3> vertices = face.vertices;
-                                for (int i = 0; i < vertices.size(); i++) {
-                                    Vector3 v = vertices.get(i);
-                                    Vector3 normal = smoothShading ? face.normals.get(i) : face.normal;
-                                    gl2.glNormal3f(normal.x, normal.y, normal.z);
-                                    gl2.glVertex3f(v.x, v.y, v.z);
-                                }
-                                Vector3 v = face.vertices.get(0);
-                                Vector3 normal = smoothShading ? face.normals.get(0) : face.normal;
-                                gl2.glNormal3f(normal.x, normal.y, normal.z);
-                                gl2.glVertex3f(v.x, v.y, v.z);
-                                gl2.glEnd();
-                            }
-
-                            if (drawNormals) {
-                                final float normalLength = 0.01f * camDistance;
-                                if (isSelected)
-                                    gl2.glColor3f(0, 1, 0);
-                                else
-                                    gl2.glColor3f(0, 0, 1);
-                                gl2.glDisable(GL2.GL_LIGHTING);
-                                gl2.glBegin(GL2.GL_LINES);
-                                Vector3 normal = face.normal;
-                                Vector3 center = face.getBounds(new Vector3(0, 0, 0)).center;
-                                gl2.glVertex3f(center.x, center.y, center.z);
-                                gl2.glVertex3f(center.x + normal.x * normalLength, center.y + normal.y * normalLength, center.z + normal.z * normalLength);
-                                List<Vector3> vertices = face.vertices;
-                                for (int i = 0; i < vertices.size(); i++) {
-                                    Vector3 v = vertices.get(i);
-                                    normal = face.normals.get(i);
-                                    gl2.glVertex3f(v.x, v.y, v.z);
-                                    gl2.glVertex3f(v.x + normal.x * normalLength, v.y + normal.y * normalLength, v.z + normal.z * normalLength);
-                                }
-                                gl2.glEnd();
-                            }
-                        }
-                    }
-                    gl2.glMatrixMode(GL2.GL_MODELVIEW);
-                    gl2.glPopMatrix();
-
-                    if (node.child != null)
-                        renderNode(gl2, node.child);
-
-                }
-                gl2.glMatrixMode(GL2.GL_MODELVIEW);
-                gl2.glPopMatrix();
-
-                if (node.sibling != null)
-                    renderNode(gl2, node.sibling);
-                gl2.glDisable(GL2.GL_LIGHTING);
-            }
-
-            public void reshape(GLAutoDrawable glAutoDrawable, int x, int y, int width, int height) {
-                GL2 gl2 = glAutoDrawable.getGL().getGL2();
-                gl2.glMatrixMode(GL2.GL_PROJECTION);
-                gl2.glLoadIdentity();
-
-                GLU glu = new GLU();
-                float aspect = (float) width / (float) height;
-                glu.gluPerspective(45, aspect, 0.1f, 20f);
-                gl2.glMatrixMode(GL2.GL_MODELVIEW);
-                gl2.glLoadIdentity();
-                viewWidth = width;
-                viewHeight = height;
-            }
-
-            private Vector3 toWorld(GL2 gl2, int x, int y) {
-                viewport.clear();
-                modelview.clear();
-                projview.clear();
-                zBuf.clear();
-                result.clear();
-                gl2.glGetIntegerv(GL2.GL_VIEWPORT, viewport);
-                gl2.glGetFloatv(GL2.GL_MODELVIEW_MATRIX, modelview);
-                gl2.glGetFloatv(GL2.GL_PROJECTION_MATRIX, projview);
-                float winX = viewport.get(3) - x;
-                gl2.glReadPixels((int) winX, y, 1, 1, GL2.GL_DEPTH_COMPONENT, GL2.GL_FLOAT, zBuf);
-                float winZ = zBuf.get(0);
-                glu.gluUnProject(winX, y, winZ, modelview, projview, viewport, result);
-                float px = result.get(0);
-                float py = result.get(1);
-                float pz = result.get(2);
-                return new Vector3(px, py, pz);
-            }
-        });
+        preview.addGLEventListener(this);
 
         MouseAdapter mad = new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
@@ -370,7 +398,6 @@ public class ModelRenderer extends JPanel {
         preview.addMouseListener(mad);
         preview.addMouseMotionListener(mad);
         preview.addMouseWheelListener(mad);
-        animator.start();
     }
 
     private int getTexture(Texture tex) {
@@ -411,6 +438,7 @@ public class ModelRenderer extends JPanel {
 
     private void colorMapSelected(ItemEvent ignore) {
         _regenerateTextures = true;
+        rebuildList = true;
     }
 
     private void initComponents() {
@@ -419,15 +447,16 @@ public class ModelRenderer extends JPanel {
 
         panel2 = new JPanel();
         panel4 = new JPanel();
-        label1 = new JLabel();
         toggleTextures = new JCheckBox();
         toggleWireframe = new JCheckBox();
         toggleNormals = new JCheckBox();
         toggleSmooth = new JCheckBox();
+        toggleGrid = new JCheckBox();
         normalToggleAction = new NormalToggleAction();
         toggleSmoothAction = new ToggleSmoothAction();
         toggleTextureAction = new ToggleTextures();
         toggleWireframeAction = new ToggleWireframe();
+        toggleGridAction = new ToggleGridAction();
 
         //======== this ========
         setLayout(new BorderLayout());
@@ -440,55 +469,58 @@ public class ModelRenderer extends JPanel {
             {
                 panel4.setBorder(new TitledBorder("Render options"));
                 panel4.setLayout(new GridBagLayout());
-                ((GridBagLayout) panel4.getLayout()).columnWidths = new int[]{0, 0, 0, 0, 0, 0, 0};
-                ((GridBagLayout) panel4.getLayout()).rowHeights = new int[]{0, 0, 0};
-                ((GridBagLayout) panel4.getLayout()).columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
-                ((GridBagLayout) panel4.getLayout()).rowWeights = new double[]{1.0, 0.0, 1.0E-4};
-
-                //---- label1 ----
-                label1.setText("Color map:");
-                label1.setLabelFor(colorMapSelector);
-                panel4.add(label1, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-                        new Insets(0, 0, 0, 0), 0, 0));
+                ((GridBagLayout)panel4.getLayout()).columnWidths = new int[] {0, 0, 0, 0, 0, 0, 0, 0};
+                ((GridBagLayout)panel4.getLayout()).rowHeights = new int[] {0, 0, 0};
+                ((GridBagLayout)panel4.getLayout()).columnWeights = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
+                ((GridBagLayout)panel4.getLayout()).rowWeights = new double[] {1.0, 0.0, 1.0E-4};
 
                 //---- colorMapSelector ----
+                colorMapSelector.setBorder(new TitledBorder("Color map"));
                 colorMapSelector.addItemListener(new ItemListener() {
                     @Override
                     public void itemStateChanged(ItemEvent e) {
                         colorMapSelected(e);
                     }
                 });
-                panel4.add(colorMapSelector, new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-                        new Insets(0, 0, 0, 0), 0, 0));
+                panel4.add(colorMapSelector, new GridBagConstraints(0, 0, 1, 1, 1.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
+                    new Insets(0, 0, 0, 0), 0, 0));
 
                 //---- toggleTextures ----
                 toggleTextures.setAction(toggleTextureAction);
                 toggleTextures.setSelected(true);
-                panel4.add(toggleTextures, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-                        new Insets(0, 0, 0, 0), 0, 0));
+                panel4.add(toggleTextures, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
+                    new Insets(0, 0, 0, 0), 0, 0));
 
                 //---- toggleWireframe ----
                 toggleWireframe.setAction(toggleWireframeAction);
-                panel4.add(toggleWireframe, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-                        new Insets(0, 0, 0, 0), 0, 0));
+                panel4.add(toggleWireframe, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
+                    new Insets(0, 0, 0, 0), 0, 0));
 
                 //---- toggleNormals ----
                 toggleNormals.setAction(normalToggleAction);
-                panel4.add(toggleNormals, new GridBagConstraints(4, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-                        new Insets(0, 0, 0, 0), 0, 0));
+                panel4.add(toggleNormals, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
+                    new Insets(0, 0, 0, 0), 0, 0));
 
                 //---- toggleSmooth ----
                 toggleSmooth.setAction(toggleSmoothAction);
-                panel4.add(toggleSmooth, new GridBagConstraints(5, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-                        new Insets(0, 0, 0, 0), 0, 0));
+                panel4.add(toggleSmooth, new GridBagConstraints(4, 0, 1, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
+                    new Insets(0, 0, 0, 0), 0, 0));
+
+                //---- toggleGrid ----
+                toggleGrid.setAction(toggleGridAction);
+                panel4.add(toggleGrid, new GridBagConstraints(5, 0, 1, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
+                    new Insets(0, 0, 0, 0), 0, 0));
             }
             panel2.add(panel4, BorderLayout.NORTH);
+
+            //---- preview ----
+            preview.setDoubleBuffered(false);
             panel2.add(preview, BorderLayout.CENTER);
         }
         add(panel2, BorderLayout.CENTER);
@@ -499,21 +531,26 @@ public class ModelRenderer extends JPanel {
         return model;
     }
 
+    public GLJPanel getRenderer() {
+        return preview;
+    }
+
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
     private JPanel panel2;
     private JPanel panel4;
-    private JLabel label1;
     private ColorMapSelector colorMapSelector;
     private JCheckBox toggleTextures;
     private JCheckBox toggleWireframe;
     private JCheckBox toggleNormals;
     private JCheckBox toggleSmooth;
+    private JCheckBox toggleGrid;
     private GLJPanel preview;
     private NormalToggleAction normalToggleAction;
     private ToggleSmoothAction toggleSmoothAction;
     private ToggleTextures toggleTextureAction;
     private ToggleWireframe toggleWireframeAction;
-    // JFormDesigner - End of variables declaration  //GEN-END:variables
+    private ToggleGridAction toggleGridAction;
+// JFormDesigner - End of variables declaration  //GEN-END:variables
 
     private class ToggleSmoothAction extends AbstractAction {
         private ToggleSmoothAction() {
@@ -525,6 +562,7 @@ public class ModelRenderer extends JPanel {
 
         public void actionPerformed(ActionEvent e) {
             smoothShading = toggleSmooth.isSelected();
+            rebuildList = true;
         }
     }
 
@@ -538,6 +576,7 @@ public class ModelRenderer extends JPanel {
 
         public void actionPerformed(ActionEvent e) {
             drawNormals = toggleNormals.isSelected();
+            rebuildList = true;
         }
     }
 
@@ -551,6 +590,8 @@ public class ModelRenderer extends JPanel {
 
         public void actionPerformed(ActionEvent e) {
             drawTextures = toggleTextures.isSelected();
+            colorMapSelector.setEnabled(drawTextures);
+            rebuildList = true;
         }
     }
 
@@ -564,6 +605,21 @@ public class ModelRenderer extends JPanel {
 
         public void actionPerformed(ActionEvent e) {
             drawWireframe = toggleWireframe.isSelected();
+            rebuildList = true;
+        }
+    }
+
+    private class ToggleGridAction extends AbstractAction {
+        private ToggleGridAction() {
+            // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+            putValue(NAME, "Grid");
+            putValue(SHORT_DESCRIPTION, "draw a grid");
+            // JFormDesigner - End of action initialization  //GEN-END:initComponents
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            drawPlane = toggleGrid.isSelected();
+            rebuildList = true;
         }
     }
 }
