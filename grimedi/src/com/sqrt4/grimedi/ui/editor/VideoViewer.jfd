@@ -23,6 +23,10 @@ new FormModel {
 					name: "button2"
 					"action": new FormReference( "stopAction" )
 				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "button3"
+					"action": new FormReference( "exportGifAction" )
+				} )
 			}, new FormLayoutConstraints( class java.lang.String ) {
 				"value": "South"
 			} )
@@ -49,6 +53,16 @@ new FormModel {
 			}
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 0, 362 )
+		} )
+		add( new FormNonVisual( "javax.swing.AbstractAction" ) {
+			name: "exportGifAction"
+			"$action.Name": "Export GIF"
+			"$action.ShortDescription": "Export the frames of this video as a GIF animation"
+			auxiliary() {
+				"JavaCodeGenerator.className": "ExportGifAction"
+			}
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 414 )
 		} )
 	}
 }

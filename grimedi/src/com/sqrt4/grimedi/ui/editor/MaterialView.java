@@ -4,16 +4,20 @@
 
 package com.sqrt4.grimedi.ui.editor;
 
-import java.awt.event.*;
 import com.sqrt.liblab.entry.model.Material;
 import com.sqrt.liblab.entry.model.Texture;
-import com.sqrt4.grimedi.ui.component.*;
+import com.sqrt4.grimedi.ui.component.ColorMapSelector;
 
 import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.event.ListDataListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import java.awt.*;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.image.BufferedImage;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author James Lawrence
@@ -24,6 +28,7 @@ public class MaterialView extends EditorPanel<Material> {
     }
 
     ImageIcon icon = new ImageIcon(getClass().getResource("/material.png"));
+
     public ImageIcon getIcon() {
         return icon;
     }
@@ -70,6 +75,7 @@ public class MaterialView extends EditorPanel<Material> {
         //======== panel3 ========
         {
             panel3.setOrientation(JSplitPane.VERTICAL_SPLIT);
+            panel3.setResizeWeight(0.8);
 
             //======== panel4 ========
             {
@@ -153,20 +159,22 @@ public class MaterialView extends EditorPanel<Material> {
                 label = cache.get(t);
             else {
                 BufferedImage bi = t.render(colorMapSelector.getSelected());
-                if(bi == null)
+                if (bi == null)
                     return new JLabel("Invalid colormodel");
                 label = new JLabel();
                 final int size = 128;
-                BufferedImage scale = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
-                float mult;
-                mult = (float) bi.getWidth() / (float) size;
-                mult = Math.max((float) bi.getHeight() / (float) size, mult);
-                int width = (int) (bi.getWidth() / mult);
-                int height = (int) (bi.getHeight() / mult);
-                int x = (size - width) / 2;
-                int y = (size - height) / 2;
-                scale.getGraphics().drawImage(bi, x, y, width, height, null);
-                label.setIcon(new ImageIcon(scale));
+                if (bi.getWidth() >= size || bi.getHeight() >= size) {
+                    BufferedImage scale = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
+                    float mult;
+                    mult = (float) bi.getWidth() / (float) size;
+                    mult = Math.max((float) bi.getHeight() / (float) size, mult);
+                    int width = (int) (bi.getWidth() / mult);
+                    int height = (int) (bi.getHeight() / mult);
+                    int x = (size - width) / 2;
+                    int y = (size - height) / 2;
+                    scale.getGraphics().drawImage(bi, x, y, width, height, null);
+                }
+                label.setIcon(new ImageIcon(bi));
                 cache.put(bi, label);
                 label.setOpaque(true);
             }

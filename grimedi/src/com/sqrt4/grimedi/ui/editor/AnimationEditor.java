@@ -18,6 +18,7 @@ import com.sqrt.liblab.threed.Angle;
 import com.sqrt.liblab.threed.Vector3;
 import com.sqrt4.grimedi.ui.component.FrameCallback;
 import com.sqrt4.grimedi.ui.component.ModelRenderer;
+import com.sqrt4.grimedi.util.AnimatedGifEncoder;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -30,16 +31,17 @@ import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Vector;
 
 /**
@@ -61,31 +63,25 @@ public class AnimationEditor extends EditorPanel<Animation> {
         initComponents();
     }
 
+    ImageIcon icon = new ImageIcon(getClass().getResource("/run.png"));
+
+    public ImageIcon getIcon() {
+        return icon;
+    }
+
     public void onNewData() {
         if (_container != data.container.container) {
             Vector<DataSource> allModels = new Vector<DataSource>();
             allModels.addAll(data.container.container.findByType(GrimModel.class));
             _container = data.container.container;
             modelSelector.setModel(new DefaultComboBoxModel(allModels));
-            modelSelected(null);
+            modelSelectorPopupMenuWillBecomeInvisible(null);
         }
         renderer.setModel(renderer.getModel()); // Forces the renderer to reset the view...
         stopAction.actionPerformed(null);
 
         frameSlider.setMaximum(data.numFrames - 1);
         frameSlider.setValue(0);
-    }
-
-    private void modelSelected(ItemEvent e) {
-        DataSource selected = (DataSource) modelSelector.getSelectedItem();
-        try {
-            selected.seek(0);
-            EntryCodec<GrimModel> codec = (EntryCodec<GrimModel>) CodecMapper.codecForProvider(selected);
-            renderer.setModel(codec.read(selected));
-            frameSlider.setValue(0);
-        } catch (IOException e1) {
-            e1.printStackTrace();
-        }
     }
 
     private void changeFrame(ChangeEvent e) {
@@ -145,6 +141,21 @@ public class AnimationEditor extends EditorPanel<Animation> {
         renderer.refreshModelCache();
     }
 
+    private void modelSelectorPopupMenuWillBecomeInvisible(PopupMenuEvent e) {
+        DataSource selected = (DataSource) modelSelector.getSelectedItem();
+        try {
+            selected.seek(0);
+            EntryCodec<GrimModel> codec = (EntryCodec<GrimModel>) CodecMapper.codecForProvider(selected);
+            GrimModel model = codec.read(selected);
+            if (model == renderer.getModel())
+                return;
+            renderer.setModel(model);
+            frameSlider.setValue(0);
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+    }
+
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         panel2 = new JSplitPane();
@@ -190,10 +201,18 @@ public class AnimationEditor extends EditorPanel<Animation> {
                         new Insets(0, 0, 0, 0), 0, 0));
 
                 //---- modelSelector ----
-                modelSelector.addItemListener(new ItemListener() {
+                modelSelector.addPopupMenuListener(new PopupMenuListener() {
                     @Override
-                    public void itemStateChanged(ItemEvent e) {
-                        modelSelected(e);
+                    public void popupMenuCanceled(PopupMenuEvent e) {
+                    }
+
+                    @Override
+                    public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+                        modelSelectorPopupMenuWillBecomeInvisible(e);
+                    }
+
+                    @Override
+                    public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
                     }
                 });
                 panel3.add(modelSelector, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
@@ -335,62 +354,64 @@ public class AnimationEditor extends EditorPanel<Animation> {
         public void actionPerformed(ActionEvent e) {
             window.runAsyncWithPopup("Please wait...", "Rendering animation (frame 1/" + data.numFrames + ")", new Runnable() {
                 public void run() {
-                    final java.util.List<BufferedImage> images = new LinkedList<BufferedImage>();
-                    final Object lock = new Object();
-                    renderer.setCallback(new FrameCallback() {
-                        public void preDisplay(GL2 gl2) {
-                        }
+                    try {
+                        final Queue<BufferedImage> images = new LinkedList<BufferedImage>();
+                        final AnimatedGifEncoder age = new AnimatedGifEncoder();
+                        age.setQuality(10);
+                        age.setFrameRate(15);
+                        age.setRepeat(0);
+                        File file = File.createTempFile("anim", ".gif");
+                        age.start(file.getAbsolutePath());
+                        frameSlider.setValue(0);
+                        FrameCallback screenshotCallback = new FrameCallback() {
+                            public void preDisplay(GL2 gl2) {
+                            }
 
-                        public void postDisplay(GL2 gl2) {
-                            int frame = frameSlider.getValue();
+                            public void postDisplay(GL2 gl2) {
+                                int frame = frameSlider.getValue();
 
-                            images.add(Screenshot.readToBufferedImage(renderer.getViewportWidth(), renderer.getViewportHeight()));
-                            frameSlider.setValue(frameSlider.getValue() + 1);
-                            window.setBusyMessage("Rendering animation (frame " + (frameSlider.getValue() + 1) + "/" + data.numFrames + ")");
-
-                            if (frame == data.numFrames - 1) {
-                                renderer.setCallback(null);
-                                synchronized (lock) {
-                                    lock.notify();
+                                synchronized (images) {
+                                    images.add(Screenshot.readToBufferedImage(renderer.getViewportWidth(), renderer.getViewportHeight()));
+                                    images.notify();
                                 }
+                                frameSlider.setValue(frameSlider.getValue() + 1);
+                                window.setBusyMessage("Rendering animation (frame " + frameSlider.getValue() + "/" + data.numFrames + ")");
+
+                                if (frame >= data.numFrames - 1)
+                                    renderer.setCallback(null);
+                            }
+                        };
+                        renderer.setCallback(screenshotCallback);
+                        int processed = 0;
+                        while (processed < data.numFrames) {
+                            // Wait for notify...
+                            BufferedImage image = null;
+                            synchronized (images) {
+                                if (images.isEmpty()) {
+                                    try {
+                                        images.wait();
+                                    } catch (InterruptedException ignore) {
+                                    }
+                                }
+                                if (images.isEmpty())
+                                    continue;
+                                image = images.poll();
+                            }
+                            if(renderer.getCallback() != screenshotCallback)
+                                window.setBusyMessage("Generating GIF (frame " + processed + " / " + data.numFrames + ")");
+                            age.addFrame(image);
+                            processed++;
+                            if(processed >= data.numFrames) {
+                                age.finish();
+                                if (Desktop.isDesktopSupported())
+                                    Desktop.getDesktop().open(file);
                             }
                         }
-                    });
-                    // Wait for notify...
-                    synchronized (lock) {
-                        try {
-                            lock.wait();
-                        } catch (InterruptedException e1) {
-                            e1.printStackTrace();
-                        }
-                    }
-                    window.setBusyMessage("Generating GIF (frame 1/" + data.numFrames + ")");
-                    try {
-                        Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("gif");
-                        if (!writers.hasNext())
-                            throw new IOException("Your system does not support writing GIFs");
-                        ImageWriter w = writers.next();
-                        File temp = File.createTempFile("anim", ".gif");
-                        ImageOutputStream ios = ImageIO.createImageOutputStream(temp);
-                        w.setOutput(ios);
-                        w.prepareWriteSequence(null);
-                        for (int i1 = 0; i1 < images.size(); i1++) {
-                            BufferedImage bi = images.get(i1);
-                            IIOMetadata metadata = w.getDefaultImageMetadata(ImageTypeSpecifier.createFromRenderedImage(bi), w.getDefaultWriteParam());
-                            IIOImage i = new IIOImage(bi, null, metadata);
-                            w.writeToSequence(i, null);
-                            window.setBusyMessage("Generating GIF (frame " + (i1 + 2) + "/" + data.numFrames + ")");
-                        }
-                        w.endWriteSequence();
-                        ios.close();
-                        if (Desktop.isDesktopSupported())
-                            Desktop.getDesktop().open(temp);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
             });
-
         }
     }
 }

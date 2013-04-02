@@ -5,12 +5,16 @@
 package com.sqrt4.grimedi.ui.editor;
 
 import java.awt.event.*;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriter;
 import javax.swing.event.*;
 
 import com.sqrt.liblab.entry.graphics.GrimBitmap;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.*;
@@ -19,7 +23,6 @@ import javax.swing.*;
  * @author James Lawrence
  */
 public class ImageView extends EditorPanel<GrimBitmap> {
-    private BufferedImage previewImage;
     private boolean playAnimation;
     private Thread animationThread;
 
@@ -47,13 +50,20 @@ public class ImageView extends EditorPanel<GrimBitmap> {
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         panel3 = new JSplitPane();
+        panel4 = new JPanel();
         panel1 = new JScrollPane();
         preview = new JLabel();
+        panel5 = new JPanel();
+        button1 = new JButton();
         panel2 = new JPanel();
+        panel6 = new JPanel();
         playButton = new JButton();
+        button2 = new JButton();
         scrollPane1 = new JScrollPane();
         imageList = new JList();
         playAction = new PlayAction();
+        exportAnimationAction = new ExportAnimationAction();
+        exportPngAction = new ExportPNGAction();
 
         //======== this ========
         setLayout(new BorderLayout());
@@ -61,23 +71,50 @@ public class ImageView extends EditorPanel<GrimBitmap> {
         //======== panel3 ========
         {
             panel3.setOrientation(JSplitPane.VERTICAL_SPLIT);
+            panel3.setResizeWeight(0.8);
 
-            //======== panel1 ========
+            //======== panel4 ========
             {
+                panel4.setLayout(new BorderLayout());
 
-                //---- preview ----
-                preview.setHorizontalAlignment(SwingConstants.CENTER);
-                panel1.setViewportView(preview);
+                //======== panel1 ========
+                {
+
+                    //---- preview ----
+                    preview.setHorizontalAlignment(SwingConstants.CENTER);
+                    panel1.setViewportView(preview);
+                }
+                panel4.add(panel1, BorderLayout.CENTER);
+
+                //======== panel5 ========
+                {
+                    panel5.setLayout(new FlowLayout());
+
+                    //---- button1 ----
+                    button1.setAction(exportPngAction);
+                    panel5.add(button1);
+                }
+                panel4.add(panel5, BorderLayout.SOUTH);
             }
-            panel3.setTopComponent(panel1);
+            panel3.setTopComponent(panel4);
 
             //======== panel2 ========
             {
                 panel2.setLayout(new BorderLayout());
 
-                //---- playButton ----
-                playButton.setAction(playAction);
-                panel2.add(playButton, BorderLayout.NORTH);
+                //======== panel6 ========
+                {
+                    panel6.setLayout(new FlowLayout());
+
+                    //---- playButton ----
+                    playButton.setAction(playAction);
+                    panel6.add(playButton);
+
+                    //---- button2 ----
+                    button2.setAction(exportAnimationAction);
+                    panel6.add(button2);
+                }
+                panel2.add(panel6, BorderLayout.NORTH);
 
                 //======== scrollPane1 ========
                 {
@@ -103,7 +140,6 @@ public class ImageView extends EditorPanel<GrimBitmap> {
 
     public void onNewData() {
         BufferedImage rep = data.images.get(0);
-        previewImage = new BufferedImage(rep.getWidth(), rep.getHeight(), BufferedImage.TYPE_INT_ARGB);
         imageList.setModel(new ListModel() {
             public int getSize() {
                 return data.images.size();
@@ -164,19 +200,26 @@ public class ImageView extends EditorPanel<GrimBitmap> {
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
     private JSplitPane panel3;
+    private JPanel panel4;
     private JScrollPane panel1;
     private JLabel preview;
+    private JPanel panel5;
+    private JButton button1;
     private JPanel panel2;
+    private JPanel panel6;
     private JButton playButton;
+    private JButton button2;
     private JScrollPane scrollPane1;
     private JList imageList;
     private PlayAction playAction;
+    private ExportAnimationAction exportAnimationAction;
+    private ExportPNGAction exportPngAction;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
     private class PlayAction extends AbstractAction {
         private PlayAction() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-            putValue(NAME, "Play");
+            putValue(NAME, "Animate");
             putValue(SHORT_DESCRIPTION, "Play animation");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
         }
@@ -231,6 +274,52 @@ public class ImageView extends EditorPanel<GrimBitmap> {
             stopAction.setEnabled(false);
             playButton.setAction(playAction);
             imageList.setEnabled(true);
+        }
+    }
+
+    private class ExportAnimationAction extends AbstractAction {
+        private ExportAnimationAction() {
+            // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+            putValue(NAME, "Export Animated GIF");
+            putValue(SHORT_DESCRIPTION, "exports the frames of this bitmap as a GIF");
+            // JFormDesigner - End of action initialization  //GEN-END:initComponents
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            // TODO add your code here
+        }
+    }
+
+    private class ExportPNGAction extends AbstractAction {
+        private ExportPNGAction() {
+            // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+            putValue(NAME, "Export PNG");
+            putValue(SHORT_DESCRIPTION, "exports this image as a PNG file");
+            // JFormDesigner - End of action initialization  //GEN-END:initComponents
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            final JFileChooser jfc = window.createFileDialog();
+            String name = data.getName();
+            int idx = name.lastIndexOf('.');
+            if(idx != -1)
+                name = name.substring(0, idx);
+            if(data.images.size() != 1)
+                name += "." + (imageList.getSelectedIndex() + 1);
+            name += ".png";
+            jfc.setSelectedFile(new File(name));
+            if(jfc.showSaveDialog(window) == JFileChooser.APPROVE_OPTION) {
+                window.runAsyncWithPopup("Please wait...", "Exporting image...", new Runnable() {
+                    public void run() {
+                        File f = jfc.getSelectedFile();
+                        try {
+                            ImageIO.write((BufferedImage) imageList.getSelectedValue(), "png", f);
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+                });
+            }
         }
     }
 }

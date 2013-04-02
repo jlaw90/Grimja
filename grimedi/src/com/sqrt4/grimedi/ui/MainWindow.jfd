@@ -11,19 +11,17 @@ new FormModel {
 			"$sizePolicy": 1
 			add( new FormContainer( "javax.swing.JSplitPane", new FormLayoutManager( class javax.swing.JSplitPane ) ) {
 				name: "splitPane1"
-				"resizeWeight": 0.1
 				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
 					name: "panel1"
 					add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
 						name: "scrollPane1"
-						add( new FormComponent( "javax.swing.JTree" ) {
+						add( new FormComponent( "org.netbeans.swing.outline.Outline" ) {
 							name: "fileList"
-							"showsRootHandles": true
-							"model": new javax.swing.tree.DefaultTreeModel( new javax.swing.tree.DefaultMutableTreeNode {
-								userObject: "Nothing open"
-							} )
 							"rootVisible": false
-							addEvent( new FormEvent( "javax.swing.event.TreeSelectionListener", "valueChanged", "fileSelected", true ) )
+							"columnHidingAllowed": false
+							"selectionMode": 0
+							"fillsViewportHeight": true
+							"autoResizeMode": 4
 							addEvent( new FormEvent( "java.awt.event.MouseListener", "mousePressed", "fileListMousePressed", true ) )
 						} )
 					}, new FormLayoutConstraints( class java.lang.String ) {

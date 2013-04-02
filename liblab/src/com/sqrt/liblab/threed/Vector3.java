@@ -1,5 +1,8 @@
 package com.sqrt.liblab.threed;
 
+/**
+ * A 3D vector
+ */
 public class Vector3 implements Comparable<Vector3> {
     public final float x, y, z;
     public static final Vector3 zero = new Vector3(0, 0, 0);

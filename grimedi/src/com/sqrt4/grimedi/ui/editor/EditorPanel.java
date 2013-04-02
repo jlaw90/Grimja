@@ -1,6 +1,6 @@
 package com.sqrt4.grimedi.ui.editor;
 
-import com.sqrt.liblab.LabEntry;
+import com.sqrt.liblab.entry.LabEntry;
 import com.sqrt4.grimedi.ui.MainWindow;
 
 import javax.swing.*;

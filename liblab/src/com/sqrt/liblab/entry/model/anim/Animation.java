@@ -1,6 +1,6 @@
 package com.sqrt.liblab.entry.model.anim;
 
-import com.sqrt.liblab.LabEntry;
+import com.sqrt.liblab.entry.LabEntry;
 import com.sqrt.liblab.LabFile;
 
 import java.util.LinkedList;

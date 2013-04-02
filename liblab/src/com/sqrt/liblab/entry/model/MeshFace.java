@@ -7,17 +7,41 @@ import com.sqrt.liblab.threed.Vector3;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * A face of a mesh
+ */
 public class MeshFace {
+
     public int type;
     public int geo;
     public int light;
     public float extraLight;
+    /**
+     * The normal of this face
+     */
     public Vector3 normal;
+    /**
+     * The vertices that make up this face
+     */
     public List<Vector3> vertices = new LinkedList<Vector3>();
+    /**
+     * The vertex normals
+     */
     public List<Vector3> normals = new LinkedList<Vector3>();
+    /**
+     * The texture mapping coordinates
+     */
     public List<Vector2> uv = new LinkedList<Vector2>();
+    /**
+     * The texture that should be mapped onto this face
+     */
     public Texture texture;
 
+    /**
+     * Calculates the bounds of this face
+     * @param pos the offset of this face from the origin
+     * @return the calculated bounds
+     */
     public Bounds3 getBounds(Vector3 pos) {
         float mx, my, mz, MX, MY, MZ;
         mx=my=mz=9999;

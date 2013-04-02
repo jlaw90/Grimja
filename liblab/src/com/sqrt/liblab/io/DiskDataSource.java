@@ -8,14 +8,31 @@ import java.nio.ByteOrder;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
-// Most annoying problem with this class: the random access file may be used asynchronously...
-// Need to check the current position for expected position...
+/**
+ * This DataSource maps the area of the file we're interested in into memory when required and then performs reads
+ * from there.  Closing this datasource unmaps the file from memory if mapped.
+ */
 public class DiskDataSource extends DataSource {
     private MappedByteBuffer map;
     private final RandomAccessFile source;
     private int mark;
-    public final long start, len;
+    /**
+     * The offset into the source file that the data we're interested in starts at
+     */
+    public final long start;
+    /**
+     * The length of the data we're interested in
+     */
+    public final long len;
 
+    /**
+     * Constructs a DiskDataSource that gets its data from the specified RandomAccessFile
+     * @param container the container that contains this data
+     * @param name the name of the entry we have the data for
+     * @param source the source of the data
+     * @param start the offset into the source that the data we're interested in starts at
+     * @param len the length of the data we're interested in
+     */
     public DiskDataSource(LabFile container, String name, RandomAccessFile source, long start, long len) {
         super(container, name);
         this.start = start;
@@ -23,6 +40,13 @@ public class DiskDataSource extends DataSource {
         this.source = source;
     }
 
+    /**
+     * Constructs a DiskDataSource that gets its data from the specified RandomAccessFile
+     * @param container the container that contains this data
+     * @param name the name of the entry we have the data for
+     * @param source the source of the data
+     * @throws IOException
+     */
     public DiskDataSource(LabFile container, String name, RandomAccessFile source) throws IOException {
         this(container, name, source, 0, source.length());
     }
@@ -34,15 +58,30 @@ public class DiskDataSource extends DataSource {
         }
     }
 
+    /**
+     * Returns a DiskDataSource that only reads the specified subsection of the data
+     * @param off the offset into this datasource that the subsections data will start at
+     * @param len the length of the data the subsection will read
+     * @return the new data source
+     */
     public synchronized DiskDataSource subsection(int off, int len) {
         return new DiskDataSource(container, getName(), source, start + off, len);
     }
 
+    /**
+     * Reads an unsigned byte from the stream and returns it
+     * @return an unsigned byte
+     * @throws IOException
+     */
     public synchronized int read() throws IOException {
         ensureMapped();
         return map.get() & 0xff;
     }
 
+    /**
+     * Unmaps the data from memory (if previously mapped)
+     * @throws IOException
+     */
     public synchronized void close() throws IOException {
         if (map == null)
             return;

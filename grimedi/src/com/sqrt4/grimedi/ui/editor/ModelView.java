@@ -96,6 +96,11 @@ public class ModelView extends EditorPanel<GrimModel> {
         boneChanged();
     }
 
+    ImageIcon icon = new ImageIcon(getClass().getResource("/3do.png"));
+    public ImageIcon getIcon() {
+        return icon;
+    }
+
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         panel3 = new JPanel();

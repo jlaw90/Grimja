@@ -2,6 +2,7 @@ package com.sqrt.liblab;
 
 import com.sqrt.liblab.codec.CodecMapper;
 import com.sqrt.liblab.codec.EntryCodec;
+import com.sqrt.liblab.entry.LabEntry;
 import com.sqrt.liblab.io.DataSource;
 import com.sqrt.liblab.io.DiskDataSource;
 
@@ -11,10 +12,19 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * A LabFile is a container for LabEntry's
+ */
 public class LabFile {
+    /**
+     * The collection that this LabFile belongs to
+     */
     public final LabCollection container;
-    private String name;
+    /**
+     * The names and data for the entries of this LabFile
+     */
     public final List<DataSource> entries = new LinkedList<DataSource>();
+    private String name;
 
     LabFile(LabCollection container) {
         this.container = container;
@@ -66,6 +76,12 @@ public class LabFile {
         });
     }
 
+    /**
+     * Returns all the LabEntry's contained in this LabFile that have a model of the specified type
+     * @param type the type of the model
+     * @param <T> the type of the model
+     * @return a list containing the results
+     */
     public <T extends LabEntry> List<DataSource> findByType(Class<T> type) {
         List<DataSource> res = new LinkedList<DataSource>();
         for (DataSource edp : entries) {
@@ -79,6 +95,12 @@ public class LabFile {
         return res;
     }
 
+    /**
+     * Fins the first LabEntry with the specified name
+     * @param name the name to search for (case insensitive)
+     * @return the entry or null if one was not found
+     * @throws IOException
+     */
     public LabEntry findByName(String name) throws IOException {
         for (DataSource edp : entries) {
             if (edp.getName().equalsIgnoreCase(name)) {

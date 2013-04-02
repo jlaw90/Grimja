@@ -19,6 +19,11 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,11 +37,11 @@ public class AudioEditor extends EditorPanel<Audio> {
     private Jump selectedJump;
     private Map<Jump, Boolean> activeJumps = new HashMap<Jump, Boolean>();
     private SourceDataLine dataLine;
-    private int _currentOffset, _syncOffset;
+    private int _currentOffset;
     private Runnable _play = new Runnable() {
         public void run() {
             dataLine.start();
-            int len = dataLine.getBufferSize(); // how much we write per update loop...
+            int len = Math.min(dataLine.getBufferSize(), 1024); // how much we write per update loop...
             byte[] buf = new byte[len];
             regionLoop:
             while (_playRegion != null && _playing) {
@@ -57,7 +62,6 @@ public class AudioEditor extends EditorPanel<Audio> {
                         int read = data.stream.read(buf, 0, Math.min(len, _playRegion.length - off));
                         off += read;
                         dataLine.write(buf, 0, read);
-                        _syncOffset = (int) ((long) _currentOffset - dataLine.getLongFramePosition());
                         _currentOffset += read;
                         updateTimeDisplay();
                     }
@@ -92,14 +96,14 @@ public class AudioEditor extends EditorPanel<Audio> {
         targetSelector.setRenderer(new RegionListCellRenderer());
     }
 
-    ImageIcon icon = new ImageIcon(getClass().getResource("/speaker.png"));
+    ImageIcon icon = new ImageIcon(getClass().getResource("/sound.png"));
 
     public ImageIcon getIcon() {
         return icon;
     }
 
     private void updateTimeDisplay() {
-        timeSlider.setValue(_currentOffset+_syncOffset);
+        timeSlider.setValue(_currentOffset);
         currentTime.setText(msToString(data.bytesToTime(_currentOffset)));
     }
 
@@ -232,7 +236,6 @@ public class AudioEditor extends EditorPanel<Audio> {
         label3 = new JLabel();
         fadeSpinner = new JSpinner();
         regionPropertyPanel = new JPanel();
-        name = new JLabel();
         label4 = new JLabel();
         startLabel = new JLabel();
         label5 = new JLabel();
@@ -242,7 +245,10 @@ public class AudioEditor extends EditorPanel<Audio> {
         commentArea = new JTextArea();
         panel4 = new JPanel();
         button4 = new JButton();
+        panel7 = new JPanel();
+        button5 = new JButton();
         soundPropertyPanel = new JPanel();
+        name = new JLabel();
         label7 = new JLabel();
         sampleRate = new JLabel();
         label8 = new JLabel();
@@ -256,6 +262,7 @@ public class AudioEditor extends EditorPanel<Audio> {
         playSelectedRegion = new PlaySelectedRegion();
         toggleJumpAction = new ToggleJumpAction();
         action1 = new UpdateCommentsButton();
+        exportRegionAction = new ExportRegionAction();
 
         //======== this ========
         setLayout(new BorderLayout());
@@ -343,8 +350,8 @@ public class AudioEditor extends EditorPanel<Audio> {
 
             //---- jumpEnabled ----
             jumpEnabled.setAction(toggleJumpAction);
-            jumpPropertyPanel.add(jumpEnabled, new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+            jumpPropertyPanel.add(jumpEnabled, new GridBagConstraints(0, 0, 2, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.VERTICAL,
                     new Insets(0, 0, 5, 0), 0, 0));
 
             //---- label1 ----
@@ -361,7 +368,7 @@ public class AudioEditor extends EditorPanel<Audio> {
                     targetSelected(e);
                 }
             });
-            jumpPropertyPanel.add(targetSelector, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
+            jumpPropertyPanel.add(targetSelector, new GridBagConstraints(1, 1, 1, 1, 1.0, 0.0,
                     GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                     new Insets(0, 0, 5, 0), 0, 0));
 
@@ -412,44 +419,36 @@ public class AudioEditor extends EditorPanel<Audio> {
             ((GridBagLayout) regionPropertyPanel.getLayout()).columnWeights = new double[]{0.0, 0.0, 1.0E-4};
             ((GridBagLayout) regionPropertyPanel.getLayout()).rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
 
-            //---- name ----
-            name.setText("text");
-            name.setFont(new Font("Tahoma", Font.BOLD, 11));
-            name.setHorizontalAlignment(SwingConstants.CENTER);
-            regionPropertyPanel.add(name, new GridBagConstraints(0, 0, 2, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 5, 0), 0, 0));
-
             //---- label4 ----
             label4.setText("Start: ");
             label4.setHorizontalAlignment(SwingConstants.TRAILING);
-            regionPropertyPanel.add(label4, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
+            regionPropertyPanel.add(label4, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
                     GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                     new Insets(0, 0, 5, 5), 0, 0));
 
             //---- startLabel ----
             startLabel.setText("text");
-            regionPropertyPanel.add(startLabel, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
+            regionPropertyPanel.add(startLabel, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
                     GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                     new Insets(0, 0, 5, 0), 0, 0));
 
             //---- label5 ----
             label5.setText("Duration: ");
             label5.setHorizontalAlignment(SwingConstants.TRAILING);
-            regionPropertyPanel.add(label5, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
+            regionPropertyPanel.add(label5, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
                     GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                     new Insets(0, 0, 5, 5), 0, 0));
 
             //---- durationLabel ----
             durationLabel.setText("text");
-            regionPropertyPanel.add(durationLabel, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0,
+            regionPropertyPanel.add(durationLabel, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
                     GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                     new Insets(0, 0, 5, 0), 0, 0));
 
             //---- label6 ----
             label6.setText("Comments: ");
             label6.setHorizontalAlignment(SwingConstants.TRAILING);
-            regionPropertyPanel.add(label6, new GridBagConstraints(0, 3, 1, 1, 0.0, 0.0,
+            regionPropertyPanel.add(label6, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
                     GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL,
                     new Insets(0, 0, 5, 5), 0, 0));
 
@@ -457,7 +456,7 @@ public class AudioEditor extends EditorPanel<Audio> {
             {
                 scrollPane2.setViewportView(commentArea);
             }
-            regionPropertyPanel.add(scrollPane2, new GridBagConstraints(1, 3, 1, 1, 1.0, 1.0,
+            regionPropertyPanel.add(scrollPane2, new GridBagConstraints(1, 2, 1, 1, 1.0, 1.0,
                     GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                     new Insets(0, 0, 5, 0), 0, 0));
 
@@ -469,7 +468,19 @@ public class AudioEditor extends EditorPanel<Audio> {
                 button4.setAction(action1);
                 panel4.add(button4);
             }
-            regionPropertyPanel.add(panel4, new GridBagConstraints(1, 4, 1, 1, 0.0, 0.0,
+            regionPropertyPanel.add(panel4, new GridBagConstraints(1, 3, 1, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 5, 0), 0, 0));
+
+            //======== panel7 ========
+            {
+                panel7.setLayout(new FlowLayout());
+
+                //---- button5 ----
+                button5.setAction(exportRegionAction);
+                panel7.add(button5);
+            }
+            regionPropertyPanel.add(panel7, new GridBagConstraints(0, 4, 2, 1, 0.0, 0.0,
                     GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                     new Insets(0, 0, 0, 0), 0, 0));
         }
@@ -477,62 +488,70 @@ public class AudioEditor extends EditorPanel<Audio> {
         //======== soundPropertyPanel ========
         {
             soundPropertyPanel.setLayout(new GridBagLayout());
-            ((GridBagLayout) soundPropertyPanel.getLayout()).columnWidths = new int[]{0, 0, 0};
-            ((GridBagLayout) soundPropertyPanel.getLayout()).rowHeights = new int[]{0, 0, 0, 0, 0};
-            ((GridBagLayout) soundPropertyPanel.getLayout()).columnWeights = new double[]{0.0, 0.0, 1.0E-4};
-            ((GridBagLayout) soundPropertyPanel.getLayout()).rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 1.0E-4};
+            ((GridBagLayout) soundPropertyPanel.getLayout()).columnWidths = new int[]{0, 0, 0, 0};
+            ((GridBagLayout) soundPropertyPanel.getLayout()).rowHeights = new int[]{0, 0, 0, 0, 0, 0};
+            ((GridBagLayout) soundPropertyPanel.getLayout()).columnWeights = new double[]{0.0, 0.0, 0.0, 1.0E-4};
+            ((GridBagLayout) soundPropertyPanel.getLayout()).rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
+
+            //---- name ----
+            name.setText("text");
+            name.setFont(new Font("Tahoma", Font.BOLD, 11));
+            name.setHorizontalAlignment(SwingConstants.CENTER);
+            soundPropertyPanel.add(name, new GridBagConstraints(0, 0, 2, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 5, 5), 0, 0));
 
             //---- label7 ----
             label7.setText("Sample Rate: ");
             label7.setHorizontalAlignment(SwingConstants.TRAILING);
-            soundPropertyPanel.add(label7, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
+            soundPropertyPanel.add(label7, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
                     GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                     new Insets(0, 0, 5, 5), 0, 0));
 
             //---- sampleRate ----
             sampleRate.setText("text");
-            soundPropertyPanel.add(sampleRate, new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0,
+            soundPropertyPanel.add(sampleRate, new GridBagConstraints(1, 1, 1, 1, 1.0, 0.0,
                     GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 5, 0), 0, 0));
+                    new Insets(0, 0, 5, 5), 0, 0));
 
             //---- label8 ----
             label8.setText("Channels: ");
             label8.setHorizontalAlignment(SwingConstants.TRAILING);
-            soundPropertyPanel.add(label8, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
+            soundPropertyPanel.add(label8, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
                     GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                     new Insets(0, 0, 5, 5), 0, 0));
 
             //---- numChannels ----
             numChannels.setText("text");
-            soundPropertyPanel.add(numChannels, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
+            soundPropertyPanel.add(numChannels, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0,
                     GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 5, 0), 0, 0));
+                    new Insets(0, 0, 5, 5), 0, 0));
 
             //---- label9 ----
             label9.setText("Bits per sample: ");
             label9.setHorizontalAlignment(SwingConstants.TRAILING);
-            soundPropertyPanel.add(label9, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
+            soundPropertyPanel.add(label9, new GridBagConstraints(0, 3, 1, 1, 0.0, 0.0,
                     GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                     new Insets(0, 0, 5, 5), 0, 0));
 
             //---- bitsPerSample ----
             bitsPerSample.setText("text");
-            soundPropertyPanel.add(bitsPerSample, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0,
+            soundPropertyPanel.add(bitsPerSample, new GridBagConstraints(1, 3, 1, 1, 0.0, 0.0,
                     GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 5, 0), 0, 0));
+                    new Insets(0, 0, 5, 5), 0, 0));
 
             //---- label10 ----
             label10.setText("Birate: ");
             label10.setHorizontalAlignment(SwingConstants.TRAILING);
-            soundPropertyPanel.add(label10, new GridBagConstraints(0, 3, 1, 1, 0.0, 0.0,
+            soundPropertyPanel.add(label10, new GridBagConstraints(0, 4, 1, 1, 0.0, 0.0,
                     GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                     new Insets(0, 0, 0, 5), 0, 0));
 
             //---- bitrate ----
             bitrate.setText("text");
-            soundPropertyPanel.add(bitrate, new GridBagConstraints(1, 3, 1, 1, 0.0, 0.0,
+            soundPropertyPanel.add(bitrate, new GridBagConstraints(1, 4, 1, 1, 0.0, 0.0,
                     GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                    new Insets(0, 0, 0, 5), 0, 0));
         }
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
@@ -677,7 +696,6 @@ public class AudioEditor extends EditorPanel<Audio> {
     private JLabel label3;
     private JSpinner fadeSpinner;
     private JPanel regionPropertyPanel;
-    private JLabel name;
     private JLabel label4;
     private JLabel startLabel;
     private JLabel label5;
@@ -687,7 +705,10 @@ public class AudioEditor extends EditorPanel<Audio> {
     private JTextArea commentArea;
     private JPanel panel4;
     private JButton button4;
+    private JPanel panel7;
+    private JButton button5;
     private JPanel soundPropertyPanel;
+    private JLabel name;
     private JLabel label7;
     private JLabel sampleRate;
     private JLabel label8;
@@ -701,6 +722,7 @@ public class AudioEditor extends EditorPanel<Audio> {
     private PlaySelectedRegion playSelectedRegion;
     private ToggleJumpAction toggleJumpAction;
     private UpdateCommentsButton action1;
+    private ExportRegionAction exportRegionAction;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
     private class PlayAllAction extends AbstractAction {
@@ -796,7 +818,7 @@ public class AudioEditor extends EditorPanel<Audio> {
 
     private class RegionTreeCellRenderer extends DefaultTreeCellRenderer {
         ImageIcon jumpIcon = new ImageIcon(getClass().getResource("/jump.png"));
-        ImageIcon regionIcon = new ImageIcon(getClass().getResource("/speaker.png"));
+        ImageIcon regionIcon = new ImageIcon(getClass().getResource("/musicnote.png"));
         ImageIcon playIcon = new ImageIcon(getClass().getResource("/play-green.png"));
 
         public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
@@ -817,5 +839,139 @@ public class AudioEditor extends EditorPanel<Audio> {
             }
             return c;
         }
+    }
+
+    private class ExportRegionAction extends AbstractAction {
+        private ExportRegionAction() {
+            // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+            putValue(NAME, "Export region as WAVE");
+            putValue(SHORT_DESCRIPTION, "exports this region as a wave file");
+            // JFormDesigner - End of action initialization  //GEN-END:initComponents
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            final JFileChooser jfc = window.createFileDialog();
+            String name = data.getName();
+            int idx = name.indexOf('.');
+            if (idx != -1)
+                name = name.substring(0, idx);
+            name += ".wav";
+            jfc.setSelectedFile(new File(name));
+            if (jfc.showSaveDialog(window) == JFileChooser.APPROVE_OPTION) {
+                window.runAsyncWithPopup("Please wait...", "Exporting region...", new Runnable() {
+                    public void run() {
+                        try {
+                            if (stopAction.isEnabled())
+                                stopAction.actionPerformed(null);
+                            WaveOutputStream wos = new WaveOutputStream(jfc.getSelectedFile(), data.channels, data.sampleRate, data.bits);
+                            Region selected = AudioEditor.this.selected;
+                            data.stream.seek(selected.offset);
+                            byte[] buf = new byte[data.sampleRate];
+                            int off = 0;
+                            while (off < selected.length) {
+                                final float ratio = ((float) off / (float) selected.length);
+                                window.setBusyMessage(String.format("Exporting region (%.2f%%)", ratio * 100f));
+                                int read = data.stream.read(buf, 0, buf.length);
+                                off += read;
+                                wos.write(buf, 0, read);
+                            }
+                            wos.finish();
+                            wos.close();
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+                });
+            }
+        }
+    }
+}
+
+class WaveOutputStream {
+    private final int channels, sampleRate, bits, bytes;
+    private RandomAccessFile dest;
+
+    private int writtenBytes;
+
+    public WaveOutputStream(File f, int channels, int sampleRate, int bits) throws IOException {
+        dest = new RandomAccessFile(f, "rw");
+        this.channels = channels;
+        this.sampleRate = sampleRate;
+        this.bits = bits;
+        this.bytes = bits / 8;
+        dest.writeInt(('R' << 24) | ('I' << 16) | ('F' << 8) | 'F');
+        dest.skipBytes(4);
+
+        dest.writeInt(('W' << 24) | ('A' << 16) | ('V' << 8) | 'E');
+        // fmt chunk...
+        dest.writeInt(('f' << 24) | ('m' << 16) | ('t' << 8) | ' ');
+        dest.writeInt(reverse32(16)); // 16 bytes...
+        dest.writeShort(reverse16(1)); // pcm
+        dest.writeShort(reverse16(channels));
+        dest.writeInt(reverse32(sampleRate));
+        dest.writeInt(reverse32(sampleRate * channels * (bits / 8)));
+        dest.writeShort(reverse16(channels * (bits / 8)));
+        dest.writeShort(reverse16(bits));
+
+        dest.writeInt(('d' << 24) | ('a' << 16) | ('t' << 8) | 'a');
+        dest.skipBytes(4);
+    }
+
+    public void write(byte[] data, int off, final int len) throws IOException {
+        final int end = off + len;
+        switch (bits) {
+            case 16:
+                for (; off < end; off += bytes) {
+                    byte b = data[off];
+                    byte b1 = data[off+1];
+                    dest.write(b1);
+                    dest.write(b);
+                }
+                break;
+            case 32:
+                for (; off < end; off += bytes) {
+                    byte b = data[off];
+                    byte b1 = data[off+1];
+                    byte b2 = data[off+2];
+                    byte b3 = data[off+3];
+                    dest.write(b3);
+                    dest.write(b2);
+                    dest.write(b1);
+                    dest.write(b);
+                }
+            default:
+                throw new IOException("Unhandled bitlength: " + bits);
+        }
+        writtenBytes += len;
+    }
+
+    public void finish() throws IOException {
+        long pos = dest.getFilePointer();
+        dest.seek(4);
+        dest.writeInt(writtenBytes + 36);
+        dest.seek(40);
+        dest.writeInt(reverse32(writtenBytes));
+        dest.seek(pos);
+    }
+
+    public void close() throws IOException {
+        finish();
+        dest.close();
+    }
+
+    private ByteBuffer buf = ByteBuffer.allocate(4);
+
+    private int reverse16(int i) {
+        buf.order(ByteOrder.BIG_ENDIAN);
+        buf.putShort(0, (short) i);
+        buf.order(ByteOrder.LITTLE_ENDIAN);
+        return buf.getShort(0) & 0xffff;
+    }
+
+    private int reverse32(int i) {
+        buf.order(ByteOrder.BIG_ENDIAN);
+        buf.putInt(0, i);
+        buf.order(ByteOrder.LITTLE_ENDIAN);
+        return buf.getInt(0);
     }
 }

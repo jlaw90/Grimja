@@ -1,0 +1,33 @@
+<component name="ArtifactManager">
+  <artifact build-on-make="true" name="grimedi:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/grimedi_jar</output-path>
+    <root id="root">
+      <element id="archive" name="grimedi.jar">
+        <element id="module-output" name="grimedi" />
+        <element id="module-output" name="liblab" />
+      </element>
+      <element id="file-copy" path="$PROJECT_DIR$/lib/gluegen-rt-natives-linux-amd64.jar" />
+      <element id="file-copy" path="$PROJECT_DIR$/lib/gluegen-rt-natives-linux-armv6.jar" />
+      <element id="file-copy" path="$PROJECT_DIR$/lib/gluegen-rt-natives-linux-armv6hf.jar" />
+      <element id="file-copy" path="$PROJECT_DIR$/lib/gluegen-rt-natives-linux-i586.jar" />
+      <element id="file-copy" path="$PROJECT_DIR$/lib/gluegen-rt-natives-macosx-universal.jar" />
+      <element id="file-copy" path="$PROJECT_DIR$/lib/gluegen-rt-natives-solaris-amd64.jar" />
+      <element id="file-copy" path="$PROJECT_DIR$/lib/gluegen-rt-natives-solaris-i586.jar" />
+      <element id="file-copy" path="$PROJECT_DIR$/lib/gluegen-rt-natives-windows-amd64.jar" />
+      <element id="file-copy" path="$PROJECT_DIR$/lib/gluegen-rt-natives-windows-i586.jar" />
+      <element id="file-copy" path="$PROJECT_DIR$/lib/gluegen-rt.jar" />
+      <element id="file-copy" path="$PROJECT_DIR$/lib/gluegen.jar" />
+      <element id="file-copy" path="$PROJECT_DIR$/lib/jogl-all-natives-linux-amd64.jar" />
+      <element id="file-copy" path="$PROJECT_DIR$/lib/jogl-all-natives-linux-armv6.jar" />
+      <element id="file-copy" path="$PROJECT_DIR$/lib/jogl-all-natives-linux-armv6hf.jar" />
+      <element id="file-copy" path="$PROJECT_DIR$/lib/jogl-all-natives-linux-i586.jar" />
+      <element id="file-copy" path="$PROJECT_DIR$/lib/jogl-all-natives-macosx-universal.jar" />
+      <element id="file-copy" path="$PROJECT_DIR$/lib/jogl-all-natives-solaris-amd64.jar" />
+      <element id="file-copy" path="$PROJECT_DIR$/lib/jogl-all-natives-solaris-i586.jar" />
+      <element id="file-copy" path="$PROJECT_DIR$/lib/jogl-all-natives-windows-amd64.jar" />
+      <element id="file-copy" path="$PROJECT_DIR$/lib/jogl-all-natives-windows-i586.jar" />
+      <element id="file-copy" path="$PROJECT_DIR$/lib/jogl-all.jar" />
+      <element id="file-copy" path="$PROJECT_DIR$/lib/netbeans/org-netbeans-swing-outline.jar" />
+    </root>
+  </artifact>
+</component>

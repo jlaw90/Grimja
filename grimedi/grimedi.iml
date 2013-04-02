@@ -19,6 +19,16 @@
         <jarDirectory url="file://$MODULE_DIR$/../lib" recursive="false" />
       </library>
     </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../lib/netbeans" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+        <jarDirectory url="file://$MODULE_DIR$/../lib/netbeans" recursive="false" />
+      </library>
+    </orderEntry>
   </component>
 </module>
 

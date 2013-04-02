@@ -4,12 +4,50 @@ import com.sqrt.liblab.threed.Angle;
 import com.sqrt.liblab.threed.Bounds3;
 import com.sqrt.liblab.threed.Vector3;
 
+/**
+ * A ModelNode to be used for animation
+ */
 public class ModelNode {
+    /**
+     * The name of this node
+     */
     public String name;
+    /**
+     * The mesh of this node (can be null)
+     */
     public Mesh mesh;
-    public ModelNode parent, child, sibling;
-    public Vector3 pos, pivot;
-    public Angle yaw, pitch, roll;
+    /**
+     * The parent of this node
+     */
+    public ModelNode parent;
+    /**
+     * The first child of this node
+     */
+    public ModelNode child;
+    /**
+     * The next sibling in this layer
+     */
+    public ModelNode sibling;
+    /**
+     * The position of this node
+     */
+    public Vector3 pos;
+    /**
+     * The pivot point for rotations
+     */
+    public Vector3 pivot;
+    /**
+     * The yaw rotation
+     */
+    public Angle yaw;
+    /**
+     * The pitch rotation
+     */
+    public Angle pitch;
+    /**
+     * The roll rotation
+     */
+    public Angle roll;
     public int flags, type, depth;
     public int childIdx = -1, siblingIdx = -1, parentIdx = -1;
     public boolean hierarchyVisible = true;
@@ -21,6 +59,11 @@ public class ModelNode {
         return name;
     }
 
+    /**
+     * Calculates the bounds of this node from the specified position
+     * @param pos the position
+     * @return the bounds
+     */
     public Bounds3 getBounds(Vector3 pos) {
         Bounds3 ourBounds = null;
         pos = pos.add(this.pos);

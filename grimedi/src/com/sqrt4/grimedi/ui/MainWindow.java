@@ -4,12 +4,15 @@
 
 package com.sqrt4.grimedi.ui;
 
+import java.awt.event.*;
+import java.beans.*;
 import com.sqrt.liblab.LabCollection;
-import com.sqrt.liblab.LabEntry;
+import com.sqrt.liblab.entry.LabEntry;
 import com.sqrt.liblab.LabFile;
 import com.sqrt.liblab.codec.CodecMapper;
 import com.sqrt.liblab.codec.EntryCodec;
 import com.sqrt.liblab.io.DataSource;
+import com.sqrt4.grimedi.Main;
 import com.sqrt4.grimedi.ui.component.BusyDialog;
 import com.sqrt4.grimedi.ui.editor.EditorMapper;
 import com.sqrt4.grimedi.ui.editor.EditorPanel;
@@ -23,13 +26,15 @@ import javax.swing.tree.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
+
+import com.sqrt4.grimedi.util.Size;
+import org.netbeans.swing.outline.*;
 
 /**
  * @author James Lawrence
@@ -41,26 +46,71 @@ public class MainWindow extends JFrame {
     private BusyDialog _busy;
     private DataSource popupSource;
     private LabFile labPopupSource;
+    private final JFileChooser fileChooser = new JFileChooser(".");
+
+    static {
+        SplashScreenController.setPercentage(100);
+        SplashScreenController.setText("GrimEdi v" + Main.VERSION + " by James Lawrence");
+        try {
+            Thread.sleep(3000);
+        } catch(Exception e) {
+            /**/
+        }
+        SplashScreenController.setPercentage(10);
+        SplashScreenController.setText("Registering codecs...");
+        CodecMapper.registerDefaults();
+        SplashScreenController.setPercentage(30);
+        SplashScreenController.setText("Registering views...");
+        EditorMapper.registerDefaults();
+        SplashScreenController.setPercentage(80);
+    }
 
     public MainWindow() {
+        SplashScreenController.setText("Initialising UI...");
         initComponents();
-        fileList.setCellRenderer(new DefaultTreeCellRenderer() {
-            ImageIcon labIcon = new ImageIcon(getClass().getResource("/lab.png"));
+        fileList.setRenderDataProvider(new RenderDataProvider() {
+            public String getDisplayName(Object o) {
+                return o.toString();
+            }
 
-            public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-                Component c = super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
-                if (value instanceof LabFile) {
-                    setIcon(labIcon);
-                } else if (value instanceof DataSource) {
-                    EditorPanel panel = EditorMapper.editorPanelForProvider((DataSource) value);
-                    if (panel != null)
-                        setIcon(panel.getIcon());
-                    else
-                        setIcon(EditorPanel.defaultIcon);
+            public boolean isHtmlDisplayName(Object o) {
+                return false;
+            }
+
+            public Color getBackground(Object o) {
+                return fileList.getBackground();
+            }
+
+            public Color getForeground(Object o) {
+                return fileList.getForeground();
+            }
+
+            public String getTooltipText(Object o) {
+                return null;
+            }
+
+            ImageIcon labIcon = new ImageIcon(getClass().getResource("/lab.png"));
+            public Icon getIcon(Object o) {
+
+                if(o instanceof LabFile)
+                    return labIcon;
+                else if(o instanceof DataSource) {
+                    EditorPanel panel = EditorMapper.editorPanelForProvider((DataSource) o);
+                    return panel == null? EditorPanel.defaultIcon: panel.getIcon();
                 }
-                return c;
+                return null;
             }
         });
+        fileList.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                fileSelected(e);
+            }
+        });
+    }
+
+    public JFileChooser createFileDialog() {
+        JFileChooser jfc = new JFileChooser(fileChooser.getCurrentDirectory());
+        return jfc;
     }
 
     private void fileSearch(CaretEvent e) {
@@ -112,6 +162,7 @@ public class MainWindow extends JFrame {
                 _busy.setVisible(false);
                 _busy = null;
             }
+            t.printStackTrace();
         }
     }
 
@@ -121,10 +172,9 @@ public class MainWindow extends JFrame {
         _busy.setMessage(message);
     }
 
-    private void fileSelected(TreeSelectionEvent e) {
-        if (fileList.getSelectionPath() == null)
-            return;
-        Object selObj = fileList.getSelectionPath().getLastPathComponent();
+    private void fileSelected(ListSelectionEvent e) {
+        int row = fileList.getSelectionModel().getLeadSelectionIndex();
+        Object selObj = fileList.getModel().getValueAt(fileList.convertRowIndexToModel(row), 0);
         if (selObj == null || !(selObj instanceof DataSource))
             return;
         final DataSource selected = (DataSource) selObj;
@@ -174,7 +224,9 @@ public class MainWindow extends JFrame {
     }
 
     private void fileListMousePressed(MouseEvent e) {
-        TreePath selPath = fileList.getPathForLocation(e.getX(), e.getY());
+        if(context == null)
+            return;
+        TreePath selPath = fileList.getClosestPathForLocation(e.getX(), e.getY());
         if (selPath == null)
             return;
         Object clicked = selPath.getLastPathComponent();
@@ -191,169 +243,9 @@ public class MainWindow extends JFrame {
         }
     }
 
-    private void initComponents() {
-        // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-        menuBar1 = new JMenuBar();
-        menu1 = new JMenu();
-        menuItem1 = new JMenuItem();
-        menuItem2 = new JMenuItem();
-        separator1 = new JSeparator();
-        menuItem3 = new JMenuItem();
-        splitPane1 = new JSplitPane();
-        panel1 = new JPanel();
-        scrollPane1 = new JScrollPane();
-        fileList = new JTree();
-        panel2 = new JPanel();
-        searchLabel = new JLabel();
-        searchField = new JTextField();
-        editorPane = new JPanel();
-        entryPopupMenu = new JPopupMenu();
-        menuItem4 = new JMenuItem();
-        menuItem5 = new JMenuItem();
-        labPopupMenu = new JPopupMenu();
-        menuItem6 = new JMenuItem();
-        openAction = new OpenAction();
-        closeAction = new CloseAction();
-        extractEntryAction = new ExtractEntryAction();
-        deleteEntryAction = new DeleteEntryAction();
-        extractAllAction = new ExtractAllAction();
-
-        //======== this ========
-        setTitle("GrimEdi");
-        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        Container contentPane = getContentPane();
-        contentPane.setLayout(new BorderLayout());
-
-        //======== menuBar1 ========
-        {
-
-            //======== menu1 ========
-            {
-                menu1.setText("File");
-
-                //---- menuItem1 ----
-                menuItem1.setAction(openAction);
-                menuItem1.setMnemonic('O');
-                menu1.add(menuItem1);
-
-                //---- menuItem2 ----
-                menuItem2.setAction(closeAction);
-                menu1.add(menuItem2);
-                menu1.add(separator1);
-
-                //---- menuItem3 ----
-                menuItem3.setText("Exit");
-                menu1.add(menuItem3);
-            }
-            menuBar1.add(menu1);
-        }
-        setJMenuBar(menuBar1);
-
-        //======== splitPane1 ========
-        {
-            splitPane1.setResizeWeight(0.1);
-
-            //======== panel1 ========
-            {
-                panel1.setLayout(new BorderLayout());
-
-                //======== scrollPane1 ========
-                {
-
-                    //---- fileList ----
-                    fileList.setShowsRootHandles(true);
-                    fileList.setModel(new DefaultTreeModel(
-                            new DefaultMutableTreeNode("Nothing open") {
-                                {
-                                }
-                            }));
-                    fileList.setRootVisible(false);
-                    fileList.addTreeSelectionListener(new TreeSelectionListener() {
-                        @Override
-                        public void valueChanged(TreeSelectionEvent e) {
-                            fileSelected(e);
-                        }
-                    });
-                    fileList.addMouseListener(new MouseAdapter() {
-                        @Override
-                        public void mousePressed(MouseEvent e) {
-                            fileListMousePressed(e);
-                        }
-                    });
-                    scrollPane1.setViewportView(fileList);
-                }
-                panel1.add(scrollPane1, BorderLayout.CENTER);
-
-                //======== panel2 ========
-                {
-                    panel2.setLayout(new GridBagLayout());
-                    ((GridBagLayout) panel2.getLayout()).columnWidths = new int[]{0, 0, 0, 0};
-                    ((GridBagLayout) panel2.getLayout()).rowHeights = new int[]{0, 0, 0};
-                    ((GridBagLayout) panel2.getLayout()).columnWeights = new double[]{1.0, 1.0, 0.0, 1.0E-4};
-                    ((GridBagLayout) panel2.getLayout()).rowWeights = new double[]{1.0, 1.0, 1.0E-4};
-
-                    //---- searchLabel ----
-                    searchLabel.setIcon(new ImageIcon(getClass().getResource("/tm_item_search.png")));
-                    searchLabel.setLabelFor(searchField);
-                    searchLabel.setText("Search:");
-                    searchLabel.setEnabled(false);
-                    searchLabel.setHorizontalAlignment(SwingConstants.TRAILING);
-                    panel2.add(searchLabel, new GridBagConstraints(0, 0, 1, 1, 1.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 2, 2), 0, 0));
-
-                    //---- searchField ----
-                    searchField.setEnabled(false);
-                    searchField.addCaretListener(new CaretListener() {
-                        @Override
-                        public void caretUpdate(CaretEvent e) {
-                            fileSearch(e);
-                        }
-                    });
-                    panel2.add(searchField, new GridBagConstraints(1, 0, 2, 1, 3.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 2, 0), 0, 0));
-                }
-                panel1.add(panel2, BorderLayout.NORTH);
-            }
-            splitPane1.setLeftComponent(panel1);
-
-            //======== editorPane ========
-            {
-                editorPane.setLayout(new BorderLayout());
-            }
-            splitPane1.setRightComponent(editorPane);
-        }
-        contentPane.add(splitPane1, BorderLayout.CENTER);
-        setSize(800, 600);
-        setLocationRelativeTo(null);
-
-        //======== entryPopupMenu ========
-        {
-
-            //---- menuItem4 ----
-            menuItem4.setMnemonic('E');
-            menuItem4.setAction(extractEntryAction);
-            entryPopupMenu.add(menuItem4);
-
-            //---- menuItem5 ----
-            menuItem5.setMnemonic('D');
-            menuItem5.setAction(deleteEntryAction);
-            entryPopupMenu.add(menuItem5);
-        }
-
-        //======== labPopupMenu ========
-        {
-
-            //---- menuItem6 ----
-            menuItem6.setAction(extractAllAction);
-            labPopupMenu.add(menuItem6);
-        }
-        // JFormDesigner - End of component initialization  //GEN-END:initComponents
-    }
-
     private void onOpen() {
-        fileList.setModel(filterableEntries = new FilterableLabTreeModel(context));
+        filterableEntries = new FilterableLabTreeModel(context);
+        fileList.setModel(DefaultOutlineModel.createOutlineModel(filterableEntries, filterableEntries, false, "File"));
         searchField.setText("");
         searchPredicate = null;
         searchField.setEnabled(true);
@@ -370,7 +262,7 @@ public class MainWindow extends JFrame {
     private JSplitPane splitPane1;
     private JPanel panel1;
     private JScrollPane scrollPane1;
-    private JTree fileList;
+    private Outline fileList;
     private JPanel panel2;
     private JLabel searchLabel;
     private JTextField searchField;
@@ -387,8 +279,6 @@ public class MainWindow extends JFrame {
     private ExtractAllAction extractAllAction;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
-    JFileChooser jfc = new JFileChooser(".");
-
     private class OpenAction extends AbstractAction {
         private OpenAction() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
@@ -399,12 +289,12 @@ public class MainWindow extends JFrame {
         }
 
         public void actionPerformed(ActionEvent e) {
-            jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            if (jfc.showOpenDialog(MainWindow.this) != JFileChooser.APPROVE_OPTION)
+            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            if (fileChooser.showOpenDialog(MainWindow.this) != JFileChooser.APPROVE_OPTION)
                 return;
             runAsyncWithPopup("Please wait...", "Loading LAB files...", new Runnable() {
                 public void run() {
-                    File f = jfc.getSelectedFile();
+                    File f = fileChooser.getSelectedFile();
                     try {
                         context = LabCollection.open(f);
                         onOpen();
@@ -429,7 +319,7 @@ public class MainWindow extends JFrame {
         }
     }
 
-    private class FilterableLabTreeModel implements TreeModel {
+    private class FilterableLabTreeModel implements TreeModel, RowModel {
         private final LabCollection source;
         private final java.util.List<TreeModelListener> listeners = new LinkedList<TreeModelListener>();
         private final java.util.List<Predicate<DataSource>> predicates = new LinkedList<Predicate<DataSource>>();
@@ -521,6 +411,54 @@ public class MainWindow extends JFrame {
         public void removeTreeModelListener(TreeModelListener l) {
             listeners.remove(l);
         }
+
+        public int getColumnCount() {
+            return 2;
+        }
+
+        public Object getValueFor(Object o, int i) {
+            switch(i) {
+                case 0:
+                    String s = o.toString();
+                    int idx = s.lastIndexOf('.');
+                    if(idx == -1)
+                        return "None";
+                    return s.substring(idx+1);
+                case 1:
+                    if(o instanceof DataSource)
+                        return new Size(((DataSource) o).getLength());
+                    return null;
+            }
+            return null;
+        }
+
+        public Class getColumnClass(int i) {
+            switch(i) {
+                case 0:
+                    return String.class;
+                case 1:
+                    return Integer.class;
+            }
+            return null;
+        }
+
+        public boolean isCellEditable(Object o, int i) {
+            return false;
+        }
+
+        public void setValueFor(Object o, int i, Object o2) {
+        }
+
+        public String getColumnName(int i) {
+            switch(i) {
+                case 0:
+                    return "Type";
+                case 1:
+                    return "Size";
+                default:
+                    return "?";
+            }
+        }
     }
 
     private class ExtractEntryAction extends AbstractAction {
@@ -532,14 +470,14 @@ public class MainWindow extends JFrame {
         }
 
         public void actionPerformed(ActionEvent e) {
-            final JFileChooser fc = new JFileChooser(jfc.getCurrentDirectory());
-            fc.setSelectedFile(new File(popupSource.getName()));
-            if (fc.showSaveDialog(MainWindow.this) != JFileChooser.APPROVE_OPTION)
+            final JFileChooser jfc = createFileDialog();
+            jfc.setSelectedFile(new File(popupSource.getName()));
+            if (jfc.showSaveDialog(MainWindow.this) != JFileChooser.APPROVE_OPTION)
                 return;
             runAsyncWithPopup("Please wait...", "Extracting " + popupSource.getName() + "...", new Runnable() {
                 public void run() {
                     try {
-                        FileOutputStream fos = new FileOutputStream(fc.getSelectedFile());
+                        FileOutputStream fos = new FileOutputStream(jfc.getSelectedFile());
                         byte[] buf = new byte[5000];
                         int copied = 0;
                         long len = popupSource.getLength();
@@ -570,6 +508,8 @@ public class MainWindow extends JFrame {
 
         public void actionPerformed(ActionEvent e) {
             popupSource.container.entries.remove(popupSource);
+            fileList.revalidate();
+            // Todo: model should be notified...
         }
     }
 
@@ -582,12 +522,12 @@ public class MainWindow extends JFrame {
         }
 
         public void actionPerformed(ActionEvent e) {
-            JFileChooser fc = new JFileChooser(jfc.getCurrentDirectory());
-            fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            if (fc.showSaveDialog(MainWindow.this) != JFileChooser.APPROVE_OPTION)
+            JFileChooser jfc = createFileDialog();
+            jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            if (jfc.showSaveDialog(MainWindow.this) != JFileChooser.APPROVE_OPTION)
                 return;
 
-            final File dir = fc.getSelectedFile();
+            final File dir = jfc.getSelectedFile();
             final String pre = "<html>Extracting " + labPopupSource.toString() + "...<br/>";
             runAsyncWithPopup("Please wait...", pre, new Runnable() {
                 public void run() {
@@ -612,5 +552,157 @@ public class MainWindow extends JFrame {
                 }
             });
         }
+    }
+
+    private void initComponents() {
+        // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+        menuBar1 = new JMenuBar();
+        menu1 = new JMenu();
+        menuItem1 = new JMenuItem();
+        menuItem2 = new JMenuItem();
+        separator1 = new JSeparator();
+        menuItem3 = new JMenuItem();
+        splitPane1 = new JSplitPane();
+        panel1 = new JPanel();
+        scrollPane1 = new JScrollPane();
+        fileList = new Outline();
+        panel2 = new JPanel();
+        searchLabel = new JLabel();
+        searchField = new JTextField();
+        editorPane = new JPanel();
+        entryPopupMenu = new JPopupMenu();
+        menuItem4 = new JMenuItem();
+        menuItem5 = new JMenuItem();
+        labPopupMenu = new JPopupMenu();
+        menuItem6 = new JMenuItem();
+        openAction = new OpenAction();
+        closeAction = new CloseAction();
+        extractEntryAction = new ExtractEntryAction();
+        deleteEntryAction = new DeleteEntryAction();
+        extractAllAction = new ExtractAllAction();
+
+        //======== this ========
+        setTitle("GrimEdi");
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        Container contentPane = getContentPane();
+        contentPane.setLayout(new BorderLayout());
+
+        //======== menuBar1 ========
+        {
+
+            //======== menu1 ========
+            {
+                menu1.setText("File");
+
+                //---- menuItem1 ----
+                menuItem1.setAction(openAction);
+                menuItem1.setMnemonic('O');
+                menu1.add(menuItem1);
+
+                //---- menuItem2 ----
+                menuItem2.setAction(closeAction);
+                menu1.add(menuItem2);
+                menu1.add(separator1);
+
+                //---- menuItem3 ----
+                menuItem3.setText("Exit");
+                menu1.add(menuItem3);
+            }
+            menuBar1.add(menu1);
+        }
+        setJMenuBar(menuBar1);
+
+        //======== splitPane1 ========
+        {
+
+            //======== panel1 ========
+            {
+                panel1.setLayout(new BorderLayout());
+
+                //======== scrollPane1 ========
+                {
+
+                    //---- fileList ----
+                    fileList.setRootVisible(false);
+                    fileList.setColumnHidingAllowed(false);
+                    fileList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+                    fileList.setFillsViewportHeight(true);
+                    fileList.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+                    fileList.addMouseListener(new MouseAdapter() {
+                        @Override
+                        public void mousePressed(MouseEvent e) {
+                            fileListMousePressed(e);
+                        }
+                    });
+                    scrollPane1.setViewportView(fileList);
+                }
+                panel1.add(scrollPane1, BorderLayout.CENTER);
+
+                //======== panel2 ========
+                {
+                    panel2.setLayout(new GridBagLayout());
+                    ((GridBagLayout)panel2.getLayout()).columnWidths = new int[] {0, 0, 0, 0};
+                    ((GridBagLayout)panel2.getLayout()).rowHeights = new int[] {0, 0, 0};
+                    ((GridBagLayout)panel2.getLayout()).columnWeights = new double[] {1.0, 1.0, 0.0, 1.0E-4};
+                    ((GridBagLayout)panel2.getLayout()).rowWeights = new double[] {1.0, 1.0, 1.0E-4};
+
+                    //---- searchLabel ----
+                    searchLabel.setIcon(new ImageIcon(getClass().getResource("/tm_item_search.png")));
+                    searchLabel.setLabelFor(searchField);
+                    searchLabel.setText("Search:");
+                    searchLabel.setEnabled(false);
+                    searchLabel.setHorizontalAlignment(SwingConstants.TRAILING);
+                    panel2.add(searchLabel, new GridBagConstraints(0, 0, 1, 1, 1.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 2, 2), 0, 0));
+
+                    //---- searchField ----
+                    searchField.setEnabled(false);
+                    searchField.addCaretListener(new CaretListener() {
+                        @Override
+                        public void caretUpdate(CaretEvent e) {
+                            fileSearch(e);
+                        }
+                    });
+                    panel2.add(searchField, new GridBagConstraints(1, 0, 2, 1, 3.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 2, 0), 0, 0));
+                }
+                panel1.add(panel2, BorderLayout.NORTH);
+            }
+            splitPane1.setLeftComponent(panel1);
+
+            //======== editorPane ========
+            {
+                editorPane.setLayout(new BorderLayout());
+            }
+            splitPane1.setRightComponent(editorPane);
+        }
+        contentPane.add(splitPane1, BorderLayout.CENTER);
+        setSize(800, 600);
+        setLocationRelativeTo(null);
+
+        //======== entryPopupMenu ========
+        {
+
+            //---- menuItem4 ----
+            menuItem4.setMnemonic('E');
+            menuItem4.setAction(extractEntryAction);
+            entryPopupMenu.add(menuItem4);
+
+            //---- menuItem5 ----
+            menuItem5.setMnemonic('D');
+            menuItem5.setAction(deleteEntryAction);
+            entryPopupMenu.add(menuItem5);
+        }
+
+        //======== labPopupMenu ========
+        {
+
+            //---- menuItem6 ----
+            menuItem6.setAction(extractAllAction);
+            labPopupMenu.add(menuItem6);
+        }
+        // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
 }

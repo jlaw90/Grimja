@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Class-Path: gluegen-rt-natives-linux-amd64.jar gluegen-rt-natives-linu
+ x-armv6.jar gluegen-rt-natives-linux-armv6hf.jar gluegen-rt-natives-l
+ inux-i586.jar gluegen-rt-natives-macosx-universal.jar gluegen-rt-nati
+ ves-solaris-amd64.jar gluegen-rt-natives-solaris-i586.jar gluegen-rt-
+ natives-windows-amd64.jar gluegen-rt-natives-windows-i586.jar gluegen
+ -rt.jar gluegen.jar jogl-all-natives-linux-amd64.jar jogl-all-natives
+ -linux-armv6.jar jogl-all-natives-linux-armv6hf.jar jogl-all-natives-
+ linux-i586.jar jogl-all-natives-macosx-universal.jar jogl-all-natives
+ -solaris-amd64.jar jogl-all-natives-solaris-i586.jar jogl-all-natives
+ -windows-amd64.jar jogl-all-natives-windows-i586.jar jogl-all.jar org
+ -netbeans-swing-outline.jar
+Main-Class: com.sqrt4.grimedi.Main
+SplashScreen-Image: splash.png

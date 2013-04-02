@@ -54,9 +54,6 @@ public class AudioCodec extends EntryCodec<Audio> {
     private int parseSoundHeader(Audio audio, final DataSource source) throws IOException {
         List<UnresolvedJump> unresolvedJumps = new LinkedList<UnresolvedJump>();
         int tag = source.readInt();
-        int channels = 0;
-        int sampleRate = 0;
-        int bits = 0;
         if (tag == (('R' << 24) | ('I' << 16) | ('F' << 8) | 'F')) {
             Region main = new Region();
             audio.regions.add(main);
@@ -156,7 +153,7 @@ public class AudioCodec extends EntryCodec<Audio> {
             }
             return headerSize;
         } else {
-            System.err.println("WHA?");
+            System.err.println("Invalid sound header: " + tagToString(tag));
         }
         return 44;
     }

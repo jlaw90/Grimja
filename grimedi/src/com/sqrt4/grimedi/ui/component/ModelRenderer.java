@@ -36,6 +36,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author James Lawrence
  */
 public class ModelRenderer extends JPanel implements GLEventListener {
+    private static OurAnimator animator;
     private GrimModel model;
     private java.util.List<Texture> textures = new LinkedList<Texture>();
     private boolean _regenerateTextures;
@@ -55,9 +56,9 @@ public class ModelRenderer extends JPanel implements GLEventListener {
     private int oldX, oldY, rX, rY;
     private GLU glu = new GLU();
     private ModelNode selected;
-    private OurAnimator animator = new OurAnimator();
     private FrameCallback callback;
     private int viewWidth, viewHeight;
+    private GLCanvas preview;
 
     public ModelRenderer() {
         initComponents();
@@ -84,9 +85,9 @@ public class ModelRenderer extends JPanel implements GLEventListener {
         return selected;
     }
 
-    public void setModel(GrimModel model) {
-        // Todo: remove and re-add GLJPanel, as there's a bug in JOGL if it's re-used
+    public void setModel(final GrimModel model) {
         this.model = model;
+        loadGL();
         selected = null;
         _regenerateTextures = true;
         rebuildList = true;
@@ -359,16 +360,15 @@ public class ModelRenderer extends JPanel implements GLEventListener {
         rebuildList = true;
     }
 
-    private void createUIComponents() {
-        colorMapSelector = new ColorMapSelector();
-        preview = new GLJPanel(new GLCapabilities(GLProfile.getGL2ES1())) {
-            protected void paintComponent(Graphics graphics) {
-                super.paintComponent(graphics);
-            }
-        };
+    private void loadGL() {
+        if(animator != null)
+            return;
+        animator = new OurAnimator();
+        preview = new GLCanvas(new GLCapabilities(GLProfile.getGL2GL3()));
+        preview.addGLEventListener(this);
+        panel2.add(preview, BorderLayout.CENTER);
         animator.add(preview);
         animator.start();
-        preview.addGLEventListener(this);
 
         MouseAdapter mad = new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
@@ -443,10 +443,9 @@ public class ModelRenderer extends JPanel implements GLEventListener {
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-        createUIComponents();
-
         panel2 = new JPanel();
         panel4 = new JPanel();
+        colorMapSelector = new ColorMapSelector();
         toggleTextures = new JCheckBox();
         toggleWireframe = new JCheckBox();
         toggleNormals = new JCheckBox();
@@ -518,10 +517,6 @@ public class ModelRenderer extends JPanel implements GLEventListener {
                     new Insets(0, 0, 0, 0), 0, 0));
             }
             panel2.add(panel4, BorderLayout.NORTH);
-
-            //---- preview ----
-            preview.setDoubleBuffered(false);
-            panel2.add(preview, BorderLayout.CENTER);
         }
         add(panel2, BorderLayout.CENTER);
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
@@ -529,10 +524,6 @@ public class ModelRenderer extends JPanel implements GLEventListener {
 
     public GrimModel getModel() {
         return model;
-    }
-
-    public GLJPanel getRenderer() {
-        return preview;
     }
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
@@ -544,12 +535,15 @@ public class ModelRenderer extends JPanel implements GLEventListener {
     private JCheckBox toggleNormals;
     private JCheckBox toggleSmooth;
     private JCheckBox toggleGrid;
-    private GLJPanel preview;
     private NormalToggleAction normalToggleAction;
     private ToggleSmoothAction toggleSmoothAction;
     private ToggleTextures toggleTextureAction;
     private ToggleWireframe toggleWireframeAction;
     private ToggleGridAction toggleGridAction;
+
+    public FrameCallback getCallback() {
+        return callback;
+    }
 // JFormDesigner - End of variables declaration  //GEN-END:variables
 
     private class ToggleSmoothAction extends AbstractAction {
@@ -629,28 +623,30 @@ class OurAnimator implements GLAnimatorControl {
     private boolean started, paused;
     private int frameDelta;
 
-    private Thread thread = new Thread(new Runnable() {
+    private Runnable _runner = new Runnable() {
         public void run() {
             try {
                 while (started) {
                     try {
                         long start = System.currentTimeMillis();
                         if (isAnimating()) {
-                            for (GLAutoDrawable drawable : drawables) {
+                            for (int i = 0; isAnimating() && i < drawables.size(); i++) {
+                                GLAutoDrawable drawable = drawables.get(i);
                                 drawable.display();
                             }
                         }
                         long delta = System.currentTimeMillis() - start;
                         Thread.sleep(Math.max(frameDelta - delta, 5));
                     } catch (Throwable ignore) {
+                        ignore.printStackTrace();
                     }
                 }
             } finally {
                 started = false;
                 paused = false;
             }
-        }
-    });
+        }};
+    private Thread thread;
 
     public boolean isStarted() {
         return started;
@@ -669,10 +665,11 @@ class OurAnimator implements GLAnimatorControl {
     }
 
     public boolean start() {
-        if (started)
+        if (thread != null)
             return false;
         started = true;
         paused = false;
+        thread = new Thread(_runner);
         thread.setPriority(1);
         thread.setDaemon(true);
         thread.start();
@@ -680,11 +677,12 @@ class OurAnimator implements GLAnimatorControl {
     }
 
     public boolean stop() {
-        if (!started)
+        if (thread == null)
             return false;
         started = false;
         try {
             thread.join();
+            thread = null;
             return true;
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -693,7 +691,7 @@ class OurAnimator implements GLAnimatorControl {
     }
 
     public boolean pause() {
-        if (!started)
+        if (thread == null)
             return false;
         paused = true;
         return true;
@@ -707,6 +705,8 @@ class OurAnimator implements GLAnimatorControl {
     }
 
     public void add(GLAutoDrawable glAutoDrawable) {
+        if(drawables.contains(glAutoDrawable))
+            return;
         drawables.add(glAutoDrawable);
         glAutoDrawable.setAnimator(this);
     }

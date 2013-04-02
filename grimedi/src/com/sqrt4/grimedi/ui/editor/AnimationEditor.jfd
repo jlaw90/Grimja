@@ -30,7 +30,7 @@ new FormModel {
 					} )
 					add( new FormComponent( "javax.swing.JComboBox" ) {
 						name: "modelSelector"
-						addEvent( new FormEvent( "java.awt.event.ItemListener", "itemStateChanged", "modelSelected", true ) )
+						addEvent( new FormEvent( "javax.swing.event.PopupMenuListener", "popupMenuWillBecomeInvisible", "modelSelectorPopupMenuWillBecomeInvisible", true ) )
 					}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
 						"gridx": 2
 					} )

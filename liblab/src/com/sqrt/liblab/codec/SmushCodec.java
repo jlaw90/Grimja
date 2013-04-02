@@ -39,7 +39,7 @@ public class SmushCodec extends EntryCodec<Video> {
         ctx.source = source;
         ctx.video.stream = new SANMVideoStream(ctx);
         if (source.readInt() != (('S' << 24) | ('A' << 16) | ('N' << 8) | 'M')) {
-            System.err.println("WHA?");
+            System.err.println("Not a SANM file?");
             return null;
         }
 
@@ -59,7 +59,7 @@ public class SmushCodec extends EntryCodec<Video> {
             // Header
             case (('S' << 24) | ('H' << 16) | ('D' << 8) | 'R'):
                 ctx.ver = source.readUnsignedShort();
-                int numFrames = source.readUnsignedShortLE();
+                ctx.video.numFrames = source.readUnsignedShortLE();
                 int vidX = source.readUnsignedShortLE();
                 int vidY = source.readUnsignedShortLE();
                 ctx.width = source.readUnsignedShortLE();
@@ -196,8 +196,6 @@ class SANMVideoContext {
     int rle_buf_size, rotate_code, npixels, buf_size;
     short[] codebook = new short[256];
     short[] small_codebook = new short[4];
-    boolean[][] p4x4glyphs = new boolean[256][16];
-    boolean[][] p8x8glyphs = new boolean[256][64];
 
     public short readCodebook(int index) {
         short val = codebook[index];
@@ -288,6 +286,8 @@ class VimaStream extends com.sqrt.liblab.entry.audio.AudioInputStream {
 
 class SANMVideoStream extends VideoInputStream {
     //region Large arrays...
+    private static final boolean[][] p4x4glyphs = new boolean[256][16];
+    private static final boolean[][] p8x8glyphs = new boolean[256][64];
     private static final byte[] glyph4_x = {0, 1, 2, 3, 3, 3, 3, 2, 1, 0, 0, 0, 1, 2, 2, 1};
     private static final byte[] glyph4_y = {0, 0, 0, 0, 1, 2, 3, 3, 3, 3, 2, 1, 1, 1, 2, 2};
     private static final byte[] glyph8_x = {0, 2, 5, 7, 7, 7, 7, 7, 7, 5, 2, 0, 0, 0, 0, 0};
@@ -500,6 +500,11 @@ class SANMVideoStream extends VideoInputStream {
             -10, 15, 10, 15, -5, 17, 5, 17, 0, 18,
             -12, 19, 13, 19, -6, 22, 6, 22, 0, 23,
     };
+
+    static {
+        make_glyphs(p4x4glyphs, glyph4_x, glyph4_y, 4);
+        make_glyphs(p8x8glyphs, glyph8_x, glyph8_y, 8);
+    }
     //endregion
 
     private static enum GlyphEdge {
@@ -552,8 +557,6 @@ class SANMVideoStream extends VideoInputStream {
 
     public SANMVideoStream(SANMVideoContext ctx) {
         this.ctx = ctx;
-        make_glyphs(ctx.p4x4glyphs, glyph4_x, glyph4_y, 4);
-        make_glyphs(ctx.p8x8glyphs, glyph8_x, glyph8_y, 8);
     }
 
     public void seek(int pos) throws IOException {
@@ -662,7 +665,8 @@ class SANMVideoStream extends VideoInputStream {
             int y0 = yvec[i];
             GlyphEdge edge0 = GlyphEdge.which(x0, y0, side_length);
 
-            for (j = 0, pglyph = pglyphs[pglyph_off++]; j < 16; j++) {
+            for (j = 0; j < 16; j++) {
+                pglyph = pglyphs[pglyph_off++];
                 int x1 = xvec[j];
                 int y1 = yvec[j];
                 GlyphEdge edge1 = GlyphEdge.which(x1, y1, side_length);
@@ -722,13 +726,13 @@ class SANMVideoStream extends VideoInputStream {
             return;
         }
 
-        pglyph = block_size == 8 ? ctx.p8x8glyphs[index] : ctx.p4x4glyphs[index];
+        pglyph = block_size == 8 ? p8x8glyphs[index] : p4x4glyphs[index];
         int glyphOff = 0;
         pitch -= block_size;
 
         for (y = 0; y < block_size; y++, dstOff += pitch)
             for (x = 0; x < block_size; x++)
-                dst[dstOff++] = pglyph[glyphOff++] ? fg_color : bg_color;
+                dst[dstOff++] = pglyph[glyphOff++] ? bg_color : fg_color;
     }
 
     private static interface Subcodec {

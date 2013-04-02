@@ -2,7 +2,7 @@ package com.sqrt4.grimedi.ui.editor;
 
 import com.sqrt.liblab.entry.video.Video;
 import com.sqrt.liblab.io.DataSource;
-import com.sqrt.liblab.LabEntry;
+import com.sqrt.liblab.entry.LabEntry;
 import com.sqrt.liblab.codec.EntryCodec;
 import com.sqrt.liblab.codec.CodecMapper;
 import com.sqrt.liblab.entry.audio.Audio;
@@ -30,6 +30,8 @@ public class EditorMapper {
     }
 
     public static void registerDefaults() {
+        if(!mapping.isEmpty())
+            return; // already done
         map(GrimFont.class, new FontView());
         map(GrimBitmap.class, new ImageView());
         map(ColorMap.class, new ColorMapView());

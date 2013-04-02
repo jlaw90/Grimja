@@ -1,6 +1,6 @@
 package com.sqrt.liblab.codec;
 
-import com.sqrt.liblab.LabEntry;
+import com.sqrt.liblab.entry.LabEntry;
 import com.sqrt.liblab.io.DataSource;
 
 import java.util.LinkedList;
@@ -57,12 +57,14 @@ public final class CodecMapper {
     }
 
     public static void registerDefaults() {
+        if(!codecs.isEmpty())
+            return;
         CodecMapper.registerCodec(new FontCodec());
         CodecMapper.registerCodec(new BitmapCodec());
         CodecMapper.registerCodec(new ColorMapCodec());
         CodecMapper.registerCodec(new MaterialCodec());
         CodecMapper.registerCodec(new ModelCodec());
-        CodecMapper.registerCodec(new KeyFrameCodec());
+        CodecMapper.registerCodec(new AnimationCodec());
         CodecMapper.registerCodec(new AudioCodec());
         CodecMapper.registerCodec(new SmushCodec());
         // Todo .cos (costume)

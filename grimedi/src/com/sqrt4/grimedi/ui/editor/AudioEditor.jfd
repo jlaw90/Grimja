@@ -98,8 +98,8 @@ new FormModel {
 				name: "jumpEnabled"
 				"action": new FormReference( "toggleJumpAction" )
 			}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
-				"weightx": 1.0
-				"gridx": 1
+				"gridwidth": 2
+				"hAlign": 0
 			} )
 			add( new FormComponent( "javax.swing.JLabel" ) {
 				name: "label1"
@@ -114,6 +114,7 @@ new FormModel {
 			}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
 				"gridx": 1
 				"gridy": 1
+				"weightx": 1.0
 			} )
 			add( new FormComponent( "javax.swing.JLabel" ) {
 				name: "label2"
@@ -163,47 +164,36 @@ new FormModel {
 		} ) {
 			name: "regionPropertyPanel"
 			add( new FormComponent( "javax.swing.JLabel" ) {
-				name: "name"
-				"text": "text"
-				"font": new java.awt.Font( "Tahoma", 1, 11 )
-				"horizontalAlignment": 0
-			}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
-				"gridwidth": 2
-			} )
-			add( new FormComponent( "javax.swing.JLabel" ) {
 				name: "label4"
 				"text": "Start: "
 				"horizontalAlignment": 11
-			}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
-				"gridy": 1
-			} )
+			}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) )
 			add( new FormComponent( "javax.swing.JLabel" ) {
 				name: "startLabel"
 				"text": "text"
 			}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
 				"gridx": 1
-				"gridy": 1
 			} )
 			add( new FormComponent( "javax.swing.JLabel" ) {
 				name: "label5"
 				"text": "Duration: "
 				"horizontalAlignment": 11
 			}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
-				"gridy": 2
+				"gridy": 1
 			} )
 			add( new FormComponent( "javax.swing.JLabel" ) {
 				name: "durationLabel"
 				"text": "text"
 			}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
 				"gridx": 1
-				"gridy": 2
+				"gridy": 1
 			} )
 			add( new FormComponent( "javax.swing.JLabel" ) {
 				name: "label6"
 				"text": "Comments: "
 				"horizontalAlignment": 11
 			}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
-				"gridy": 3
+				"gridy": 2
 				"vAlign": 1
 			} )
 			add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
@@ -213,7 +203,7 @@ new FormModel {
 				} )
 			}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
 				"gridx": 1
-				"gridy": 3
+				"gridy": 2
 				"weightx": 1.0
 				"weighty": 1.0
 			} )
@@ -225,15 +215,25 @@ new FormModel {
 				} )
 			}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
 				"gridx": 1
+				"gridy": 3
+			} )
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.FlowLayout ) ) {
+				name: "panel7"
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "button5"
+					"action": new FormReference( "exportRegionAction" )
+				} )
+			}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
 				"gridy": 4
+				"gridwidth": 2
 			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 280, 310 )
 			"size": new java.awt.Dimension( 200, 200 )
 		} )
 		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.GridBagLayout ) {
-			"$columnSpecs": "0, 0"
-			"$rowSpecs": "0, 0, 0, 0"
+			"$columnSpecs": "0, 0, 0"
+			"$rowSpecs": "0, 0, 0, 0, 0"
 			"$hGap": 5
 			"$vGap": 5
 			"$alignLeft": true
@@ -241,58 +241,69 @@ new FormModel {
 		} ) {
 			name: "soundPropertyPanel"
 			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "name"
+				"text": "text"
+				"font": new java.awt.Font( "Tahoma", 1, 11 )
+				"horizontalAlignment": 0
+			}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+				"gridwidth": 2
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
 				name: "label7"
 				"text": "Sample Rate: "
 				"horizontalAlignment": 11
-			}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) )
+			}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+				"gridy": 1
+			} )
 			add( new FormComponent( "javax.swing.JLabel" ) {
 				name: "sampleRate"
 				"text": "text"
 			}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
 				"gridx": 1
 				"weightx": 1.0
+				"gridy": 1
 			} )
 			add( new FormComponent( "javax.swing.JLabel" ) {
 				name: "label8"
 				"text": "Channels: "
 				"horizontalAlignment": 11
 			}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
-				"gridy": 1
+				"gridy": 2
 			} )
 			add( new FormComponent( "javax.swing.JLabel" ) {
 				name: "numChannels"
 				"text": "text"
 			}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
 				"gridx": 1
-				"gridy": 1
+				"gridy": 2
 			} )
 			add( new FormComponent( "javax.swing.JLabel" ) {
 				name: "label9"
 				"text": "Bits per sample: "
 				"horizontalAlignment": 11
 			}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
-				"gridy": 2
+				"gridy": 3
 			} )
 			add( new FormComponent( "javax.swing.JLabel" ) {
 				name: "bitsPerSample"
 				"text": "text"
 			}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
 				"gridx": 1
-				"gridy": 2
+				"gridy": 3
 			} )
 			add( new FormComponent( "javax.swing.JLabel" ) {
 				name: "label10"
 				"text": "Birate: "
 				"horizontalAlignment": 11
 			}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
-				"gridy": 3
+				"gridy": 4
 			} )
 			add( new FormComponent( "javax.swing.JLabel" ) {
 				name: "bitrate"
 				"text": "text"
 			}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
 				"gridx": 1
-				"gridy": 3
+				"gridy": 4
 			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 455, 60 )
@@ -347,6 +358,16 @@ new FormModel {
 			}
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 0, 641 )
+		} )
+		add( new FormNonVisual( "javax.swing.AbstractAction" ) {
+			name: "exportRegionAction"
+			"$action.Name": "Export region as WAVE"
+			"$action.ShortDescription": "exports this region as a wave file"
+			auxiliary() {
+				"JavaCodeGenerator.className": "ExportRegionAction"
+			}
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 693 )
 		} )
 	}
 }
