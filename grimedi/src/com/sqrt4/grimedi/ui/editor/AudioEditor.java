@@ -257,12 +257,17 @@ public class AudioEditor extends EditorPanel<Audio> {
         bitsPerSample = new JLabel();
         label10 = new JLabel();
         bitrate = new JLabel();
+        panel8 = new JPanel();
+        button6 = new JButton();
+        button7 = new JButton();
         playAllAction = new PlayAllAction();
         stopAction = new StopAction();
         playSelectedRegion = new PlaySelectedRegion();
         toggleJumpAction = new ToggleJumpAction();
         action1 = new UpdateCommentsButton();
         exportRegionAction = new ExportRegionAction();
+        exportWaveAction = new ExportWaveAction();
+        exportDirectoryAction = new ExportDirectoryAction();
 
         //======== this ========
         setLayout(new BorderLayout());
@@ -489,9 +494,9 @@ public class AudioEditor extends EditorPanel<Audio> {
         {
             soundPropertyPanel.setLayout(new GridBagLayout());
             ((GridBagLayout) soundPropertyPanel.getLayout()).columnWidths = new int[]{0, 0, 0, 0};
-            ((GridBagLayout) soundPropertyPanel.getLayout()).rowHeights = new int[]{0, 0, 0, 0, 0, 0};
+            ((GridBagLayout) soundPropertyPanel.getLayout()).rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0};
             ((GridBagLayout) soundPropertyPanel.getLayout()).columnWeights = new double[]{0.0, 0.0, 0.0, 1.0E-4};
-            ((GridBagLayout) soundPropertyPanel.getLayout()).rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
+            ((GridBagLayout) soundPropertyPanel.getLayout()).rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
 
             //---- name ----
             name.setText("text");
@@ -545,11 +550,27 @@ public class AudioEditor extends EditorPanel<Audio> {
             label10.setHorizontalAlignment(SwingConstants.TRAILING);
             soundPropertyPanel.add(label10, new GridBagConstraints(0, 4, 1, 1, 0.0, 0.0,
                     GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 5), 0, 0));
+                    new Insets(0, 0, 5, 5), 0, 0));
 
             //---- bitrate ----
             bitrate.setText("text");
             soundPropertyPanel.add(bitrate, new GridBagConstraints(1, 4, 1, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 5, 5), 0, 0));
+
+            //======== panel8 ========
+            {
+                panel8.setLayout(new FlowLayout());
+
+                //---- button6 ----
+                button6.setAction(exportWaveAction);
+                panel8.add(button6);
+
+                //---- button7 ----
+                button7.setAction(exportDirectoryAction);
+                panel8.add(button7);
+            }
+            soundPropertyPanel.add(panel8, new GridBagConstraints(0, 5, 2, 1, 0.0, 0.0,
                     GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                     new Insets(0, 0, 0, 5), 0, 0));
         }
@@ -717,12 +738,17 @@ public class AudioEditor extends EditorPanel<Audio> {
     private JLabel bitsPerSample;
     private JLabel label10;
     private JLabel bitrate;
+    private JPanel panel8;
+    private JButton button6;
+    private JButton button7;
     private PlayAllAction playAllAction;
     private StopAction stopAction;
     private PlaySelectedRegion playSelectedRegion;
     private ToggleJumpAction toggleJumpAction;
     private UpdateCommentsButton action1;
     private ExportRegionAction exportRegionAction;
+    private ExportWaveAction exportWaveAction;
+    private ExportDirectoryAction exportDirectoryAction;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
     private class PlayAllAction extends AbstractAction {
@@ -865,18 +891,130 @@ public class AudioEditor extends EditorPanel<Audio> {
                                 stopAction.actionPerformed(null);
                             WaveOutputStream wos = new WaveOutputStream(jfc.getSelectedFile(), data.channels, data.sampleRate, data.bits);
                             Region selected = AudioEditor.this.selected;
-                            data.stream.seek(selected.offset);
                             byte[] buf = new byte[data.sampleRate];
                             int off = 0;
                             while (off < selected.length) {
                                 final float ratio = ((float) off / (float) selected.length);
                                 window.setBusyMessage(String.format("Exporting region (%.2f%%)", ratio * 100f));
-                                int read = data.stream.read(buf, 0, buf.length);
+                                data.stream.seek(selected.offset+off);
+                                int read = data.stream.read(buf, 0, Math.min(buf.length, selected.length - off));
                                 off += read;
                                 wos.write(buf, 0, read);
                             }
                             wos.finish();
                             wos.close();
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+                });
+            }
+        }
+    }
+
+    private class ExportWaveAction extends AbstractAction {
+        private ExportWaveAction() {
+            // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+            putValue(NAME, "Export as WAVE");
+            putValue(SHORT_DESCRIPTION, "export the entire song as a WAVE file");
+            // JFormDesigner - End of action initialization  //GEN-END:initComponents
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            final JFileChooser jfc = window.createFileDialog();
+            String name = data.getName();
+            int idx = name.indexOf('.');
+            if (idx != -1)
+                name = name.substring(0, idx);
+            name += ".wav";
+            jfc.setSelectedFile(new File(name));
+            if (jfc.showSaveDialog(window) == JFileChooser.APPROVE_OPTION) {
+                window.runAsyncWithPopup("Please wait...", "Exporting song...", new Runnable() {
+                    public void run() {
+                        try {
+                            if (stopAction.isEnabled())
+                                stopAction.actionPerformed(null);
+                            WaveOutputStream wos = new WaveOutputStream(jfc.getSelectedFile(), data.channels, data.sampleRate, data.bits);
+
+                            byte[] buf = new byte[data.sampleRate];
+                            int len = 0;
+                            for (Region region : data.regions)
+                                len += region.length;
+                            int globOff = 0;
+                            for (Region region : data.regions) {
+                                int off = 0;
+                                while (off < region.length) {
+                                    final float ratio = ((float) globOff / (float) len);
+                                    window.setBusyMessage(String.format("Exporting song (%.2f%%)", ratio * 100f));
+                                    data.stream.seek(region.offset+off);
+                                    int read = data.stream.read(buf, 0, Math.min(buf.length, region.length - off));
+                                    off += read;
+                                    globOff += read;
+                                    wos.write(buf, 0, read);
+                                }
+                            }
+                            wos.finish();
+                            wos.close();
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+                });
+            }
+        }
+    }
+
+    private class ExportDirectoryAction extends AbstractAction {
+        private ExportDirectoryAction() {
+            // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+            putValue(NAME, "Export separated regions");
+            putValue(SHORT_DESCRIPTION, "export all the regions to their own wave file in the specified directory");
+            // JFormDesigner - End of action initialization  //GEN-END:initComponents
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            final JFileChooser jfc = window.createFileDialog();
+            jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            if (jfc.showSaveDialog(window) == JFileChooser.APPROVE_OPTION) {
+                window.runAsyncWithPopup("Please wait...", "Exporting song...", new Runnable() {
+                    public void run() {
+                        try {
+                            if (stopAction.isEnabled())
+                                stopAction.actionPerformed(null);
+                            File dir = jfc.getSelectedFile();
+                            if (!dir.exists())
+                                dir.mkdirs();
+
+                            byte[] buf = new byte[data.sampleRate];
+                            int len = 0;
+                            for (Region region : data.regions)
+                                len += region.length;
+                            int globOff = 0;
+                            for (Region region : data.regions) {
+                                String regionName = "region " + data.regions.indexOf(region);
+                                if (region.comments != null && !region.comments.isEmpty()) {
+                                    String comPart = region.comments;
+                                    int idx = comPart.indexOf('\n');
+                                    if (idx != -1)
+                                        comPart = comPart.substring(0, idx);
+                                    regionName += " (" + comPart + ")";
+                                }
+                                regionName += ".wav";
+
+                                WaveOutputStream wos = new WaveOutputStream(new File(dir, regionName), data.channels, data.sampleRate, data.bits);
+                                int off = 0;
+                                while (off < region.length) {
+                                    final float ratio = ((float) globOff / (float) len);
+                                    window.setBusyMessage(String.format("Exporting song (%.2f%%)", ratio * 100f));
+                                    data.stream.seek(region.offset+off);
+                                    int read = data.stream.read(buf, 0, Math.min(buf.length, region.length - off));
+                                    off += read;
+                                    globOff += read;
+                                    wos.write(buf, 0, read);
+                                }
+                                wos.finish();
+                                wos.close();
+                            }
                         } catch (IOException e1) {
                             e1.printStackTrace();
                         }
@@ -923,7 +1061,7 @@ class WaveOutputStream {
             case 16:
                 for (; off < end; off += bytes) {
                     byte b = data[off];
-                    byte b1 = data[off+1];
+                    byte b1 = data[off + 1];
                     dest.write(b1);
                     dest.write(b);
                 }
@@ -931,9 +1069,9 @@ class WaveOutputStream {
             case 32:
                 for (; off < end; off += bytes) {
                     byte b = data[off];
-                    byte b1 = data[off+1];
-                    byte b2 = data[off+2];
-                    byte b3 = data[off+3];
+                    byte b1 = data[off + 1];
+                    byte b2 = data[off + 2];
+                    byte b3 = data[off + 3];
                     dest.write(b3);
                     dest.write(b2);
                     dest.write(b1);

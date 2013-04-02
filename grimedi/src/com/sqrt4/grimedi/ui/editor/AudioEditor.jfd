@@ -233,7 +233,7 @@ new FormModel {
 		} )
 		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.GridBagLayout ) {
 			"$columnSpecs": "0, 0, 0"
-			"$rowSpecs": "0, 0, 0, 0, 0"
+			"$rowSpecs": "0, 0, 0, 0, 0, 0"
 			"$hGap": 5
 			"$vGap": 5
 			"$alignLeft": true
@@ -305,6 +305,20 @@ new FormModel {
 				"gridx": 1
 				"gridy": 4
 			} )
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.FlowLayout ) ) {
+				name: "panel8"
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "button6"
+					"action": new FormReference( "exportWaveAction" )
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "button7"
+					"action": new FormReference( "exportDirectoryAction" )
+				} )
+			}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+				"gridy": 5
+				"gridwidth": 2
+			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 455, 60 )
 			"size": new java.awt.Dimension( 200, 200 )
@@ -368,6 +382,26 @@ new FormModel {
 			}
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 0, 693 )
+		} )
+		add( new FormNonVisual( "javax.swing.AbstractAction" ) {
+			name: "exportWaveAction"
+			"$action.Name": "Export as WAVE"
+			"$action.ShortDescription": "export the entire song as a WAVE file"
+			auxiliary() {
+				"JavaCodeGenerator.className": "ExportWaveAction"
+			}
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 745 )
+		} )
+		add( new FormNonVisual( "javax.swing.AbstractAction" ) {
+			name: "exportDirectoryAction"
+			"$action.Name": "Export separated regions"
+			"$action.ShortDescription": "export all the regions to their own wave file in the specified directory"
+			auxiliary() {
+				"JavaCodeGenerator.className": "ExportDirectoryAction"
+			}
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 797 )
 		} )
 	}
 }
