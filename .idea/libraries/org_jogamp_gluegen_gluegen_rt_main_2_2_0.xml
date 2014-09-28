@@ -1,0 +1,21 @@
+<component name="libraryTable">
+  <library name="org.jogamp.gluegen:gluegen-rt-main:2.2.0" type="repository">
+    <properties maven-id="org.jogamp.gluegen:gluegen-rt-main:2.2.0" />
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/jogamp/gluegen/gluegen-rt-main/2.2.0/gluegen-rt-main-2.2.0.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/jogamp/gluegen/gluegen-rt/2.2.0/gluegen-rt-2.2.0.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/jogamp/gluegen/gluegen-rt/2.2.0/gluegen-rt-2.2.0-natives-android-armv6.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/jogamp/gluegen/gluegen-rt/2.2.0/gluegen-rt-2.2.0-natives-linux-amd64.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/jogamp/gluegen/gluegen-rt/2.2.0/gluegen-rt-2.2.0-natives-linux-armv6.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/jogamp/gluegen/gluegen-rt/2.2.0/gluegen-rt-2.2.0-natives-linux-armv6hf.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/jogamp/gluegen/gluegen-rt/2.2.0/gluegen-rt-2.2.0-natives-linux-i586.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/jogamp/gluegen/gluegen-rt/2.2.0/gluegen-rt-2.2.0-natives-macosx-universal.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/jogamp/gluegen/gluegen-rt/2.2.0/gluegen-rt-2.2.0-natives-solaris-amd64.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/jogamp/gluegen/gluegen-rt/2.2.0/gluegen-rt-2.2.0-natives-solaris-i586.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/jogamp/gluegen/gluegen-rt/2.2.0/gluegen-rt-2.2.0-natives-windows-amd64.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/jogamp/gluegen/gluegen-rt/2.2.0/gluegen-rt-2.2.0-natives-windows-i586.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

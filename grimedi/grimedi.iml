@@ -9,26 +9,10 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="liblab" />
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="file://$MODULE_DIR$/lib" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-        <jarDirectory url="file://$MODULE_DIR$/lib" recursive="false" />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="file://$MODULE_DIR$/lib/netbeans" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-        <jarDirectory url="file://$MODULE_DIR$/lib/netbeans" recursive="false" />
-      </library>
-    </orderEntry>
+    <orderEntry type="library" name="org.jogamp.jogl:jogl-all-main:2.2.0" level="project" />
+    <orderEntry type="library" name="org.jogamp.gluegen:gluegen:2.2.0" level="project" />
+    <orderEntry type="library" name="org.jogamp.gluegen:gluegen-rt-main:2.2.0" level="project" />
+    <orderEntry type="library" name="org.netbeans.api:org-netbeans-swing-outline:RELEASE80" level="project" />
   </component>
 </module>
 

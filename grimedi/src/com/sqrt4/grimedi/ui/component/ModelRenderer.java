@@ -717,6 +717,16 @@ class OurAnimator implements GLAnimatorControl {
         drawables.remove(glAutoDrawable);
     }
 
+    @Override
+    public UncaughtExceptionHandler getUncaughtExceptionHandler() {
+        return null;
+    }
+
+    @Override
+    public void setUncaughtExceptionHandler(UncaughtExceptionHandler uncaughtExceptionHandler) {
+
+    }
+
     public void setUpdateFPSFrames(int i, PrintStream printStream) {
         frameDelta = 1000 / i;
     }

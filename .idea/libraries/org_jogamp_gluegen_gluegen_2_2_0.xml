@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="org.jogamp.gluegen:gluegen:2.2.0" type="repository">
+    <properties maven-id="org.jogamp.gluegen:gluegen:2.2.0" />
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/jogamp/gluegen/gluegen/2.2.0/gluegen-2.2.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
