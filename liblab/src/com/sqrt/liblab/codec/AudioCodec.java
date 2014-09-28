@@ -31,7 +31,6 @@ public class AudioCodec extends EntryCodec<Audio> {
                     return source.read(dst, off, len);
                 }
             };
-            parseSoundHeader(audio, source);
         } else {
             System.err.println("Currently unsupported audio ext: " + ext);
             return null;

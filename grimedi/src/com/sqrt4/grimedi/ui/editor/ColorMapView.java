@@ -45,7 +45,7 @@ public class ColorMapView extends EditorPanel<ColorMap> {
         colorList.setCellRenderer(new ListCellRenderer() {
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 int color = (Integer) value;
-                JLabel label = new JLabel(String.format("#0%06x", color));
+                JLabel label = new JLabel(String.format("#%06x", color));
                 label.setHorizontalTextPosition(SwingConstants.CENTER);
                 int r = (color >> 16) & 0xff;
                 int g = (color >> 8) & 0xff;
@@ -69,30 +69,25 @@ public class ColorMapView extends EditorPanel<ColorMap> {
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-        splitPane1 = new JSplitPane();
         scrollPane1 = new JScrollPane();
         colorList = new JList();
 
         //======== this ========
         setLayout(new BorderLayout());
 
-        //======== splitPane1 ========
+        //======== scrollPane1 ========
         {
-            splitPane1.setOrientation(JSplitPane.VERTICAL_SPLIT);
-            splitPane1.setResizeWeight(0.8);
 
-            //======== scrollPane1 ========
-            {
-                scrollPane1.setViewportView(colorList);
-            }
-            splitPane1.setTopComponent(scrollPane1);
+            //---- colorList ----
+            colorList.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+            colorList.setVisibleRowCount(0);
+            scrollPane1.setViewportView(colorList);
         }
-        add(splitPane1, BorderLayout.CENTER);
+        add(scrollPane1, BorderLayout.CENTER);
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
-    private JSplitPane splitPane1;
     private JScrollPane scrollPane1;
     private JList colorList;
     // JFormDesigner - End of variables declaration  //GEN-END:variables

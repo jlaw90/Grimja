@@ -35,7 +35,7 @@ public class AudioEditor extends EditorPanel<Audio> {
     private Region _playRegion;
     private Region selected;
     private Jump selectedJump;
-    private Map<Jump, Boolean> activeJumps = new HashMap<Jump, Boolean>();
+    private Map<Jump, Boolean> activeJumps = new HashMap<>();
     private SourceDataLine dataLine;
     private int _currentOffset;
     private Runnable _play = new Runnable() {
@@ -343,28 +343,28 @@ public class AudioEditor extends EditorPanel<Audio> {
             }
             panel1.add(panel2, BorderLayout.SOUTH);
         }
-        add(panel1, BorderLayout.PAGE_END);
+        add(panel1, BorderLayout.SOUTH);
 
         //======== jumpPropertyPanel ========
         {
             jumpPropertyPanel.setLayout(new GridBagLayout());
-            ((GridBagLayout) jumpPropertyPanel.getLayout()).columnWidths = new int[]{0, 0, 0};
-            ((GridBagLayout) jumpPropertyPanel.getLayout()).rowHeights = new int[]{0, 0, 0, 0, 0};
-            ((GridBagLayout) jumpPropertyPanel.getLayout()).columnWeights = new double[]{0.0, 0.0, 1.0E-4};
-            ((GridBagLayout) jumpPropertyPanel.getLayout()).rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 1.0E-4};
+            ((GridBagLayout)jumpPropertyPanel.getLayout()).columnWidths = new int[] {0, 0, 0};
+            ((GridBagLayout)jumpPropertyPanel.getLayout()).rowHeights = new int[] {0, 0, 0, 0, 0};
+            ((GridBagLayout)jumpPropertyPanel.getLayout()).columnWeights = new double[] {0.0, 0.0, 1.0E-4};
+            ((GridBagLayout)jumpPropertyPanel.getLayout()).rowWeights = new double[] {0.0, 0.0, 0.0, 0.0, 1.0E-4};
 
             //---- jumpEnabled ----
             jumpEnabled.setAction(toggleJumpAction);
             jumpPropertyPanel.add(jumpEnabled, new GridBagConstraints(0, 0, 2, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.VERTICAL,
-                    new Insets(0, 0, 5, 0), 0, 0));
+                GridBagConstraints.CENTER, GridBagConstraints.VERTICAL,
+                new Insets(0, 0, 5, 0), 0, 0));
 
             //---- label1 ----
             label1.setText("Target: ");
             label1.setHorizontalAlignment(SwingConstants.TRAILING);
             jumpPropertyPanel.add(label1, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 5, 5), 0, 0));
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                new Insets(0, 0, 5, 5), 0, 0));
 
             //---- targetSelector ----
             targetSelector.addItemListener(new ItemListener() {
@@ -374,15 +374,15 @@ public class AudioEditor extends EditorPanel<Audio> {
                 }
             });
             jumpPropertyPanel.add(targetSelector, new GridBagConstraints(1, 1, 1, 1, 1.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 5, 0), 0, 0));
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                new Insets(0, 0, 5, 0), 0, 0));
 
             //---- label2 ----
             label2.setText("Hook ID: ");
             label2.setHorizontalAlignment(SwingConstants.TRAILING);
             jumpPropertyPanel.add(label2, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 5, 5), 0, 0));
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                new Insets(0, 0, 5, 5), 0, 0));
 
             //---- hookSpinner ----
             hookSpinner.setModel(new SpinnerNumberModel(0, 0, null, 1));
@@ -393,15 +393,15 @@ public class AudioEditor extends EditorPanel<Audio> {
                 }
             });
             jumpPropertyPanel.add(hookSpinner, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 5, 0), 0, 0));
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                new Insets(0, 0, 5, 0), 0, 0));
 
             //---- label3 ----
             label3.setText("Fade delay: ");
             label3.setHorizontalAlignment(SwingConstants.TRAILING);
             jumpPropertyPanel.add(label3, new GridBagConstraints(0, 3, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 5), 0, 0));
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                new Insets(0, 0, 0, 5), 0, 0));
 
             //---- fadeSpinner ----
             fadeSpinner.setModel(new SpinnerNumberModel(0, 0, null, 1));
@@ -412,58 +412,58 @@ public class AudioEditor extends EditorPanel<Audio> {
                 }
             });
             jumpPropertyPanel.add(fadeSpinner, new GridBagConstraints(1, 3, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                new Insets(0, 0, 0, 0), 0, 0));
         }
 
         //======== regionPropertyPanel ========
         {
             regionPropertyPanel.setLayout(new GridBagLayout());
-            ((GridBagLayout) regionPropertyPanel.getLayout()).columnWidths = new int[]{0, 0, 0};
-            ((GridBagLayout) regionPropertyPanel.getLayout()).rowHeights = new int[]{0, 0, 0, 0, 0, 0};
-            ((GridBagLayout) regionPropertyPanel.getLayout()).columnWeights = new double[]{0.0, 0.0, 1.0E-4};
-            ((GridBagLayout) regionPropertyPanel.getLayout()).rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
+            ((GridBagLayout)regionPropertyPanel.getLayout()).columnWidths = new int[] {0, 0, 0};
+            ((GridBagLayout)regionPropertyPanel.getLayout()).rowHeights = new int[] {0, 0, 0, 0, 0, 0};
+            ((GridBagLayout)regionPropertyPanel.getLayout()).columnWeights = new double[] {0.0, 0.0, 1.0E-4};
+            ((GridBagLayout)regionPropertyPanel.getLayout()).rowWeights = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
 
             //---- label4 ----
             label4.setText("Start: ");
             label4.setHorizontalAlignment(SwingConstants.TRAILING);
             regionPropertyPanel.add(label4, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 5, 5), 0, 0));
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                new Insets(0, 0, 5, 5), 0, 0));
 
             //---- startLabel ----
             startLabel.setText("text");
             regionPropertyPanel.add(startLabel, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 5, 0), 0, 0));
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                new Insets(0, 0, 5, 0), 0, 0));
 
             //---- label5 ----
             label5.setText("Duration: ");
             label5.setHorizontalAlignment(SwingConstants.TRAILING);
             regionPropertyPanel.add(label5, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 5, 5), 0, 0));
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                new Insets(0, 0, 5, 5), 0, 0));
 
             //---- durationLabel ----
             durationLabel.setText("text");
             regionPropertyPanel.add(durationLabel, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 5, 0), 0, 0));
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                new Insets(0, 0, 5, 0), 0, 0));
 
             //---- label6 ----
             label6.setText("Comments: ");
             label6.setHorizontalAlignment(SwingConstants.TRAILING);
             regionPropertyPanel.add(label6, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL,
-                    new Insets(0, 0, 5, 5), 0, 0));
+                GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL,
+                new Insets(0, 0, 5, 5), 0, 0));
 
             //======== scrollPane2 ========
             {
                 scrollPane2.setViewportView(commentArea);
             }
             regionPropertyPanel.add(scrollPane2, new GridBagConstraints(1, 2, 1, 1, 1.0, 1.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 5, 0), 0, 0));
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                new Insets(0, 0, 5, 0), 0, 0));
 
             //======== panel4 ========
             {
@@ -474,8 +474,8 @@ public class AudioEditor extends EditorPanel<Audio> {
                 panel4.add(button4);
             }
             regionPropertyPanel.add(panel4, new GridBagConstraints(1, 3, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 5, 0), 0, 0));
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                new Insets(0, 0, 5, 0), 0, 0));
 
             //======== panel7 ========
             {
@@ -486,77 +486,77 @@ public class AudioEditor extends EditorPanel<Audio> {
                 panel7.add(button5);
             }
             regionPropertyPanel.add(panel7, new GridBagConstraints(0, 4, 2, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                new Insets(0, 0, 0, 0), 0, 0));
         }
 
         //======== soundPropertyPanel ========
         {
             soundPropertyPanel.setLayout(new GridBagLayout());
-            ((GridBagLayout) soundPropertyPanel.getLayout()).columnWidths = new int[]{0, 0, 0, 0};
-            ((GridBagLayout) soundPropertyPanel.getLayout()).rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0};
-            ((GridBagLayout) soundPropertyPanel.getLayout()).columnWeights = new double[]{0.0, 0.0, 0.0, 1.0E-4};
-            ((GridBagLayout) soundPropertyPanel.getLayout()).rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
+            ((GridBagLayout)soundPropertyPanel.getLayout()).columnWidths = new int[] {0, 0, 0, 0};
+            ((GridBagLayout)soundPropertyPanel.getLayout()).rowHeights = new int[] {0, 0, 0, 0, 0, 0, 0};
+            ((GridBagLayout)soundPropertyPanel.getLayout()).columnWeights = new double[] {0.0, 0.0, 0.0, 1.0E-4};
+            ((GridBagLayout)soundPropertyPanel.getLayout()).rowWeights = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
 
             //---- name ----
             name.setText("text");
             name.setFont(new Font("Tahoma", Font.BOLD, 11));
             name.setHorizontalAlignment(SwingConstants.CENTER);
             soundPropertyPanel.add(name, new GridBagConstraints(0, 0, 2, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 5, 5), 0, 0));
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                new Insets(0, 0, 5, 5), 0, 0));
 
             //---- label7 ----
             label7.setText("Sample Rate: ");
             label7.setHorizontalAlignment(SwingConstants.TRAILING);
             soundPropertyPanel.add(label7, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 5, 5), 0, 0));
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                new Insets(0, 0, 5, 5), 0, 0));
 
             //---- sampleRate ----
             sampleRate.setText("text");
             soundPropertyPanel.add(sampleRate, new GridBagConstraints(1, 1, 1, 1, 1.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 5, 5), 0, 0));
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                new Insets(0, 0, 5, 5), 0, 0));
 
             //---- label8 ----
             label8.setText("Channels: ");
             label8.setHorizontalAlignment(SwingConstants.TRAILING);
             soundPropertyPanel.add(label8, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 5, 5), 0, 0));
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                new Insets(0, 0, 5, 5), 0, 0));
 
             //---- numChannels ----
             numChannels.setText("text");
             soundPropertyPanel.add(numChannels, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 5, 5), 0, 0));
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                new Insets(0, 0, 5, 5), 0, 0));
 
             //---- label9 ----
             label9.setText("Bits per sample: ");
             label9.setHorizontalAlignment(SwingConstants.TRAILING);
             soundPropertyPanel.add(label9, new GridBagConstraints(0, 3, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 5, 5), 0, 0));
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                new Insets(0, 0, 5, 5), 0, 0));
 
             //---- bitsPerSample ----
             bitsPerSample.setText("text");
             soundPropertyPanel.add(bitsPerSample, new GridBagConstraints(1, 3, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 5, 5), 0, 0));
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                new Insets(0, 0, 5, 5), 0, 0));
 
             //---- label10 ----
             label10.setText("Birate: ");
             label10.setHorizontalAlignment(SwingConstants.TRAILING);
             soundPropertyPanel.add(label10, new GridBagConstraints(0, 4, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 5, 5), 0, 0));
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                new Insets(0, 0, 5, 5), 0, 0));
 
             //---- bitrate ----
             bitrate.setText("text");
             soundPropertyPanel.add(bitrate, new GridBagConstraints(1, 4, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 5, 5), 0, 0));
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                new Insets(0, 0, 5, 5), 0, 0));
 
             //======== panel8 ========
             {
@@ -571,8 +571,8 @@ public class AudioEditor extends EditorPanel<Audio> {
                 panel8.add(button7);
             }
             soundPropertyPanel.add(panel8, new GridBagConstraints(0, 5, 2, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 5), 0, 0));
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                new Insets(0, 0, 0, 5), 0, 0));
         }
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
@@ -884,7 +884,7 @@ public class AudioEditor extends EditorPanel<Audio> {
             name += ".wav";
             jfc.setSelectedFile(new File(name));
             if (jfc.showSaveDialog(window) == JFileChooser.APPROVE_OPTION) {
-                window.runAsyncWithPopup("Please wait...", "Exporting region...", new Runnable() {
+                window.runAsyncWithPopup("Exporting region...", new Runnable() {
                     public void run() {
                         try {
                             if (stopAction.isEnabled())
@@ -907,7 +907,7 @@ public class AudioEditor extends EditorPanel<Audio> {
                             e1.printStackTrace();
                         }
                     }
-                });
+                }, true);
             }
         }
     }
@@ -929,7 +929,7 @@ public class AudioEditor extends EditorPanel<Audio> {
             name += ".wav";
             jfc.setSelectedFile(new File(name));
             if (jfc.showSaveDialog(window) == JFileChooser.APPROVE_OPTION) {
-                window.runAsyncWithPopup("Please wait...", "Exporting song...", new Runnable() {
+                window.runAsyncWithPopup("Exporting song...", new Runnable() {
                     public void run() {
                         try {
                             if (stopAction.isEnabled())
@@ -959,7 +959,7 @@ public class AudioEditor extends EditorPanel<Audio> {
                             e1.printStackTrace();
                         }
                     }
-                });
+                }, true);
             }
         }
     }
@@ -976,7 +976,7 @@ public class AudioEditor extends EditorPanel<Audio> {
             final JFileChooser jfc = window.createFileDialog();
             jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             if (jfc.showSaveDialog(window) == JFileChooser.APPROVE_OPTION) {
-                window.runAsyncWithPopup("Please wait...", "Exporting song...", new Runnable() {
+                window.runAsyncWithPopup("Exporting song...", new Runnable() {
                     public void run() {
                         try {
                             if (stopAction.isEnabled())
@@ -1019,7 +1019,7 @@ public class AudioEditor extends EditorPanel<Audio> {
                             e1.printStackTrace();
                         }
                     }
-                });
+                }, true);
             }
         }
     }

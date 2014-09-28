@@ -28,7 +28,7 @@ public abstract class EntryCodec<T extends LabEntry> {
      * @throws IOException
      */
     public final T read(DataSource edp) throws IOException {
-       String key = edp.getName();
+       String key = edp.container.toString() + "." + edp.getName();
        if(cache.containsKey(key)) {
            WeakReference<T> ref = cache.get(key);
            T t = ref.get();

@@ -4,19 +4,10 @@
 
 package com.sqrt4.grimedi.ui.editor;
 
-import com.jogamp.opengl.util.awt.Screenshot;
 import com.sqrt.liblab.entry.video.AudioTrack;
 import com.sqrt.liblab.entry.video.Video;
-import com.sqrt4.grimedi.ui.component.FrameCallback;
 import com.sqrt4.grimedi.util.AnimatedGifEncoder;
 
-import javax.imageio.IIOImage;
-import javax.imageio.ImageIO;
-import javax.imageio.ImageTypeSpecifier;
-import javax.imageio.ImageWriter;
-import javax.imageio.metadata.IIOMetadata;
-import javax.imageio.stream.ImageOutputStream;
-import javax.media.opengl.GL2;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
@@ -29,8 +20,6 @@ import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.LinkedList;
 
 /**
  * @author James Lawrence
@@ -229,7 +218,7 @@ public class VideoViewer extends EditorPanel<Video> {
         }
 
         public void actionPerformed(ActionEvent e) {
-            window.runAsyncWithPopup("Please wait...", "Decoding video...", new Runnable() {
+            window.runAsyncWithPopup("Decoding video...", new Runnable() {
                 public void run() {
                     window.setBusyMessage("Generating GIF (frame 1/" + data.numFrames + ")");
                     try {
@@ -259,7 +248,7 @@ public class VideoViewer extends EditorPanel<Video> {
                         e.printStackTrace();
                     }
                 }
-            });
+            }, true);
         }
     }
 }

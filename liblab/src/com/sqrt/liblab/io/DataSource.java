@@ -2,10 +2,9 @@ package com.sqrt.liblab.io;
 
 import com.sqrt.liblab.LabFile;
 import com.sqrt.liblab.threed.Angle;
-import com.sqrt.liblab.threed.Vector2;
-import com.sqrt.liblab.threed.Vector3;
+import com.sqrt.liblab.threed.Vector2f;
+import com.sqrt.liblab.threed.Vector3f;
 
-import java.io.DataInput;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -251,12 +250,12 @@ public abstract class DataSource extends InputStream {
     }
 
     /**
-     * Reads a vector2 from the stream (2 floats encapsulated in a Vector2)
+     * Reads a vector2 from the stream (2 floats encapsulated in a Vector2f)
      * @return the vector
      * @throws IOException
      */
-    public Vector2 readVector2() throws IOException {
-        return new Vector2(readFloatLE(), readFloatLE());
+    public Vector2f readVector2f() throws IOException {
+        return new Vector2f(readFloatLE(), readFloatLE());
     }
 
     /**
@@ -264,8 +263,8 @@ public abstract class DataSource extends InputStream {
      * @return the vector
      * @throws IOException
      */
-    public Vector3 readVector3() throws IOException {
-        return new Vector3(readFloatLE(), readFloatLE(), readFloatLE());
+    public Vector3f readVector3f() throws IOException {
+        return new Vector3f(readFloatLE(), readFloatLE(), readFloatLE());
     }
 
     public String toString() {

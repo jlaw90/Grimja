@@ -14,9 +14,10 @@ import java.awt.event.KeyEvent;
  * @author James Lawrence
  */
 public class BusyDialog extends JDialog {
+    private boolean canCancel;
     private Action cancelCallback;
 
-    public BusyDialog(Frame owner) {
+    public BusyDialog(Window owner) {
         super(owner);
         initComponents();
     }
@@ -31,11 +32,14 @@ public class BusyDialog extends JDialog {
         pack();
     }
 
-    public void setCancelCallback(Action a) {
-        this.cancelCallback = a;
-        boolean cancellable = cancelCallback != null;
-        cancelButton.setVisible(cancellable);
-        cancelAction.setEnabled(cancellable);
+    public void setCancelCallback(Action callback) {
+        this.cancelCallback = callback;
+    }
+
+    public void setCancellable(boolean b) {
+        canCancel = b;
+        cancelAction.setEnabled(canCancel);
+        pack();
     }
 
     private void keyPressed(KeyEvent e) {

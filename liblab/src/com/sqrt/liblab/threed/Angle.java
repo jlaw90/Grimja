@@ -9,6 +9,9 @@ public class Angle {
      */
     public static final Angle zero = new Angle(0);
 
+
+    private boolean hasRads;
+    private float rads;
     /**
      * The angle in degrees
      */
@@ -95,5 +98,24 @@ public class Angle {
      */
     public Angle sub(Angle a) {
         return new Angle(degrees - a.degrees);
+    }
+
+    /**
+     * Returns this angle in radians
+     * @return this angle in radians
+     */
+    public float radians() {
+        if(!hasRads) {
+            rads = (float) Math.toRadians(degrees);
+            hasRads = true;
+        }
+        return rads;
+    }
+
+    public static Angle fromRadians(float rads) {
+        Angle a = new Angle((float) Math.toDegrees(rads));
+        a.hasRads = true;
+        a.rads = rads;
+        return a;
     }
 }

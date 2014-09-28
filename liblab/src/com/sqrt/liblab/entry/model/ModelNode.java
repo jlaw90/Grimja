@@ -2,7 +2,7 @@ package com.sqrt.liblab.entry.model;
 
 import com.sqrt.liblab.threed.Angle;
 import com.sqrt.liblab.threed.Bounds3;
-import com.sqrt.liblab.threed.Vector3;
+import com.sqrt.liblab.threed.Vector3f;
 
 /**
  * A ModelNode to be used for animation
@@ -31,11 +31,11 @@ public class ModelNode {
     /**
      * The position of this node
      */
-    public Vector3 pos;
+    public Vector3f pos;
     /**
      * The pivot point for rotations
      */
-    public Vector3 pivot;
+    public Vector3f pivot;
     /**
      * The yaw rotation
      */
@@ -52,7 +52,7 @@ public class ModelNode {
     public int childIdx = -1, siblingIdx = -1, parentIdx = -1;
     public boolean hierarchyVisible = true;
     public boolean meshVisible = true;
-    public Vector3 animPos = Vector3.zero;
+    public Vector3f animPos = Vector3f.zero;
     public Angle animYaw = Angle.zero, animPitch = Angle.zero, animRoll = Angle.zero;
 
     public String toString() {
@@ -64,7 +64,7 @@ public class ModelNode {
      * @param pos the position
      * @return the bounds
      */
-    public Bounds3 getBounds(Vector3 pos) {
+    public Bounds3 getBounds(Vector3f pos) {
         Bounds3 ourBounds = null;
         pos = pos.add(this.pos);
         if (mesh != null)

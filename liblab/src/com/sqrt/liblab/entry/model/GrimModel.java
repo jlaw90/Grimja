@@ -2,8 +2,9 @@ package com.sqrt.liblab.entry.model;
 
 import com.sqrt.liblab.entry.LabEntry;
 import com.sqrt.liblab.LabFile;
+import com.sqrt.liblab.threed.Angle;
 import com.sqrt.liblab.threed.Bounds3;
-import com.sqrt.liblab.threed.Vector3;
+import com.sqrt.liblab.threed.Vector3f;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -23,7 +24,7 @@ public class GrimModel extends LabEntry {
     /**
      * The 3d offset of this model
      */
-    public Vector3 off;
+    public Vector3f off;
     /**
      * The radius of a bounding sphere?
      */
@@ -38,7 +39,7 @@ public class GrimModel extends LabEntry {
      * @return the bounds
      */
     public Bounds3 getBounds() {
-        return hierarchy.get(0).getBounds(new Vector3(0, 0, 0));
+        return hierarchy.get(0).getBounds(new Vector3f(0, 0, 0));
     }
 
     /**
@@ -54,5 +55,12 @@ public class GrimModel extends LabEntry {
                 return node;
         }
         return null;
+    }
+
+    public void reset() {
+        for(ModelNode node: hierarchy) {
+            node.animPos = Vector3f.zero;
+            node.animYaw = node.animRoll = node.animPitch = Angle.zero;
+        }
     }
 }

@@ -202,6 +202,7 @@ public class HexView extends JPanel {
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+        // Generated using JFormDesigner non-commercial license
         createUIComponents();
 
         panel1 = new JScrollPane();
@@ -218,6 +219,7 @@ public class HexView extends JPanel {
     }
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
+    // Generated using JFormDesigner non-commercial license
     private JScrollPane panel1;
     private JTable hexTable;
     // JFormDesigner - End of variables declaration  //GEN-END:variables

@@ -7,19 +7,19 @@ public class Bounds3 {
     /**
      * The minimum vector of this bounding box
      */
-    public final Vector3 min;
+    public final Vector3f min;
     /**
      * The maximum vector of this bounding box
      */
-    public final Vector3 max;
+    public final Vector3f max;
     /**
      * The center of this bounding box
      */
-    public final Vector3 center;
+    public final Vector3f center;
     /**
      * The extents of this bounding box
      */
-    public final Vector3 extent;
+    public final Vector3f extent;
 
 
     /**
@@ -27,7 +27,7 @@ public class Bounds3 {
      * @param min the minimum vector
      * @param max the maximum vector
      */
-    public Bounds3(Vector3 min, Vector3 max) {
+    public Bounds3(Vector3f min, Vector3f max) {
         this.min = min;
         this.max = max;
         this.extent = max.sub(min).div(2f);
@@ -41,8 +41,8 @@ public class Bounds3 {
      */
     public Bounds3 encapsulate(Bounds3 b) {
         return new Bounds3(
-                new Vector3(Math.min(b.min.x, min.x), Math.min(b.min.y, min.y), Math.min(b.min.z, min.z)),
-                new Vector3(Math.max(b.max.x, max.x), Math.max(b.max.y, max.y), Math.max(b.max.z, max.z))
+                new Vector3f(Math.min(b.min.x, min.x), Math.min(b.min.y, min.y), Math.min(b.min.z, min.z)),
+                new Vector3f(Math.max(b.max.x, max.x), Math.max(b.max.y, max.y), Math.max(b.max.z, max.z))
         );
     }
 }

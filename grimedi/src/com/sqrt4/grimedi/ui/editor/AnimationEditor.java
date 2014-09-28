@@ -4,7 +4,9 @@
 
 package com.sqrt4.grimedi.ui.editor;
 
-import com.jogamp.opengl.util.awt.Screenshot;
+import java.awt.event.*;
+import com.jogamp.opengl.util.GLReadBufferUtil;
+import com.jogamp.opengl.util.awt.AWTGLReadBufferUtil;
 import com.sqrt.liblab.LabCollection;
 import com.sqrt.liblab.codec.CodecMapper;
 import com.sqrt.liblab.codec.EntryCodec;
@@ -15,31 +17,21 @@ import com.sqrt.liblab.entry.model.anim.AnimationNode;
 import com.sqrt.liblab.entry.model.anim.KeyFrame;
 import com.sqrt.liblab.io.DataSource;
 import com.sqrt.liblab.threed.Angle;
-import com.sqrt.liblab.threed.Vector3;
+import com.sqrt.liblab.threed.Vector3f;
 import com.sqrt4.grimedi.ui.component.FrameCallback;
 import com.sqrt4.grimedi.ui.component.ModelRenderer;
 import com.sqrt4.grimedi.util.AnimatedGifEncoder;
 
-import javax.imageio.IIOImage;
-import javax.imageio.ImageIO;
-import javax.imageio.ImageTypeSpecifier;
-import javax.imageio.ImageWriter;
-import javax.imageio.metadata.IIOMetadata;
-import javax.imageio.stream.ImageOutputStream;
 import javax.media.opengl.GL2;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Vector;
@@ -49,15 +41,30 @@ import java.util.Vector;
  */
 public class AnimationEditor extends EditorPanel<Animation> {
     private LabCollection _container;
-    private boolean _exporting;
-    private Timer animTimer = new Timer(1000 / 15, new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-            if (!isVisible())
-                stopAction.actionPerformed(null);
-            else
-                frameSlider.setValue((frameSlider.getValue() + 1) % data.numFrames);
+    private boolean _animating;
+    private Runnable animator = new Runnable() {
+        public void run() {
+            long last = System.currentTimeMillis();
+            float frame = 0f;
+            while(_animating) {
+                int fps = (int) fpsSelect.getValue();
+                int frameTime = 1000/fps;
+                long time = System.currentTimeMillis();
+                long delta = time - last;
+                last = time;
+                frame += ((float) delta / (float) frameTime);
+                while(frame >= data.numFrames)
+                    frame -= data.numFrames;
+                setFrame(frame);
+                try {
+                    Thread.sleep(10);
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
+            }
         }
-    });
+    };
+    private Thread animateThread;
 
     public AnimationEditor() {
         initComponents();
@@ -75,7 +82,7 @@ public class AnimationEditor extends EditorPanel<Animation> {
             allModels.addAll(data.container.container.findByType(GrimModel.class));
             _container = data.container.container;
             modelSelector.setModel(new DefaultComboBoxModel(allModels));
-            modelSelectorPopupMenuWillBecomeInvisible(null);
+            modelSelectorItemStateChanged(null);
         }
         renderer.setModel(renderer.getModel()); // Forces the renderer to reset the view...
         stopAction.actionPerformed(null);
@@ -84,14 +91,12 @@ public class AnimationEditor extends EditorPanel<Animation> {
         frameSlider.setValue(0);
     }
 
-    private void changeFrame(ChangeEvent e) {
-        int frame = frameSlider.getValue();
-
+    public void setFrame(float frame) {
+        // Todo: move most of this into the model...
+        if(frameSlider.getValue() != (int) frame)
+            frameSlider.setValue((int) frame);
         // Reset model...
-        for (ModelNode node : renderer.getModel().hierarchy) {
-            node.animRoll = node.animPitch = node.animYaw = Angle.zero;
-            node.animPos = Vector3.zero;
-        }
+        renderer.getModel().reset();
 
         if (data.nodes.isEmpty())
             return;
@@ -121,7 +126,7 @@ public class AnimationEditor extends EditorPanel<Animation> {
             KeyFrame last = node.entries.get(low);
 
             float dt = frame - last.frame;
-            Vector3 pos = last.pos;
+            Vector3f pos = last.pos;
             Angle pitch = last.pitch;
             Angle yaw = last.yaw;
             Angle roll = last.roll;
@@ -141,7 +146,11 @@ public class AnimationEditor extends EditorPanel<Animation> {
         renderer.refreshModelCache();
     }
 
-    private void modelSelectorPopupMenuWillBecomeInvisible(PopupMenuEvent e) {
+    private void changeFrame(ChangeEvent e) {
+        setFrame(frameSlider.getValue());
+    }
+
+    private void modelSelectorItemStateChanged(ItemEvent e) {
         DataSource selected = (DataSource) modelSelector.getSelectedItem();
         try {
             selected.seek(0);
@@ -158,7 +167,6 @@ public class AnimationEditor extends EditorPanel<Animation> {
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-        panel2 = new JSplitPane();
         renderer = new ModelRenderer();
         panel3 = new JPanel();
         label1 = new JLabel();
@@ -167,7 +175,7 @@ public class AnimationEditor extends EditorPanel<Animation> {
         label2 = new JLabel();
         frameSlider = new JSlider();
         label3 = new JLabel();
-        spinner1 = new JSpinner();
+        fpsSelect = new JSpinner();
         panel1 = new JPanel();
         playButton = new JButton();
         button1 = new JButton();
@@ -178,123 +186,110 @@ public class AnimationEditor extends EditorPanel<Animation> {
 
         //======== this ========
         setLayout(new BorderLayout());
+        add(renderer, BorderLayout.CENTER);
 
-        //======== panel2 ========
+        //======== panel3 ========
         {
-            panel2.setOrientation(JSplitPane.VERTICAL_SPLIT);
-            panel2.setResizeWeight(0.7);
-            panel2.setTopComponent(renderer);
+            panel3.setLayout(new GridBagLayout());
+            ((GridBagLayout)panel3.getLayout()).columnWidths = new int[] {0, 0, 0, 0};
+            ((GridBagLayout)panel3.getLayout()).rowHeights = new int[] {0, 0, 0, 0};
+            ((GridBagLayout)panel3.getLayout()).columnWeights = new double[] {0.0, 1.0, 1.0, 1.0E-4};
+            ((GridBagLayout)panel3.getLayout()).rowWeights = new double[] {0.0, 1.0, 0.0, 1.0E-4};
 
-            //======== panel3 ========
+            //---- label1 ----
+            label1.setText("Target model: ");
+            label1.setHorizontalAlignment(SwingConstants.TRAILING);
+            panel3.add(label1, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                new Insets(0, 0, 0, 0), 0, 0));
+
+            //---- modelSelector ----
+            modelSelector.addItemListener(new ItemListener() {
+                @Override
+                public void itemStateChanged(ItemEvent e) {
+                    modelSelectorItemStateChanged(e);
+                }
+            });
+            panel3.add(modelSelector, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                new Insets(0, 0, 0, 0), 0, 0));
+
+            //======== panel4 ========
             {
-                panel3.setLayout(new GridBagLayout());
-                ((GridBagLayout) panel3.getLayout()).columnWidths = new int[]{0, 0, 0, 0};
-                ((GridBagLayout) panel3.getLayout()).rowHeights = new int[]{0, 0, 0, 0};
-                ((GridBagLayout) panel3.getLayout()).columnWeights = new double[]{0.0, 1.0, 1.0, 1.0E-4};
-                ((GridBagLayout) panel3.getLayout()).rowWeights = new double[]{0.0, 1.0, 0.0, 1.0E-4};
+                panel4.setBorder(new TitledBorder("Anim control"));
+                panel4.setLayout(new GridBagLayout());
+                ((GridBagLayout)panel4.getLayout()).columnWidths = new int[] {0, 0, 0};
+                ((GridBagLayout)panel4.getLayout()).rowHeights = new int[] {0, 0, 0, 0};
+                ((GridBagLayout)panel4.getLayout()).columnWeights = new double[] {0.0, 1.0, 1.0E-4};
+                ((GridBagLayout)panel4.getLayout()).rowWeights = new double[] {1.0, 0.0, 0.0, 1.0E-4};
 
-                //---- label1 ----
-                label1.setText("Target model: ");
-                label1.setHorizontalAlignment(SwingConstants.TRAILING);
-                panel3.add(label1, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 0, 0), 0, 0));
+                //---- label2 ----
+                label2.setText("Frame: ");
+                label2.setHorizontalAlignment(SwingConstants.TRAILING);
+                panel4.add(label2, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 0, 0), 0, 0));
 
-                //---- modelSelector ----
-                modelSelector.addPopupMenuListener(new PopupMenuListener() {
+                //---- frameSlider ----
+                frameSlider.setSnapToTicks(true);
+                frameSlider.setMajorTickSpacing(1);
+                frameSlider.setMaximum(50);
+                frameSlider.setPaintTicks(true);
+                frameSlider.setValue(0);
+                frameSlider.addChangeListener(new ChangeListener() {
                     @Override
-                    public void popupMenuCanceled(PopupMenuEvent e) {
-                    }
-
-                    @Override
-                    public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-                        modelSelectorPopupMenuWillBecomeInvisible(e);
-                    }
-
-                    @Override
-                    public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+                    public void stateChanged(ChangeEvent e) {
+                        changeFrame(e);
                     }
                 });
-                panel3.add(modelSelector, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 0, 0), 0, 0));
+                panel4.add(frameSlider, new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 0, 0), 0, 0));
 
-                //======== panel4 ========
+                //---- label3 ----
+                label3.setText("FPS: ");
+                label3.setHorizontalAlignment(SwingConstants.TRAILING);
+                panel4.add(label3, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 0, 0), 0, 0));
+
+                //---- fpsSelect ----
+                fpsSelect.setModel(new SpinnerNumberModel(15, 1, null, 1));
+                panel4.add(fpsSelect, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 0, 0), 0, 0));
+
+                //======== panel1 ========
                 {
-                    panel4.setBorder(new TitledBorder("Anim control"));
-                    panel4.setLayout(new GridBagLayout());
-                    ((GridBagLayout) panel4.getLayout()).columnWidths = new int[]{0, 0, 0};
-                    ((GridBagLayout) panel4.getLayout()).rowHeights = new int[]{0, 0, 0, 0};
-                    ((GridBagLayout) panel4.getLayout()).columnWeights = new double[]{0.0, 1.0, 1.0E-4};
-                    ((GridBagLayout) panel4.getLayout()).rowWeights = new double[]{1.0, 0.0, 0.0, 1.0E-4};
+                    panel1.setLayout(new FlowLayout());
 
-                    //---- label2 ----
-                    label2.setText("Frame: ");
-                    label2.setHorizontalAlignment(SwingConstants.TRAILING);
-                    panel4.add(label2, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 0, 0), 0, 0));
+                    //---- playButton ----
+                    playButton.setAction(playAction);
+                    panel1.add(playButton);
 
-                    //---- frameSlider ----
-                    frameSlider.setSnapToTicks(true);
-                    frameSlider.setMajorTickSpacing(1);
-                    frameSlider.setMaximum(50);
-                    frameSlider.setPaintTicks(true);
-                    frameSlider.setValue(0);
-                    frameSlider.addChangeListener(new ChangeListener() {
-                        @Override
-                        public void stateChanged(ChangeEvent e) {
-                            changeFrame(e);
-                        }
-                    });
-                    panel4.add(frameSlider, new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 0, 0), 0, 0));
+                    //---- button1 ----
+                    button1.setText("text");
+                    button1.setAction(stopAction);
+                    button1.setEnabled(false);
+                    panel1.add(button1);
 
-                    //---- label3 ----
-                    label3.setText("FPS: ");
-                    label3.setHorizontalAlignment(SwingConstants.TRAILING);
-                    panel4.add(label3, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 0, 0), 0, 0));
-                    panel4.add(spinner1, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 0, 0), 0, 0));
-
-                    //======== panel1 ========
-                    {
-                        panel1.setLayout(new FlowLayout());
-
-                        //---- playButton ----
-                        playButton.setAction(playAction);
-                        panel1.add(playButton);
-
-                        //---- button1 ----
-                        button1.setText("text");
-                        button1.setAction(stopAction);
-                        button1.setEnabled(false);
-                        panel1.add(button1);
-
-                        //---- button2 ----
-                        button2.setAction(exportGif);
-                        panel1.add(button2);
-                    }
-                    panel4.add(panel1, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 0, 0), 0, 0));
+                    //---- button2 ----
+                    button2.setAction(exportGif);
+                    panel1.add(button2);
                 }
-                panel3.add(panel4, new GridBagConstraints(1, 1, 2, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 0, 0), 0, 0));
+                panel4.add(panel1, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 0, 0), 0, 0));
             }
-            panel2.setBottomComponent(panel3);
+            panel3.add(panel4, new GridBagConstraints(1, 1, 2, 1, 0.0, 0.0,
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                new Insets(0, 0, 0, 0), 0, 0));
         }
-        add(panel2, BorderLayout.CENTER);
+        add(panel3, BorderLayout.PAGE_END);
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
-    private JSplitPane panel2;
     private ModelRenderer renderer;
     private JPanel panel3;
     private JLabel label1;
@@ -303,7 +298,7 @@ public class AnimationEditor extends EditorPanel<Animation> {
     private JLabel label2;
     private JSlider frameSlider;
     private JLabel label3;
-    private JSpinner spinner1;
+    private JSpinner fpsSelect;
     private JPanel panel1;
     private JButton playButton;
     private JButton button1;
@@ -322,7 +317,11 @@ public class AnimationEditor extends EditorPanel<Animation> {
         }
 
         public void actionPerformed(ActionEvent e) {
-            animTimer.start();
+            _animating = true;
+            animateThread = new Thread(animator);
+            animateThread.setPriority(1);
+            animateThread.setDaemon(true);
+            animateThread.start();
             stopAction.setEnabled(true);
             setEnabled(false);
         }
@@ -337,9 +336,16 @@ public class AnimationEditor extends EditorPanel<Animation> {
         }
 
         public void actionPerformed(ActionEvent e) {
-            animTimer.stop();
-            playAction.setEnabled(true);
+            _animating = false;
             setEnabled(false);
+            try {
+                if(animateThread != null)
+                    animateThread.join();
+                animateThread = null;
+            } catch (InterruptedException e1) {
+                /**/
+            }
+            playAction.setEnabled(true);
         }
     }
 
@@ -352,7 +358,8 @@ public class AnimationEditor extends EditorPanel<Animation> {
         }
 
         public void actionPerformed(ActionEvent e) {
-            window.runAsyncWithPopup("Please wait...", "Rendering animation (frame 1/" + data.numFrames + ")", new Runnable() {
+            stopAction.actionPerformed(null);
+            window.runAsyncWithPopup("Rendering animation (frame 1/" + data.numFrames + ")", new Runnable() {
                 public void run() {
                     try {
                         final Queue<BufferedImage> images = new LinkedList<BufferedImage>();
@@ -363,6 +370,7 @@ public class AnimationEditor extends EditorPanel<Animation> {
                         File file = File.createTempFile("anim", ".gif");
                         age.start(file.getAbsolutePath());
                         frameSlider.setValue(0);
+                        final AWTGLReadBufferUtil screenshot = new AWTGLReadBufferUtil(renderer.getGL().getGLProfile(), true);
                         FrameCallback screenshotCallback = new FrameCallback() {
                             public void preDisplay(GL2 gl2) {
                             }
@@ -371,7 +379,7 @@ public class AnimationEditor extends EditorPanel<Animation> {
                                 int frame = frameSlider.getValue();
 
                                 synchronized (images) {
-                                    images.add(Screenshot.readToBufferedImage(renderer.getViewportWidth(), renderer.getViewportHeight()));
+                                    images.add(screenshot.readPixelsToBufferedImage(gl2, true));
                                     images.notify();
                                 }
                                 frameSlider.setValue(frameSlider.getValue() + 1);
@@ -411,7 +419,7 @@ public class AnimationEditor extends EditorPanel<Animation> {
                         e.printStackTrace();
                     }
                 }
-            });
+            }, true);
         }
     }
 }

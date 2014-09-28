@@ -5,48 +5,37 @@ new FormModel {
 	root: new FormRoot {
 		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
 			name: "this"
-			add( new FormContainer( "javax.swing.JSplitPane", new FormLayoutManager( class javax.swing.JSplitPane ) ) {
-				name: "panel3"
-				"orientation": 0
-				"resizeWeight": 0.8
-				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
-					name: "panel4"
-					add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
-						name: "panel1"
-						add( new FormComponent( "javax.swing.JLabel" ) {
-							name: "preview"
-							"horizontalAlignment": 0
-						} )
-					}, new FormLayoutConstraints( class java.lang.String ) {
-						"value": "Center"
-					} )
-					add( new FormComponent( "com.sqrt4.grimedi.ui.component.ColorMapSelector" ) {
-						name: "colorMapSelector"
-						auxiliary() {
-							"JavaCodeGenerator.customCreate": true
-						}
-						addEvent( new FormEvent( "java.awt.event.ItemListener", "itemStateChanged", "colorMapSelected", true ) )
-					}, new FormLayoutConstraints( class java.lang.String ) {
-						"value": "South"
-					} )
-				}, new FormLayoutConstraints( class java.lang.String ) {
-					"value": "left"
+			add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+				name: "scrollPane1"
+				"verticalScrollBarPolicy": 21
+				add( new FormComponent( "javax.swing.JList" ) {
+					name: "imageList"
+					"visibleRowCount": 0
+					"layoutOrientation": 2
+					addEvent( new FormEvent( "javax.swing.event.ListSelectionListener", "valueChanged", "imageSelected", true ) )
 				} )
-				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
-					name: "panel2"
-					add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
-						name: "scrollPane1"
-						add( new FormComponent( "javax.swing.JList" ) {
-							name: "imageList"
-							"visibleRowCount": 0
-							"layoutOrientation": 2
-							addEvent( new FormEvent( "javax.swing.event.ListSelectionListener", "valueChanged", "imageSelected", true ) )
-						} )
-					}, new FormLayoutConstraints( class java.lang.String ) {
-						"value": "Center"
+			}, new FormLayoutConstraints( class java.lang.String ) {
+				"value": "South"
+			} )
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+				name: "panel4"
+				add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+					name: "panel1"
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "preview"
+						"horizontalAlignment": 0
 					} )
 				}, new FormLayoutConstraints( class java.lang.String ) {
-					"value": "right"
+					"value": "Center"
+				} )
+				add( new FormComponent( "com.sqrt4.grimedi.ui.component.ColorMapSelector" ) {
+					name: "colorMapSelector"
+					auxiliary() {
+						"JavaCodeGenerator.customCreate": true
+					}
+					addEvent( new FormEvent( "java.awt.event.ItemListener", "itemStateChanged", "colorMapSelected", true ) )
+				}, new FormLayoutConstraints( class java.lang.String ) {
+					"value": "South"
 				} )
 			}, new FormLayoutConstraints( class java.lang.String ) {
 				"value": "Center"

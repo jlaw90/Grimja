@@ -6,7 +6,6 @@ import com.sqrt.liblab.entry.model.anim.AnimationNode;
 import com.sqrt.liblab.entry.model.anim.KeyFrame;
 import com.sqrt.liblab.entry.model.anim.Marker;
 import com.sqrt.liblab.io.TextParser;
-import com.sqrt.liblab.threed.Vector3;
 
 import java.io.IOException;
 
@@ -119,11 +118,11 @@ public class AnimationCodec extends EntryCodec<Animation> {
                 KeyFrame kfe = new KeyFrame();
                 kfe.frame = source.readFloatLE();
                 kfe.flags = source.readIntLE();
-                kfe.pos = source.readVector3();
+                kfe.pos = source.readVector3f();
                 kfe.pitch = source.readAngle();
                 kfe.yaw = source.readAngle();
                 kfe.roll = source.readAngle();
-                kfe.dpos = source.readVector3();
+                kfe.dpos = source.readVector3f();
                 kfe.dpitch = source.readAngle();
                 kfe.dyaw = source.readAngle();
                 kfe.droll = source.readAngle();

@@ -61,69 +61,55 @@ public class MaterialView extends EditorPanel<Material> {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         createUIComponents();
 
-        panel3 = new JSplitPane();
+        scrollPane1 = new JScrollPane();
+        imageList = new JList();
         panel4 = new JPanel();
         panel1 = new JScrollPane();
         preview = new JLabel();
-        panel2 = new JPanel();
-        scrollPane1 = new JScrollPane();
-        imageList = new JList();
 
         //======== this ========
         setLayout(new BorderLayout());
 
-        //======== panel3 ========
+        //======== scrollPane1 ========
         {
-            panel3.setOrientation(JSplitPane.VERTICAL_SPLIT);
-            panel3.setResizeWeight(0.8);
+            scrollPane1.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
 
-            //======== panel4 ========
-            {
-                panel4.setLayout(new BorderLayout());
-
-                //======== panel1 ========
-                {
-
-                    //---- preview ----
-                    preview.setHorizontalAlignment(SwingConstants.CENTER);
-                    panel1.setViewportView(preview);
+            //---- imageList ----
+            imageList.setVisibleRowCount(0);
+            imageList.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+            imageList.addListSelectionListener(new ListSelectionListener() {
+                @Override
+                public void valueChanged(ListSelectionEvent e) {
+                    imageSelected(e);
                 }
-                panel4.add(panel1, BorderLayout.CENTER);
-
-                //---- colorMapSelector ----
-                colorMapSelector.addItemListener(new ItemListener() {
-                    @Override
-                    public void itemStateChanged(ItemEvent e) {
-                        colorMapSelected(e);
-                    }
-                });
-                panel4.add(colorMapSelector, BorderLayout.SOUTH);
-            }
-            panel3.setTopComponent(panel4);
-
-            //======== panel2 ========
-            {
-                panel2.setLayout(new BorderLayout());
-
-                //======== scrollPane1 ========
-                {
-
-                    //---- imageList ----
-                    imageList.setVisibleRowCount(0);
-                    imageList.setLayoutOrientation(JList.HORIZONTAL_WRAP);
-                    imageList.addListSelectionListener(new ListSelectionListener() {
-                        @Override
-                        public void valueChanged(ListSelectionEvent e) {
-                            imageSelected(e);
-                        }
-                    });
-                    scrollPane1.setViewportView(imageList);
-                }
-                panel2.add(scrollPane1, BorderLayout.CENTER);
-            }
-            panel3.setBottomComponent(panel2);
+            });
+            scrollPane1.setViewportView(imageList);
         }
-        add(panel3, BorderLayout.CENTER);
+        add(scrollPane1, BorderLayout.SOUTH);
+
+        //======== panel4 ========
+        {
+            panel4.setLayout(new BorderLayout());
+
+            //======== panel1 ========
+            {
+
+                //---- preview ----
+                preview.setHorizontalAlignment(SwingConstants.CENTER);
+                panel1.setViewportView(preview);
+            }
+            panel4.add(panel1, BorderLayout.CENTER);
+
+            //---- colorMapSelector ----
+            colorMapSelector.addItemListener(new ItemListener() {
+                @Override
+                public void itemStateChanged(ItemEvent e) {
+                    colorMapSelected(e);
+                }
+            });
+            panel4.add(colorMapSelector, BorderLayout.SOUTH);
+        }
+        add(panel4, BorderLayout.CENTER);
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
 
@@ -193,13 +179,11 @@ public class MaterialView extends EditorPanel<Material> {
     }
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
-    private JSplitPane panel3;
+    private JScrollPane scrollPane1;
+    private JList imageList;
     private JPanel panel4;
     private JScrollPane panel1;
     private JLabel preview;
     private ColorMapSelector colorMapSelector;
-    private JPanel panel2;
-    private JScrollPane scrollPane1;
-    private JList imageList;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 }

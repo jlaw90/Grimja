@@ -2,8 +2,8 @@ package com.sqrt.liblab.codec;
 
 import com.sqrt.liblab.io.DataSource;
 import com.sqrt.liblab.entry.model.*;
-import com.sqrt.liblab.threed.Vector2;
-import com.sqrt.liblab.threed.Vector3;
+import com.sqrt.liblab.threed.Vector2f;
+import com.sqrt.liblab.threed.Vector3f;
 
 import java.io.*;
 
@@ -11,7 +11,9 @@ public class ModelCodec extends EntryCodec<GrimModel> {
     public GrimModel _read(DataSource source) throws IOException {
         if (source.readIntLE() != (('M' << 24) | ('O' << 16) | ('D' << 8) | 'L'))
             throw new IOException("Invalid model format (text format W.I.P)"); // Todo
-        return loadBinary(source);
+        GrimModel mod = loadBinary(source);
+        //exportWavefront(new File(source.getName() + ".obj"), mod);
+        return mod;
     }
 
     private GrimModel loadBinary(DataSource source) throws IOException {
@@ -44,7 +46,7 @@ public class ModelCodec extends EntryCodec<GrimModel> {
         }
         model.radius = source.readFloatLE();
         source.skip(36);
-        model.off = source.readVector3();
+        model.off = source.readVector3f();
         return model;
     }
 
@@ -61,8 +63,8 @@ public class ModelCodec extends EntryCodec<GrimModel> {
         int numChildren = source.readIntLE();
         boolean hasChild = source.readBoolean();
         boolean hasSibling = source.readBoolean();
-        node.pivot = source.readVector3();
-        node.pos = source.readVector3();
+        node.pivot = source.readVector3f();
+        node.pos = source.readVector3f();
         node.pitch = source.readAngle();
         node.yaw = source.readAngle();
         node.roll = source.readAngle();
@@ -97,14 +99,14 @@ public class ModelCodec extends EntryCodec<GrimModel> {
         int numTextureVerts = source.readIntLE();
         int numFaces = source.readIntLE();
 
-        Vector3[] vertices = new Vector3[numVertices];
+        Vector3f[] vertices = new Vector3f[numVertices];
         float[] verticesI = new float[numVertices];
-        Vector3[] normals = new Vector3[numVertices];
-        Vector2[] textureVerts = new Vector2[numTextureVerts];
+        Vector3f[] normals = new Vector3f[numVertices];
+        Vector2f[] textureVerts = new Vector2f[numTextureVerts];
         for (int i = 0; i < numVertices; i++)
-            vertices[i] =source.readVector3();
+            vertices[i] =source.readVector3f();
         for (int i = 0; i < numTextureVerts; i++)
-            textureVerts[i] = source.readVector2();
+            textureVerts[i] = source.readVector2f();
         for (int i = 0; i < numVertices; i++)
             verticesI[i] = source.readFloatLE();
         source.skip(numVertices * 4);
@@ -112,7 +114,7 @@ public class ModelCodec extends EntryCodec<GrimModel> {
         for (int i = 0; i < numFaces; i++)
             m.faces.add(loadMeshFaceBinary(source, materials, vertices, normalTemp, i, textureVerts));
         for (int i = 0; i < numVertices; i++)
-            normals[i] = source.readVector3();
+            normals[i] = source.readVector3f();
         for (int i = 0; i < numFaces; i++) {
             MeshFace mf = m.faces.get(i);
             for (int index : normalTemp[i])
@@ -127,8 +129,8 @@ public class ModelCodec extends EntryCodec<GrimModel> {
     }
 
     private MeshFace loadMeshFaceBinary(DataSource source, Material[] materials,
-                                        Vector3[] vertexTable, int[][] normalTemp, int normalOff,
-                                        Vector2[] texVertexTable) throws IOException {
+                                        Vector3f[] vertexTable, int[][] normalTemp, int normalOff,
+                                        Vector2f[] texVertexTable) throws IOException {
         source.skip(4);
         int type = source.readIntLE();
         int geo = source.readIntLE();
@@ -142,7 +144,7 @@ public class ModelCodec extends EntryCodec<GrimModel> {
         source.skip(12);
         float extraLight = source.readFloatLE();
         source.skip(12);
-        Vector3 normal = source.readVector3();
+        Vector3f normal = source.readVector3f();
         MeshFace mf = new MeshFace();
         for (int i = 0; i < numVertices; i++) {
             int vid = source.readIntLE();
@@ -170,13 +172,13 @@ public class ModelCodec extends EntryCodec<GrimModel> {
     private void exportWavefront(File f, GrimModel model) throws FileNotFoundException {
         PrintStream ps = new PrintStream(f);
         _vertexOff = 1;
-        printNode(model, model.hierarchy.get(0), new Vector3(0, 0, 0), ps);
+        printNode(model, model.hierarchy.get(0), new Vector3f(0, 0, 0), ps);
         // Todo: export MTL
         ps.close();
     }
 
-    private void printNode(GrimModel model, ModelNode node, Vector3 offset, PrintStream ps) {
-        Vector3 nodeOffset = offset.add(node.pos);
+    private void printNode(GrimModel model, ModelNode node, Vector3f offset, PrintStream ps) {
+        Vector3f nodeOffset = offset.add(node.pos);
         // The mesh is offset by the pivot
         if(node.mesh != null)
             printMesh(model, node.mesh, nodeOffset.add(node.pivot), ps);
@@ -187,7 +189,7 @@ public class ModelCodec extends EntryCodec<GrimModel> {
     }
 
     private int _vertexOff;
-    private void printMesh(GrimModel model, Mesh mesh, Vector3 offset, PrintStream ps) {
+    private void printMesh(GrimModel model, Mesh mesh, Vector3f offset, PrintStream ps) {
         ps.println("g " + mesh.name);
 
         for(MeshFace face: mesh.faces) {
@@ -195,12 +197,12 @@ public class ModelCodec extends EntryCodec<GrimModel> {
             if(face.texture != null)
                 tex = face.texture;
             for (int i = 0; i < face.vertices.size(); i++) {
-                Vector3 v = face.vertices.get(i);
-                Vector3 n = face.normals.get(i);
-                Vector2 t = face.uv.get(i);
-                t = new Vector2(t.x, -t.y);
+                Vector3f v = face.vertices.get(i);
+                Vector3f n = face.normals.get(i);
+                Vector2f t = face.uv.get(i);
+                t = new Vector2f(t.x, -t.y);
                 if(tex != null)
-                    t = t.div(new Vector2(tex.width, tex.height)); // map to 0-1 range...
+                    t = t.div(new Vector2f(tex.width, tex.height)); // map to 0-1 range...
                 v = v.add(offset);
                 ps.println("v " + v.x + " " + v.y + " " + v.z);
                 ps.println("vn " + n.x + " " + n.y + " " + n.z);

@@ -17,11 +17,15 @@ new FormModel {
 						name: "scrollPane1"
 						add( new FormComponent( "org.netbeans.swing.outline.Outline" ) {
 							name: "fileList"
-							"rootVisible": false
-							"columnHidingAllowed": false
-							"selectionMode": 0
 							"fillsViewportHeight": true
-							"autoResizeMode": 4
+							"autoResizeMode": 1
+							"fullyNonEditable": true
+							"surrendersFocusOnKeystroke": false
+							"rootVisible": false
+							"showHorizontalLines": true
+							auxiliary() {
+								"showHorizontalLines.forceValue": true
+							}
 							addEvent( new FormEvent( "java.awt.event.MouseListener", "mousePressed", "fileListMousePressed", true ) )
 						} )
 					}, new FormLayoutConstraints( class java.lang.String ) {

@@ -9,9 +9,11 @@ new FormModel {
 				name: "angleslider"
 				"maximum": 180
 				"paintTicks": true
-				"majorTickSpacing": 45
+				"majorTickSpacing": 90
 				"value": 0
 				"minimum": -180
+				"minorTickSpacing": 30
+				"snapToTicks": true
 				addEvent( new FormEvent( "javax.swing.event.ChangeListener", "stateChanged", "angleSliderChanged", true ) )
 			}, new FormLayoutConstraints( class java.lang.String ) {
 				"value": "Center"

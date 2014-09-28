@@ -4,9 +4,7 @@
 
 package com.sqrt4.grimedi.ui.component;
 
-import javax.swing.event.*;
-import com.sqrt.liblab.threed.Vector3;
-import com.sun.javaws.exceptions.InvalidArgumentException;
+import com.sqrt.liblab.threed.Vector3f;
 
 import java.awt.*;
 import javax.swing.*;
@@ -38,8 +36,8 @@ public class Vector3Editor extends JPanel {
         zSpinner.removeChangeListener(cl);
     }
 
-    public Vector3 getValue() {
-        return new Vector3(getValue(xSpinner), getValue(ySpinner), getValue(zSpinner));
+    public Vector3f getValue() {
+        return new Vector3f(getValue(xSpinner), getValue(ySpinner), getValue(zSpinner));
     }
 
     private float getValue(JSpinner spin) {
@@ -49,7 +47,7 @@ public class Vector3Editor extends JPanel {
         return ((Number) val).floatValue();
     }
 
-    public void setValue(Vector3 v) {
+    public void setValue(Vector3f v) {
         xSpinner.setValue(v.x);
         ySpinner.setValue(v.y);
         zSpinner.setValue(v.z);
@@ -72,17 +70,17 @@ public class Vector3Editor extends JPanel {
 
         //======== this ========
         setLayout(new GridBagLayout());
-        ((GridBagLayout)getLayout()).columnWidths = new int[] {0, 0, 0};
+        ((GridBagLayout)getLayout()).columnWidths = new int[] {0, 0, 0, 0, 0, 0, 0};
         ((GridBagLayout)getLayout()).rowHeights = new int[] {0, 0, 0, 0};
-        ((GridBagLayout)getLayout()).columnWeights = new double[] {1.0, 0.0, 1.0E-4};
+        ((GridBagLayout)getLayout()).columnWeights = new double[] {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
         ((GridBagLayout)getLayout()).rowWeights = new double[] {1.0, 0.0, 0.0, 1.0E-4};
 
         //---- label1 ----
         label1.setText("X: ");
         label1.setHorizontalAlignment(SwingConstants.TRAILING);
         add(label1, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                new Insets(0, 0, 0, 0), 0, 0));
+            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+            new Insets(0, 0, 0, 0), 0, 0));
         add(xSpinner, new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0,
             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
             new Insets(0, 0, 0, 0), 0, 0));
@@ -90,20 +88,20 @@ public class Vector3Editor extends JPanel {
         //---- label2 ----
         label2.setText("Y: ");
         label2.setHorizontalAlignment(SwingConstants.TRAILING);
-        add(label2, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
+        add(label2, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
             new Insets(0, 0, 0, 0), 0, 0));
-        add(ySpinner, new GridBagConstraints(1, 1, 1, 1, 1.0, 0.0,
+        add(ySpinner, new GridBagConstraints(3, 0, 1, 1, 1.0, 0.0,
             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
             new Insets(0, 0, 0, 0), 0, 0));
 
         //---- label3 ----
         label3.setText("Z: ");
         label3.setHorizontalAlignment(SwingConstants.TRAILING);
-        add(label3, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
+        add(label3, new GridBagConstraints(4, 0, 1, 1, 0.0, 0.0,
             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
             new Insets(0, 0, 0, 0), 0, 0));
-        add(zSpinner, new GridBagConstraints(1, 2, 1, 1, 1.0, 0.0,
+        add(zSpinner, new GridBagConstraints(5, 0, 1, 1, 1.0, 0.0,
             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
             new Insets(0, 0, 0, 0), 0, 0));
         // JFormDesigner - End of component initialization  //GEN-END:initComponents

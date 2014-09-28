@@ -5,19 +5,12 @@ new FormModel {
 	root: new FormRoot {
 		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
 			name: "this"
-			add( new FormContainer( "javax.swing.JSplitPane", new FormLayoutManager( class javax.swing.JSplitPane ) ) {
-				name: "splitPane1"
-				"orientation": 0
-				"resizeWeight": 0.8
-				add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
-					name: "scrollPane1"
-					add( new FormComponent( "javax.swing.JList" ) {
-						name: "colorList"
-						"layoutOrientation": 2
-						"visibleRowCount": 0
-					} )
-				}, new FormLayoutConstraints( class java.lang.String ) {
-					"value": "left"
+			add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+				name: "scrollPane1"
+				add( new FormComponent( "javax.swing.JList" ) {
+					name: "colorList"
+					"layoutOrientation": 2
+					"visibleRowCount": 0
 				} )
 			}, new FormLayoutConstraints( class java.lang.String ) {
 				"value": "Center"

@@ -5,103 +5,100 @@ new FormModel {
 	root: new FormRoot {
 		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
 			name: "this"
-			add( new FormContainer( "javax.swing.JSplitPane", new FormLayoutManager( class javax.swing.JSplitPane ) ) {
-				name: "panel2"
-				"orientation": 0
-				"resizeWeight": 0.7
-				add( new FormComponent( "com.sqrt4.grimedi.ui.component.ModelRenderer" ) {
-					name: "renderer"
-				}, new FormLayoutConstraints( class java.lang.String ) {
-					"value": "left"
+			add( new FormComponent( "com.sqrt4.grimedi.ui.component.ModelRenderer" ) {
+				name: "renderer"
+			}, new FormLayoutConstraints( class java.lang.String ) {
+				"value": "Center"
+			} )
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.GridBagLayout ) {
+				"$columnSpecs": "0, 0:1.0, 0:1.0"
+				"$rowSpecs": "0, 0:1.0, 0"
+				"$alignTop": true
+				"$alignLeft": true
+			} ) {
+				name: "panel3"
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "label1"
+					"text": "Target model: "
+					"horizontalAlignment": 11
+				}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+					"gridx": 1
+				} )
+				add( new FormComponent( "javax.swing.JComboBox" ) {
+					name: "modelSelector"
+					addEvent( new FormEvent( "java.awt.event.ItemListener", "itemStateChanged", "modelSelectorItemStateChanged", true ) )
+				}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+					"gridx": 2
 				} )
 				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.GridBagLayout ) {
-					"$columnSpecs": "0, 0:1.0, 0:1.0"
-					"$rowSpecs": "0, 0:1.0, 0"
+					"$columnSpecs": "0, 0:1.0"
+					"$rowSpecs": "0:1.0, 0, 0"
 					"$alignTop": true
 					"$alignLeft": true
 				} ) {
-					name: "panel3"
+					name: "panel4"
+					"border": new javax.swing.border.TitledBorder( "Anim control" )
 					add( new FormComponent( "javax.swing.JLabel" ) {
-						name: "label1"
-						"text": "Target model: "
+						name: "label2"
+						"text": "Frame: "
+						"horizontalAlignment": 11
+					}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) )
+					add( new FormComponent( "javax.swing.JSlider" ) {
+						name: "frameSlider"
+						"snapToTicks": true
+						"majorTickSpacing": 1
+						"maximum": 50
+						"paintTicks": true
+						"value": 0
+						addEvent( new FormEvent( "javax.swing.event.ChangeListener", "stateChanged", "changeFrame", true ) )
+					}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+						"weightx": 1.0
+						"gridx": 1
+					} )
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "label3"
+						"text": "FPS: "
 						"horizontalAlignment": 11
 					}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
-						"gridx": 1
+						"gridy": 1
 					} )
-					add( new FormComponent( "javax.swing.JComboBox" ) {
-						name: "modelSelector"
-						addEvent( new FormEvent( "javax.swing.event.PopupMenuListener", "popupMenuWillBecomeInvisible", "modelSelectorPopupMenuWillBecomeInvisible", true ) )
-					}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
-						"gridx": 2
-					} )
-					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.GridBagLayout ) {
-						"$columnSpecs": "0, 0:1.0"
-						"$rowSpecs": "0:1.0, 0, 0"
-						"$alignTop": true
-						"$alignLeft": true
-					} ) {
-						name: "panel4"
-						"border": new javax.swing.border.TitledBorder( "Anim control" )
-						add( new FormComponent( "javax.swing.JLabel" ) {
-							name: "label2"
-							"text": "Frame: "
-							"horizontalAlignment": 11
-						}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) )
-						add( new FormComponent( "javax.swing.JSlider" ) {
-							name: "frameSlider"
-							"snapToTicks": true
-							"majorTickSpacing": 1
-							"maximum": 50
-							"paintTicks": true
-							"value": 0
-							addEvent( new FormEvent( "javax.swing.event.ChangeListener", "stateChanged", "changeFrame", true ) )
-						}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
-							"weightx": 1.0
-							"gridx": 1
-						} )
-						add( new FormComponent( "javax.swing.JLabel" ) {
-							name: "label3"
-							"text": "FPS: "
-							"horizontalAlignment": 11
-						}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
-							"gridy": 1
-						} )
-						add( new FormComponent( "javax.swing.JSpinner" ) {
-							name: "spinner1"
-						}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
-							"gridy": 1
-							"gridx": 1
-						} )
-						add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.FlowLayout ) ) {
-							name: "panel1"
-							add( new FormComponent( "javax.swing.JButton" ) {
-								name: "playButton"
-								"action": new FormReference( "playAction" )
-							} )
-							add( new FormComponent( "javax.swing.JButton" ) {
-								name: "button1"
-								"text": "text"
-								"action": new FormReference( "stopAction" )
-								"enabled": false
-							} )
-							add( new FormComponent( "javax.swing.JButton" ) {
-								name: "button2"
-								"action": new FormReference( "exportGif" )
-							} )
-						}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
-							"gridy": 2
-							"gridx": 1
-						} )
+					add( new FormComponent( "javax.swing.JSpinner" ) {
+						name: "fpsSelect"
+						"model": new javax.swing.SpinnerNumberModel {
+							minimum: 1
+							value: 15
+						}
 					}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
 						"gridy": 1
-						"gridwidth": 2
 						"gridx": 1
 					} )
-				}, new FormLayoutConstraints( class java.lang.String ) {
-					"value": "right"
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.FlowLayout ) ) {
+						name: "panel1"
+						add( new FormComponent( "javax.swing.JButton" ) {
+							name: "playButton"
+							"action": new FormReference( "playAction" )
+						} )
+						add( new FormComponent( "javax.swing.JButton" ) {
+							name: "button1"
+							"text": "text"
+							"action": new FormReference( "stopAction" )
+							"enabled": false
+						} )
+						add( new FormComponent( "javax.swing.JButton" ) {
+							name: "button2"
+							"action": new FormReference( "exportGif" )
+						} )
+					}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+						"gridy": 2
+						"gridx": 1
+					} )
+				}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+					"gridy": 1
+					"gridwidth": 2
+					"gridx": 1
 				} )
 			}, new FormLayoutConstraints( class java.lang.String ) {
-				"value": "Center"
+				"value": "Last"
 			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 0, 0 )

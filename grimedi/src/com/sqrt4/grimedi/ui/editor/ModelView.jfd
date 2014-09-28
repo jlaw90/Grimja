@@ -5,136 +5,66 @@ new FormModel {
 	root: new FormRoot {
 		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
 			name: "this"
+			add( new FormComponent( "com.sqrt4.grimedi.ui.component.ModelRenderer" ) {
+				name: "renderer"
+			}, new FormLayoutConstraints( class java.lang.String ) {
+				"value": "Center"
+			} )
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
-				name: "panel3"
-				add( new FormContainer( "javax.swing.JSplitPane", new FormLayoutManager( class javax.swing.JSplitPane ) ) {
-					name: "panel1"
-					"resizeWeight": 0.8
-					add( new FormComponent( "com.sqrt4.grimedi.ui.component.ModelRenderer" ) {
-						name: "renderer"
-					}, new FormLayoutConstraints( class java.lang.String ) {
-						"value": "left"
-					} )
-					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
-						name: "panel5"
-						add( new FormContainer( "javax.swing.JSplitPane", new FormLayoutManager( class javax.swing.JSplitPane ) ) {
-							name: "splitPane1"
-							"orientation": 0
-							"resizeWeight": 1.0
-							add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
-								name: "scrollPane1"
-								add( new FormComponent( "javax.swing.JTree" ) {
-									name: "boneTree"
-									"border": new javax.swing.border.TitledBorder( "Bones" )
-									addEvent( new FormEvent( "javax.swing.event.TreeSelectionListener", "valueChanged", "boneSelected", true ) )
-								} )
-							}, new FormLayoutConstraints( class java.lang.String ) {
-								"value": "left"
-							} )
-							add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.GridBagLayout ) {
-								"$columnSpecs": "0:1.0, 0"
-								"$rowSpecs": "0, 0, 0, 0:1.0, 0, 0, 0, 0"
-								"$alignTop": true
-								"$alignLeft": true
-							} ) {
-								name: "panel6"
-								"border": new javax.swing.border.TitledBorder( "Bone Properties" )
-								add( new FormComponent( "javax.swing.JLabel" ) {
-									name: "label5"
-									"text": "Position: "
-									"horizontalAlignment": 11
-								}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) )
-								add( new FormComponent( "com.sqrt4.grimedi.ui.component.Vector3Editor" ) {
-									name: "bonePos"
-									"enabled": false
-									addEvent( new FormEvent( "javax.swing.event.ChangeListener", "stateChanged", "boneChanged", true ) )
-								}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
-									"gridx": 1
-								} )
-								add( new FormComponent( "javax.swing.JLabel" ) {
-									name: "label6"
-									"text": "Pivot: "
-									"horizontalAlignment": 11
-								}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
-									"gridy": 1
-								} )
-								add( new FormComponent( "com.sqrt4.grimedi.ui.component.Vector3Editor" ) {
-									name: "bonePivot"
-									"enabled": false
-									addEvent( new FormEvent( "javax.swing.event.ChangeListener", "stateChanged", "boneChanged", true ) )
-								}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
-									"gridx": 1
-									"gridy": 1
-								} )
-								add( new FormComponent( "javax.swing.JLabel" ) {
-									name: "label2"
-									"text": "Yaw: "
-									"labelFor": new FormReference( "boneYaw" )
-									"horizontalAlignment": 11
-								}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
-									"gridy": 2
-								} )
-								add( new FormComponent( "com.sqrt4.grimedi.ui.component.AngleEditor" ) {
-									name: "boneYaw"
-									"enabled": false
-									addEvent( new FormEvent( "java.beans.PropertyChangeListener", "propertyChange", "boneChanged", true ) )
-								}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
-									"gridx": 1
-									"weightx": 1.0
-									"gridy": 2
-								} )
-								add( new FormComponent( "javax.swing.JLabel" ) {
-									name: "label3"
-									"text": "Pitch: "
-									"labelFor": new FormReference( "bonePitch" )
-									"horizontalAlignment": 11
-								}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
-									"gridy": 3
-								} )
-								add( new FormComponent( "com.sqrt4.grimedi.ui.component.AngleEditor" ) {
-									name: "bonePitch"
-									"enabled": false
-									addEvent( new FormEvent( "java.beans.PropertyChangeListener", "propertyChange", "boneChanged", true ) )
-								}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
-									"gridx": 1
-									"gridy": 3
-									"weightx": 1.0
-								} )
-								add( new FormComponent( "javax.swing.JLabel" ) {
-									name: "label4"
-									"text": "Roll: "
-									"horizontalAlignment": 11
-									"labelFor": new FormReference( "boneRoll" )
-								}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
-									"gridy": 4
-								} )
-								add( new FormComponent( "com.sqrt4.grimedi.ui.component.AngleEditor" ) {
-									name: "boneRoll"
-									"enabled": false
-									addEvent( new FormEvent( "java.beans.PropertyChangeListener", "propertyChange", "boneChanged", true ) )
-								}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
-									"gridx": 1
-									"gridy": 4
-									"weightx": 1.0
-								} )
-							}, new FormLayoutConstraints( class java.lang.String ) {
-								"value": "right"
-							} )
-						}, new FormLayoutConstraints( class java.lang.String ) {
-							"value": "Center"
-						} )
-					}, new FormLayoutConstraints( class java.lang.String ) {
-						"value": "right"
+				name: "splitPane1"
+				add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+					name: "scrollPane1"
+					add( new FormComponent( "javax.swing.JTree" ) {
+						name: "boneTree"
+						addEvent( new FormEvent( "javax.swing.event.TreeSelectionListener", "valueChanged", "boneSelected", true ) )
 					} )
 				}, new FormLayoutConstraints( class java.lang.String ) {
 					"value": "Center"
 				} )
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
+					"axis": 1
+				} ) {
+					name: "panel6"
+					"border": new javax.swing.border.TitledBorder( "Bone Properties" )
+					add( new FormComponent( "com.sqrt4.grimedi.ui.component.Vector3Editor" ) {
+						name: "bonePos"
+						"enabled": false
+						"border": new javax.swing.border.TitledBorder( "Position" )
+						addEvent( new FormEvent( "javax.swing.event.ChangeListener", "stateChanged", "boneChanged", true ) )
+					} )
+					add( new FormComponent( "com.sqrt4.grimedi.ui.component.Vector3Editor" ) {
+						name: "bonePivot"
+						"enabled": false
+						"border": new javax.swing.border.TitledBorder( "Pivot" )
+						addEvent( new FormEvent( "javax.swing.event.ChangeListener", "stateChanged", "boneChanged", true ) )
+					} )
+					add( new FormComponent( "com.sqrt4.grimedi.ui.component.AngleEditor" ) {
+						name: "boneYaw"
+						"enabled": false
+						"border": new javax.swing.border.TitledBorder( "Yaw" )
+						addEvent( new FormEvent( "java.beans.PropertyChangeListener", "propertyChange", "boneChanged", true ) )
+					} )
+					add( new FormComponent( "com.sqrt4.grimedi.ui.component.AngleEditor" ) {
+						name: "bonePitch"
+						"enabled": false
+						"border": new javax.swing.border.TitledBorder( "Pitch" )
+						addEvent( new FormEvent( "java.beans.PropertyChangeListener", "propertyChange", "boneChanged", true ) )
+					} )
+					add( new FormComponent( "com.sqrt4.grimedi.ui.component.AngleEditor" ) {
+						name: "boneRoll"
+						"enabled": false
+						"border": new javax.swing.border.TitledBorder( "Roll" )
+						addEvent( new FormEvent( "java.beans.PropertyChangeListener", "propertyChange", "boneChanged", true ) )
+					} )
+				}, new FormLayoutConstraints( class java.lang.String ) {
+					"value": "South"
+				} )
 			}, new FormLayoutConstraints( class java.lang.String ) {
-				"value": "Center"
+				"value": "East"
 			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 0, 0 )
-			"size": new java.awt.Dimension( 635, 455 )
+			"size": new java.awt.Dimension( 675, 505 )
 		} )
 	}
 }

@@ -106,4 +106,8 @@ public class SplashScreenController {
             repaintThread.start();
         }
     }
+
+    public static boolean supported() {
+        return SplashScreen.getSplashScreen() != null;
+    }
 }

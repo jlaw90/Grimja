@@ -27,23 +27,15 @@ import java.beans.PropertyChangeListener;
 public class ModelView extends EditorPanel<GrimModel> {
     private boolean bonesUpdating;
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
-    private JPanel panel3;
-    private JSplitPane panel1;
     private ModelRenderer renderer;
-    private JPanel panel5;
-    private JSplitPane splitPane1;
+    private JPanel splitPane1;
     private JScrollPane scrollPane1;
     private JTree boneTree;
     private JPanel panel6;
-    private JLabel label5;
     private Vector3Editor bonePos;
-    private JLabel label6;
     private Vector3Editor bonePivot;
-    private JLabel label2;
     private AngleEditor boneYaw;
-    private JLabel label3;
     private AngleEditor bonePitch;
-    private JLabel label4;
     private AngleEditor boneRoll;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
@@ -103,177 +95,102 @@ public class ModelView extends EditorPanel<GrimModel> {
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-        panel3 = new JPanel();
-        panel1 = new JSplitPane();
         renderer = new ModelRenderer();
-        panel5 = new JPanel();
-        splitPane1 = new JSplitPane();
+        splitPane1 = new JPanel();
         scrollPane1 = new JScrollPane();
         boneTree = new JTree();
         panel6 = new JPanel();
-        label5 = new JLabel();
         bonePos = new Vector3Editor();
-        label6 = new JLabel();
         bonePivot = new Vector3Editor();
-        label2 = new JLabel();
         boneYaw = new AngleEditor();
-        label3 = new JLabel();
         bonePitch = new AngleEditor();
-        label4 = new JLabel();
         boneRoll = new AngleEditor();
 
         //======== this ========
         setLayout(new BorderLayout());
+        add(renderer, BorderLayout.CENTER);
 
-        //======== panel3 ========
+        //======== splitPane1 ========
         {
-            panel3.setLayout(new BorderLayout());
+            splitPane1.setLayout(new BorderLayout());
 
-            //======== panel1 ========
+            //======== scrollPane1 ========
             {
-                panel1.setResizeWeight(0.8);
-                panel1.setLeftComponent(renderer);
 
-                //======== panel5 ========
-                {
-                    panel5.setLayout(new BorderLayout());
-
-                    //======== splitPane1 ========
-                    {
-                        splitPane1.setOrientation(JSplitPane.VERTICAL_SPLIT);
-                        splitPane1.setResizeWeight(1.0);
-
-                        //======== scrollPane1 ========
-                        {
-
-                            //---- boneTree ----
-                            boneTree.setBorder(new TitledBorder("Bones"));
-                            boneTree.addTreeSelectionListener(new TreeSelectionListener() {
-                                @Override
-                                public void valueChanged(TreeSelectionEvent e) {
-                                    boneSelected(e);
-                                }
-                            });
-                            scrollPane1.setViewportView(boneTree);
-                        }
-                        splitPane1.setTopComponent(scrollPane1);
-
-                        //======== panel6 ========
-                        {
-                            panel6.setBorder(new TitledBorder("Bone Properties"));
-                            panel6.setLayout(new GridBagLayout());
-                            ((GridBagLayout) panel6.getLayout()).columnWidths = new int[]{0, 0, 0};
-                            ((GridBagLayout) panel6.getLayout()).rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0};
-                            ((GridBagLayout) panel6.getLayout()).columnWeights = new double[]{1.0, 0.0, 1.0E-4};
-                            ((GridBagLayout) panel6.getLayout()).rowWeights = new double[]{0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
-
-                            //---- label5 ----
-                            label5.setText("Position: ");
-                            label5.setHorizontalAlignment(SwingConstants.TRAILING);
-                            panel6.add(label5, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-                                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                    new Insets(0, 0, 0, 0), 0, 0));
-
-                            //---- bonePos ----
-                            bonePos.setEnabled(false);
-                            bonePos.addChangeListener(new ChangeListener() {
-                                @Override
-                                public void stateChanged(ChangeEvent e) {
-                                    boneChanged(e);
-                                }
-                            });
-                            panel6.add(bonePos, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                    new Insets(0, 0, 0, 0), 0, 0));
-
-                            //---- label6 ----
-                            label6.setText("Pivot: ");
-                            label6.setHorizontalAlignment(SwingConstants.TRAILING);
-                            panel6.add(label6, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
-                                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                    new Insets(0, 0, 0, 0), 0, 0));
-
-                            //---- bonePivot ----
-                            bonePivot.setEnabled(false);
-                            bonePivot.addChangeListener(new ChangeListener() {
-                                @Override
-                                public void stateChanged(ChangeEvent e) {
-                                    boneChanged(e);
-                                }
-                            });
-                            panel6.add(bonePivot, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
-                                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                    new Insets(0, 0, 0, 0), 0, 0));
-
-                            //---- label2 ----
-                            label2.setText("Yaw: ");
-                            label2.setLabelFor(boneYaw);
-                            label2.setHorizontalAlignment(SwingConstants.TRAILING);
-                            panel6.add(label2, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
-                                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                    new Insets(0, 0, 0, 0), 0, 0));
-
-                            //---- boneYaw ----
-                            boneYaw.setEnabled(false);
-                            boneYaw.addPropertyChangeListener(new PropertyChangeListener() {
-                                @Override
-                                public void propertyChange(PropertyChangeEvent e) {
-                                    boneChanged(e);
-                                }
-                            });
-                            panel6.add(boneYaw, new GridBagConstraints(1, 2, 1, 1, 1.0, 0.0,
-                                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                    new Insets(0, 0, 0, 0), 0, 0));
-
-                            //---- label3 ----
-                            label3.setText("Pitch: ");
-                            label3.setLabelFor(bonePitch);
-                            label3.setHorizontalAlignment(SwingConstants.TRAILING);
-                            panel6.add(label3, new GridBagConstraints(0, 3, 1, 1, 0.0, 0.0,
-                                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                    new Insets(0, 0, 0, 0), 0, 0));
-
-                            //---- bonePitch ----
-                            bonePitch.setEnabled(false);
-                            bonePitch.addPropertyChangeListener(new PropertyChangeListener() {
-                                @Override
-                                public void propertyChange(PropertyChangeEvent e) {
-                                    boneChanged(e);
-                                }
-                            });
-                            panel6.add(bonePitch, new GridBagConstraints(1, 3, 1, 1, 1.0, 0.0,
-                                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                    new Insets(0, 0, 0, 0), 0, 0));
-
-                            //---- label4 ----
-                            label4.setText("Roll: ");
-                            label4.setHorizontalAlignment(SwingConstants.TRAILING);
-                            label4.setLabelFor(boneRoll);
-                            panel6.add(label4, new GridBagConstraints(0, 4, 1, 1, 0.0, 0.0,
-                                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                    new Insets(0, 0, 0, 0), 0, 0));
-
-                            //---- boneRoll ----
-                            boneRoll.setEnabled(false);
-                            boneRoll.addPropertyChangeListener(new PropertyChangeListener() {
-                                @Override
-                                public void propertyChange(PropertyChangeEvent e) {
-                                    boneChanged(e);
-                                }
-                            });
-                            panel6.add(boneRoll, new GridBagConstraints(1, 4, 1, 1, 1.0, 0.0,
-                                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                    new Insets(0, 0, 0, 0), 0, 0));
-                        }
-                        splitPane1.setBottomComponent(panel6);
+                //---- boneTree ----
+                boneTree.addTreeSelectionListener(new TreeSelectionListener() {
+                    @Override
+                    public void valueChanged(TreeSelectionEvent e) {
+                        boneSelected(e);
                     }
-                    panel5.add(splitPane1, BorderLayout.CENTER);
-                }
-                panel1.setRightComponent(panel5);
+                });
+                scrollPane1.setViewportView(boneTree);
             }
-            panel3.add(panel1, BorderLayout.CENTER);
+            splitPane1.add(scrollPane1, BorderLayout.CENTER);
+
+            //======== panel6 ========
+            {
+                panel6.setBorder(new TitledBorder("Bone Properties"));
+                panel6.setLayout(new BoxLayout(panel6, BoxLayout.Y_AXIS));
+
+                //---- bonePos ----
+                bonePos.setEnabled(false);
+                bonePos.setBorder(new TitledBorder("Position"));
+                bonePos.addChangeListener(new ChangeListener() {
+                    @Override
+                    public void stateChanged(ChangeEvent e) {
+                        boneChanged(e);
+                    }
+                });
+                panel6.add(bonePos);
+
+                //---- bonePivot ----
+                bonePivot.setEnabled(false);
+                bonePivot.setBorder(new TitledBorder("Pivot"));
+                bonePivot.addChangeListener(new ChangeListener() {
+                    @Override
+                    public void stateChanged(ChangeEvent e) {
+                        boneChanged(e);
+                    }
+                });
+                panel6.add(bonePivot);
+
+                //---- boneYaw ----
+                boneYaw.setEnabled(false);
+                boneYaw.setBorder(new TitledBorder("Yaw"));
+                boneYaw.addPropertyChangeListener(new PropertyChangeListener() {
+                    @Override
+                    public void propertyChange(PropertyChangeEvent e) {
+                        boneChanged(e);
+                    }
+                });
+                panel6.add(boneYaw);
+
+                //---- bonePitch ----
+                bonePitch.setEnabled(false);
+                bonePitch.setBorder(new TitledBorder("Pitch"));
+                bonePitch.addPropertyChangeListener(new PropertyChangeListener() {
+                    @Override
+                    public void propertyChange(PropertyChangeEvent e) {
+                        boneChanged(e);
+                    }
+                });
+                panel6.add(bonePitch);
+
+                //---- boneRoll ----
+                boneRoll.setEnabled(false);
+                boneRoll.setBorder(new TitledBorder("Roll"));
+                boneRoll.addPropertyChangeListener(new PropertyChangeListener() {
+                    @Override
+                    public void propertyChange(PropertyChangeEvent e) {
+                        boneChanged(e);
+                    }
+                });
+                panel6.add(boneRoll);
+            }
+            splitPane1.add(panel6, BorderLayout.SOUTH);
         }
-        add(panel3, BorderLayout.CENTER);
+        add(splitPane1, BorderLayout.EAST);
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
 

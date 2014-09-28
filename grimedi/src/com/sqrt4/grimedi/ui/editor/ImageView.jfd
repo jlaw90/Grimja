@@ -5,64 +5,59 @@ new FormModel {
 	root: new FormRoot {
 		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
 			name: "this"
-			add( new FormContainer( "javax.swing.JSplitPane", new FormLayoutManager( class javax.swing.JSplitPane ) ) {
-				name: "panel3"
-				"orientation": 0
-				"resizeWeight": 0.8
-				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
-					name: "panel4"
-					add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
-						name: "panel1"
-						add( new FormComponent( "javax.swing.JLabel" ) {
-							name: "preview"
-							"horizontalAlignment": 0
-						} )
-					}, new FormLayoutConstraints( class java.lang.String ) {
-						"value": "Center"
-					} )
-					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.FlowLayout ) ) {
-						name: "panel5"
-						add( new FormComponent( "javax.swing.JButton" ) {
-							name: "button1"
-							"action": new FormReference( "exportPngAction" )
-						} )
-					}, new FormLayoutConstraints( class java.lang.String ) {
-						"value": "South"
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+				name: "panel4"
+				add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+					name: "panel1"
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "preview"
+						"horizontalAlignment": 0
 					} )
 				}, new FormLayoutConstraints( class java.lang.String ) {
-					"value": "left"
+					"value": "Center"
 				} )
-				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
-					name: "panel2"
-					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.FlowLayout ) ) {
-						name: "panel6"
-						add( new FormComponent( "javax.swing.JButton" ) {
-							name: "playButton"
-							"action": new FormReference( "playAction" )
-						} )
-						add( new FormComponent( "javax.swing.JButton" ) {
-							name: "button2"
-							"action": new FormReference( "exportAnimationAction" )
-						} )
-					}, new FormLayoutConstraints( class java.lang.String ) {
-						"value": "North"
-					} )
-					add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
-						name: "scrollPane1"
-						add( new FormComponent( "javax.swing.JList" ) {
-							name: "imageList"
-							"visibleRowCount": 0
-							"layoutOrientation": 2
-							addEvent( new FormEvent( "javax.swing.event.ListSelectionListener", "valueChanged", "imageSelected", true ) )
-						} )
-					}, new FormLayoutConstraints( class java.lang.String ) {
-						"value": "Center"
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.FlowLayout ) ) {
+					name: "panel5"
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "button1"
+						"action": new FormReference( "exportPngAction" )
 					} )
 				}, new FormLayoutConstraints( class java.lang.String ) {
-					"value": "right"
+					"value": "South"
 				} )
 			}, new FormLayoutConstraints( class java.lang.String ) {
 				"value": "Center"
+			} )
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+				name: "panel2"
+				add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+					name: "scrollPane1"
+					"verticalScrollBarPolicy": 21
+					add( new FormComponent( "javax.swing.JList" ) {
+						name: "imageList"
+						"visibleRowCount": 0
+						"layoutOrientation": 2
+						"selectionMode": 0
+						addEvent( new FormEvent( "javax.swing.event.ListSelectionListener", "valueChanged", "imageSelected", true ) )
+					} )
+				}, new FormLayoutConstraints( class java.lang.String ) {
+					"value": "Center"
+				} )
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.FlowLayout ) ) {
+					name: "panel6"
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "playButton"
+						"action": new FormReference( "playAction" )
+					} )
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "button2"
+						"action": new FormReference( "exportAnimationAction" )
+					} )
+				}, new FormLayoutConstraints( class java.lang.String ) {
+					"value": "South"
+				} )
+			}, new FormLayoutConstraints( class java.lang.String ) {
+				"value": "South"
 			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 0, 0 )

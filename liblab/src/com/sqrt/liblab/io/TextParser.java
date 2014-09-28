@@ -1,7 +1,7 @@
 package com.sqrt.liblab.io;
 
 import com.sqrt.liblab.threed.Angle;
-import com.sqrt.liblab.threed.Vector3;
+import com.sqrt.liblab.threed.Vector3f;
 
 import java.io.IOException;
 import java.util.LinkedList;
@@ -154,8 +154,12 @@ public class TextParser {
         float result = readInt();
         if(peek() == '.') {
             skip(1);
-            int floatPart = readInt();
             float divisor = 10f;
+            while(peek() == '0') {
+                divisor /= 10f;
+                skip(1);
+            }
+            int floatPart = readInt();
             while(floatPart >= divisor)
                 divisor *= 10f;
             float asDecimal = ((float) floatPart) / divisor;
@@ -164,8 +168,8 @@ public class TextParser {
         return result;
     }
 
-    public Vector3 readVector3() {
-        return new Vector3(readFloat(), readFloat(), readFloat());
+    public Vector3f readVector3() {
+        return new Vector3f(readFloat(), readFloat(), readFloat());
     }
 
     public Angle readAngle() {

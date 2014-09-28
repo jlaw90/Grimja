@@ -6,7 +6,6 @@ package com.sqrt4.grimedi.ui.editor;
 
 import java.awt.event.*;
 import javax.imageio.ImageIO;
-import javax.imageio.ImageWriter;
 import javax.swing.event.*;
 
 import com.sqrt.liblab.entry.graphics.GrimBitmap;
@@ -49,18 +48,17 @@ public class ImageView extends EditorPanel<GrimBitmap> {
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-        panel3 = new JSplitPane();
         panel4 = new JPanel();
         panel1 = new JScrollPane();
         preview = new JLabel();
         panel5 = new JPanel();
         button1 = new JButton();
         panel2 = new JPanel();
+        scrollPane1 = new JScrollPane();
+        imageList = new JList();
         panel6 = new JPanel();
         playButton = new JButton();
         button2 = new JButton();
-        scrollPane1 = new JScrollPane();
-        imageList = new JList();
         playAction = new PlayAction();
         exportAnimationAction = new ExportAnimationAction();
         exportPngAction = new ExportPNGAction();
@@ -68,78 +66,73 @@ public class ImageView extends EditorPanel<GrimBitmap> {
         //======== this ========
         setLayout(new BorderLayout());
 
-        //======== panel3 ========
+        //======== panel4 ========
         {
-            panel3.setOrientation(JSplitPane.VERTICAL_SPLIT);
-            panel3.setResizeWeight(0.8);
+            panel4.setLayout(new BorderLayout());
 
-            //======== panel4 ========
+            //======== panel1 ========
             {
-                panel4.setLayout(new BorderLayout());
 
-                //======== panel1 ========
-                {
-
-                    //---- preview ----
-                    preview.setHorizontalAlignment(SwingConstants.CENTER);
-                    panel1.setViewportView(preview);
-                }
-                panel4.add(panel1, BorderLayout.CENTER);
-
-                //======== panel5 ========
-                {
-                    panel5.setLayout(new FlowLayout());
-
-                    //---- button1 ----
-                    button1.setAction(exportPngAction);
-                    panel5.add(button1);
-                }
-                panel4.add(panel5, BorderLayout.SOUTH);
+                //---- preview ----
+                preview.setHorizontalAlignment(SwingConstants.CENTER);
+                panel1.setViewportView(preview);
             }
-            panel3.setTopComponent(panel4);
+            panel4.add(panel1, BorderLayout.CENTER);
 
-            //======== panel2 ========
+            //======== panel5 ========
             {
-                panel2.setLayout(new BorderLayout());
+                panel5.setLayout(new FlowLayout());
 
-                //======== panel6 ========
-                {
-                    panel6.setLayout(new FlowLayout());
-
-                    //---- playButton ----
-                    playButton.setAction(playAction);
-                    panel6.add(playButton);
-
-                    //---- button2 ----
-                    button2.setAction(exportAnimationAction);
-                    panel6.add(button2);
-                }
-                panel2.add(panel6, BorderLayout.NORTH);
-
-                //======== scrollPane1 ========
-                {
-
-                    //---- imageList ----
-                    imageList.setVisibleRowCount(0);
-                    imageList.setLayoutOrientation(JList.HORIZONTAL_WRAP);
-                    imageList.addListSelectionListener(new ListSelectionListener() {
-                        @Override
-                        public void valueChanged(ListSelectionEvent e) {
-                            imageSelected(e);
-                        }
-                    });
-                    scrollPane1.setViewportView(imageList);
-                }
-                panel2.add(scrollPane1, BorderLayout.CENTER);
+                //---- button1 ----
+                button1.setAction(exportPngAction);
+                panel5.add(button1);
             }
-            panel3.setBottomComponent(panel2);
+            panel4.add(panel5, BorderLayout.SOUTH);
         }
-        add(panel3, BorderLayout.CENTER);
+        add(panel4, BorderLayout.CENTER);
+
+        //======== panel2 ========
+        {
+            panel2.setLayout(new BorderLayout());
+
+            //======== scrollPane1 ========
+            {
+                scrollPane1.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+
+                //---- imageList ----
+                imageList.setVisibleRowCount(0);
+                imageList.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+                imageList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+                imageList.addListSelectionListener(new ListSelectionListener() {
+                    @Override
+                    public void valueChanged(ListSelectionEvent e) {
+                        imageSelected(e);
+                    }
+                });
+                scrollPane1.setViewportView(imageList);
+            }
+            panel2.add(scrollPane1, BorderLayout.CENTER);
+
+            //======== panel6 ========
+            {
+                panel6.setLayout(new FlowLayout());
+
+                //---- playButton ----
+                playButton.setAction(playAction);
+                panel6.add(playButton);
+
+                //---- button2 ----
+                button2.setAction(exportAnimationAction);
+                panel6.add(button2);
+            }
+            panel2.add(panel6, BorderLayout.SOUTH);
+        }
+        add(panel2, BorderLayout.SOUTH);
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
 
     public void onNewData() {
-        BufferedImage rep = data.images.get(0);
+        playAction.setEnabled(data.images.size() > 1);
         imageList.setModel(new ListModel() {
             public int getSize() {
                 return data.images.size();
@@ -150,11 +143,9 @@ public class ImageView extends EditorPanel<GrimBitmap> {
             }
 
             public void addListDataListener(ListDataListener l) {
-                //To change body of implemented methods use File | Settings | File Templates.
             }
 
             public void removeListDataListener(ListDataListener l) {
-                //To change body of implemented methods use File | Settings | File Templates.
             }
         });
         imageList.setCellRenderer(new ListCellRenderer() {
@@ -199,18 +190,17 @@ public class ImageView extends EditorPanel<GrimBitmap> {
     }
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
-    private JSplitPane panel3;
     private JPanel panel4;
     private JScrollPane panel1;
     private JLabel preview;
     private JPanel panel5;
     private JButton button1;
     private JPanel panel2;
+    private JScrollPane scrollPane1;
+    private JList imageList;
     private JPanel panel6;
     private JButton playButton;
     private JButton button2;
-    private JScrollPane scrollPane1;
-    private JList imageList;
     private PlayAction playAction;
     private ExportAnimationAction exportAnimationAction;
     private ExportPNGAction exportPngAction;
@@ -309,7 +299,7 @@ public class ImageView extends EditorPanel<GrimBitmap> {
             name += ".png";
             jfc.setSelectedFile(new File(name));
             if(jfc.showSaveDialog(window) == JFileChooser.APPROVE_OPTION) {
-                window.runAsyncWithPopup("Please wait...", "Exporting image...", new Runnable() {
+                window.runAsyncWithPopup("Exporting image...", new Runnable() {
                     public void run() {
                         File f = jfc.getSelectedFile();
                         try {

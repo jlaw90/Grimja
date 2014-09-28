@@ -12,7 +12,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.*;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 
@@ -345,161 +346,6 @@ class SANMVideoStream extends VideoInputStream {
             {23, 36}, {-19, 39}, {16, 40}, {-13, 41}, {9, 42},
             {-6, 43}, {1, 43}, {0, 0}, {0, 0}, {0, 0},
     };
-    private static final byte[] c37_mv = {
-            0, 0, 1, 0, 2, 0, 3, 0, 5, 0,
-            8, 0, 13, 0, 21, 0, -1, 0, -2, 0,
-            -3, 0, -5, 0, -8, 0, -13, 0, -17, 0,
-            -21, 0, 0, 1, 1, 1, 2, 1, 3, 1,
-            5, 1, 8, 1, 13, 1, 21, 1, -1, 1,
-            -2, 1, -3, 1, -5, 1, -8, 1, -13, 1,
-            -17, 1, -21, 1, 0, 2, 1, 2, 2, 2,
-            3, 2, 5, 2, 8, 2, 13, 2, 21, 2,
-            -1, 2, -2, 2, -3, 2, -5, 2, -8, 2,
-            -13, 2, -17, 2, -21, 2, 0, 3, 1, 3,
-            2, 3, 3, 3, 5, 3, 8, 3, 13, 3,
-            21, 3, -1, 3, -2, 3, -3, 3, -5, 3,
-            -8, 3, -13, 3, -17, 3, -21, 3, 0, 5,
-            1, 5, 2, 5, 3, 5, 5, 5, 8, 5,
-            13, 5, 21, 5, -1, 5, -2, 5, -3, 5,
-            -5, 5, -8, 5, -13, 5, -17, 5, -21, 5,
-            0, 8, 1, 8, 2, 8, 3, 8, 5, 8,
-            8, 8, 13, 8, 21, 8, -1, 8, -2, 8,
-            -3, 8, -5, 8, -8, 8, -13, 8, -17, 8,
-            -21, 8, 0, 13, 1, 13, 2, 13, 3, 13,
-            5, 13, 8, 13, 13, 13, 21, 13, -1, 13,
-            -2, 13, -3, 13, -5, 13, -8, 13, -13, 13,
-            -17, 13, -21, 13, 0, 21, 1, 21, 2, 21,
-            3, 21, 5, 21, 8, 21, 13, 21, 21, 21,
-            -1, 21, -2, 21, -3, 21, -5, 21, -8, 21,
-            -13, 21, -17, 21, -21, 21, 0, -1, 1, -1,
-            2, -1, 3, -1, 5, -1, 8, -1, 13, -1,
-            21, -1, -1, -1, -2, -1, -3, -1, -5, -1,
-            -8, -1, -13, -1, -17, -1, -21, -1, 0, -2,
-            1, -2, 2, -2, 3, -2, 5, -2, 8, -2,
-            13, -2, 21, -2, -1, -2, -2, -2, -3, -2,
-            -5, -2, -8, -2, -13, -2, -17, -2, -21, -2,
-            0, -3, 1, -3, 2, -3, 3, -3, 5, -3,
-            8, -3, 13, -3, 21, -3, -1, -3, -2, -3,
-            -3, -3, -5, -3, -8, -3, -13, -3, -17, -3,
-            -21, -3, 0, -5, 1, -5, 2, -5, 3, -5,
-            5, -5, 8, -5, 13, -5, 21, -5, -1, -5,
-            -2, -5, -3, -5, -5, -5, -8, -5, -13, -5,
-            -17, -5, -21, -5, 0, -8, 1, -8, 2, -8,
-            3, -8, 5, -8, 8, -8, 13, -8, 21, -8,
-            -1, -8, -2, -8, -3, -8, -5, -8, -8, -8,
-            -13, -8, -17, -8, -21, -8, 0, -13, 1, -13,
-            2, -13, 3, -13, 5, -13, 8, -13, 13, -13,
-            21, -13, -1, -13, -2, -13, -3, -13, -5, -13,
-            -8, -13, -13, -13, -17, -13, -21, -13, 0, -17,
-            1, -17, 2, -17, 3, -17, 5, -17, 8, -17,
-            13, -17, 21, -17, -1, -17, -2, -17, -3, -17,
-            -5, -17, -8, -17, -13, -17, -17, -17, -21, -17,
-            0, -21, 1, -21, 2, -21, 3, -21, 5, -21,
-            8, -21, 13, -21, 21, -21, -1, -21, -2, -21,
-            -3, -21, -5, -21, -8, -21, -13, -21, -17, -21,
-            0, 0, -8, -29, 8, -29, -18, -25, 17, -25,
-            0, -23, -6, -22, 6, -22, -13, -19, 12, -19,
-            0, -18, 25, -18, -25, -17, -5, -17, 5, -17,
-            -10, -15, 10, -15, 0, -14, -4, -13, 4, -13,
-            19, -13, -19, -12, -8, -11, -2, -11, 0, -11,
-            2, -11, 8, -11, -15, -10, -4, -10, 4, -10,
-            15, -10, -6, -9, -1, -9, 1, -9, 6, -9,
-            -29, -8, -11, -8, -8, -8, -3, -8, 3, -8,
-            8, -8, 11, -8, 29, -8, -5, -7, -2, -7,
-            0, -7, 2, -7, 5, -7, -22, -6, -9, -6,
-            -6, -6, -3, -6, -1, -6, 1, -6, 3, -6,
-            6, -6, 9, -6, 22, -6, -17, -5, -7, -5,
-            -4, -5, -2, -5, 0, -5, 2, -5, 4, -5,
-            7, -5, 17, -5, -13, -4, -10, -4, -5, -4,
-            -3, -4, -1, -4, 0, -4, 1, -4, 3, -4,
-            5, -4, 10, -4, 13, -4, -8, -3, -6, -3,
-            -4, -3, -3, -3, -2, -3, -1, -3, 0, -3,
-            1, -3, 2, -3, 4, -3, 6, -3, 8, -3,
-            -11, -2, -7, -2, -5, -2, -3, -2, -2, -2,
-            -1, -2, 0, -2, 1, -2, 2, -2, 3, -2,
-            5, -2, 7, -2, 11, -2, -9, -1, -6, -1,
-            -4, -1, -3, -1, -2, -1, -1, -1, 0, -1,
-            1, -1, 2, -1, 3, -1, 4, -1, 6, -1,
-            9, -1, -31, 0, -23, 0, -18, 0, -14, 0,
-            -11, 0, -7, 0, -5, 0, -4, 0, -3, 0,
-            -2, 0, -1, 0, 0, -31, 1, 0, 2, 0,
-            3, 0, 4, 0, 5, 0, 7, 0, 11, 0,
-            14, 0, 18, 0, 23, 0, 31, 0, -9, 1,
-            -6, 1, -4, 1, -3, 1, -2, 1, -1, 1,
-            0, 1, 1, 1, 2, 1, 3, 1, 4, 1,
-            6, 1, 9, 1, -11, 2, -7, 2, -5, 2,
-            -3, 2, -2, 2, -1, 2, 0, 2, 1, 2,
-            2, 2, 3, 2, 5, 2, 7, 2, 11, 2,
-            -8, 3, -6, 3, -4, 3, -2, 3, -1, 3,
-            0, 3, 1, 3, 2, 3, 3, 3, 4, 3,
-            6, 3, 8, 3, -13, 4, -10, 4, -5, 4,
-            -3, 4, -1, 4, 0, 4, 1, 4, 3, 4,
-            5, 4, 10, 4, 13, 4, -17, 5, -7, 5,
-            -4, 5, -2, 5, 0, 5, 2, 5, 4, 5,
-            7, 5, 17, 5, -22, 6, -9, 6, -6, 6,
-            -3, 6, -1, 6, 1, 6, 3, 6, 6, 6,
-            9, 6, 22, 6, -5, 7, -2, 7, 0, 7,
-            2, 7, 5, 7, -29, 8, -11, 8, -8, 8,
-            -3, 8, 3, 8, 8, 8, 11, 8, 29, 8,
-            -6, 9, -1, 9, 1, 9, 6, 9, -15, 10,
-            -4, 10, 4, 10, 15, 10, -8, 11, -2, 11,
-            0, 11, 2, 11, 8, 11, 19, 12, -19, 13,
-            -4, 13, 4, 13, 0, 14, -10, 15, 10, 15,
-            -5, 17, 5, 17, 25, 17, -25, 18, 0, 18,
-            -12, 19, 13, 19, -6, 22, 6, 22, 0, 23,
-            -17, 25, 18, 25, -8, 29, 8, 29, 0, 31,
-            0, 0, -6, -22, 6, -22, -13, -19, 12, -19,
-            0, -18, -5, -17, 5, -17, -10, -15, 10, -15,
-            0, -14, -4, -13, 4, -13, 19, -13, -19, -12,
-            -8, -11, -2, -11, 0, -11, 2, -11, 8, -11,
-            -15, -10, -4, -10, 4, -10, 15, -10, -6, -9,
-            -1, -9, 1, -9, 6, -9, -11, -8, -8, -8,
-            -3, -8, 0, -8, 3, -8, 8, -8, 11, -8,
-            -5, -7, -2, -7, 0, -7, 2, -7, 5, -7,
-            -22, -6, -9, -6, -6, -6, -3, -6, -1, -6,
-            1, -6, 3, -6, 6, -6, 9, -6, 22, -6,
-            -17, -5, -7, -5, -4, -5, -2, -5, -1, -5,
-            0, -5, 1, -5, 2, -5, 4, -5, 7, -5,
-            17, -5, -13, -4, -10, -4, -5, -4, -3, -4,
-            -2, -4, -1, -4, 0, -4, 1, -4, 2, -4,
-            3, -4, 5, -4, 10, -4, 13, -4, -8, -3,
-            -6, -3, -4, -3, -3, -3, -2, -3, -1, -3,
-            0, -3, 1, -3, 2, -3, 3, -3, 4, -3,
-            6, -3, 8, -3, -11, -2, -7, -2, -5, -2,
-            -4, -2, -3, -2, -2, -2, -1, -2, 0, -2,
-            1, -2, 2, -2, 3, -2, 4, -2, 5, -2,
-            7, -2, 11, -2, -9, -1, -6, -1, -5, -1,
-            -4, -1, -3, -1, -2, -1, -1, -1, 0, -1,
-            1, -1, 2, -1, 3, -1, 4, -1, 5, -1,
-            6, -1, 9, -1, -23, 0, -18, 0, -14, 0,
-            -11, 0, -7, 0, -5, 0, -4, 0, -3, 0,
-            -2, 0, -1, 0, 0, -23, 1, 0, 2, 0,
-            3, 0, 4, 0, 5, 0, 7, 0, 11, 0,
-            14, 0, 18, 0, 23, 0, -9, 1, -6, 1,
-            -5, 1, -4, 1, -3, 1, -2, 1, -1, 1,
-            0, 1, 1, 1, 2, 1, 3, 1, 4, 1,
-            5, 1, 6, 1, 9, 1, -11, 2, -7, 2,
-            -5, 2, -4, 2, -3, 2, -2, 2, -1, 2,
-            0, 2, 1, 2, 2, 2, 3, 2, 4, 2,
-            5, 2, 7, 2, 11, 2, -8, 3, -6, 3,
-            -4, 3, -3, 3, -2, 3, -1, 3, 0, 3,
-            1, 3, 2, 3, 3, 3, 4, 3, 6, 3,
-            8, 3, -13, 4, -10, 4, -5, 4, -3, 4,
-            -2, 4, -1, 4, 0, 4, 1, 4, 2, 4,
-            3, 4, 5, 4, 10, 4, 13, 4, -17, 5,
-            -7, 5, -4, 5, -2, 5, -1, 5, 0, 5,
-            1, 5, 2, 5, 4, 5, 7, 5, 17, 5,
-            -22, 6, -9, 6, -6, 6, -3, 6, -1, 6,
-            1, 6, 3, 6, 6, 6, 9, 6, 22, 6,
-            -5, 7, -2, 7, 0, 7, 2, 7, 5, 7,
-            -11, 8, -8, 8, -3, 8, 0, 8, 3, 8,
-            8, 8, 11, 8, -6, 9, -1, 9, 1, 9,
-            6, 9, -15, 10, -4, 10, 4, 10, 15, 10,
-            -8, 11, -2, 11, 0, 11, 2, 11, 8, 11,
-            19, 12, -19, 13, -4, 13, 4, 13, 0, 14,
-            -10, 15, 10, 15, -5, 17, 5, 17, 0, 18,
-            -12, 19, 13, 19, -6, 22, 6, 22, 0, 23,
-    };
 
     static {
         make_glyphs(p4x4glyphs, glyph4_x, glyph4_y, 4);
@@ -516,8 +362,15 @@ class SANMVideoStream extends VideoInputStream {
 
         public static GlyphEdge which(int x, int y, int edge_size) {
             final int edge_max = edge_size - 1;
-            return y == 0 ? BOTTOM_EDGE : y == edge_max ? TOP_EDGE : x == 0 ? LEFT_EDGE : x == edge_max ? RIGHT_EDGE
-                    : NO_EDGE;
+            if (y == 0)
+                return BOTTOM_EDGE;
+            if (y == edge_max)
+                return TOP_EDGE;
+            if (x == 0)
+                return LEFT_EDGE;
+            if (x == edge_max)
+                return RIGHT_EDGE;
+            return NO_EDGE;
         }
     }
 
@@ -529,18 +382,21 @@ class SANMVideoStream extends VideoInputStream {
         NO_DIR;
 
         public static GlyphDir which(GlyphEdge edge0, GlyphEdge edge1) {
-            if ((edge0 == GlyphEdge.LEFT_EDGE && edge1 == GlyphEdge.RIGHT_EDGE) ||
+            if (    (edge0 == GlyphEdge.LEFT_EDGE && edge1 == GlyphEdge.RIGHT_EDGE) ||
                     (edge1 == GlyphEdge.LEFT_EDGE && edge0 == GlyphEdge.RIGHT_EDGE) ||
                     (edge0 == GlyphEdge.BOTTOM_EDGE && edge1 != GlyphEdge.TOP_EDGE) ||
                     (edge1 == GlyphEdge.BOTTOM_EDGE && edge0 != GlyphEdge.TOP_EDGE)) {
                 return DIR_UP;
-            } else if ((edge0 == GlyphEdge.TOP_EDGE && edge1 != GlyphEdge.BOTTOM_EDGE) ||
+            }
+            if (    (edge0 == GlyphEdge.TOP_EDGE && edge1 != GlyphEdge.BOTTOM_EDGE) ||
                     (edge1 == GlyphEdge.TOP_EDGE && edge0 != GlyphEdge.BOTTOM_EDGE)) {
                 return DIR_DOWN;
-            } else if ((edge0 == GlyphEdge.LEFT_EDGE && edge1 != GlyphEdge.RIGHT_EDGE) ||
+            }
+            if (    (edge0 == GlyphEdge.LEFT_EDGE && edge1 != GlyphEdge.RIGHT_EDGE) ||
                     (edge1 == GlyphEdge.LEFT_EDGE && edge0 != GlyphEdge.RIGHT_EDGE)) {
                 return DIR_LEFT;
-            } else if ((edge0 == GlyphEdge.TOP_EDGE && edge1 == GlyphEdge.BOTTOM_EDGE) ||
+            }
+            if (    (edge0 == GlyphEdge.TOP_EDGE && edge1 == GlyphEdge.BOTTOM_EDGE) ||
                     (edge1 == GlyphEdge.TOP_EDGE && edge0 == GlyphEdge.BOTTOM_EDGE) ||
                     (edge0 == GlyphEdge.RIGHT_EDGE && edge1 != GlyphEdge.LEFT_EDGE) ||
                     (edge1 == GlyphEdge.RIGHT_EDGE && edge0 != GlyphEdge.LEFT_EDGE)) {
@@ -599,11 +455,7 @@ class SANMVideoStream extends VideoInputStream {
         ctx.current_frame = header;
 
         DataSource source = ctx.source;
-        boolean rootedIo = source instanceof DiskDataSource;
-        if(rootedIo)
-            ctx.source = ((DiskDataSource) source).subsection((int) header.off, header.size);
-        else
-            source.seek(header.off);
+        source.seek(header.off);
 
         long start = ctx.source.getPosition();
         if (header.codec < v1_decoders.length) {
@@ -612,9 +464,6 @@ class SANMVideoStream extends VideoInputStream {
             System.err.println("Unhandled subcodec: " + header.codec);
             return false;
         }
-
-        if(rootedIo)
-            ctx.source = source;
 
         // Copy to output buffer...
         copyToOutput(raster, ctx.width, ctx.height, ctx.frm0);
@@ -642,15 +491,15 @@ class SANMVideoStream extends VideoInputStream {
         ctx.frm0 = temp;
     }
 
-    private static void interp_point(Point point, int x0, int y0, int x1, int y1, int pos, int npoints) {
-        if (npoints == 0) {
+    private static void interp_point(Point point, int x0, int y0, int x1, int y1, int pos, int width) {
+        if (width == 0) {
             point.x = x0;
             point.y = y0;
         } else {
-            final int remaining = npoints - pos;
-            final int halfTotal = npoints >> 2;
-            point.x = ((x0 * pos + x1 * remaining + halfTotal) / npoints);
-            point.y = ((y0 * pos + y1 * remaining + halfTotal) / npoints);
+            final int remaining = width - pos;
+            final int halfTotal = width >> 1;
+            point.x = ((x0 * pos + x1 * remaining + halfTotal) / width);
+            point.y = ((y0 * pos + y1 * remaining + halfTotal) / width);
         }
     }
 
@@ -671,31 +520,31 @@ class SANMVideoStream extends VideoInputStream {
                 int y1 = yvec[j];
                 GlyphEdge edge1 = GlyphEdge.which(x1, y1, side_length);
                 GlyphDir dir = GlyphDir.which(edge0, edge1);
-                int npoints = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0));
+                int width = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0));
                 int ipoint;
 
-                for (ipoint = 0; ipoint <= npoints; ipoint++) {
+                for (ipoint = 0; ipoint <= width; ipoint++) {
                     int irow, icol;
 
-                    interp_point(point, x0, y0, x1, y1, ipoint, npoints);
+                    interp_point(point, x0, y0, x1, y1, ipoint, width);
 
                     switch (dir) {
                         case DIR_UP:
-                            for (irow = point.y; irow >= 0; irow--)
-                                pglyph[point.x + irow * side_length] = true;
+                            for (irow = point.y; irow >= 0;)
+                                pglyph[point.x + irow-- * side_length] = true;
                             break;
                         case DIR_DOWN:
-                            for (irow = point.y; irow < side_length; irow++)
-                                pglyph[point.x + irow * side_length] = true;
+                            for (irow = point.y; irow < side_length;)
+                                pglyph[point.x + irow++ * side_length] = true;
                             break;
                         case DIR_LEFT:
-                            for (icol = point.x; icol >= 0; icol--)
-                                pglyph[icol + point.y * side_length] = true;
+                            for (icol = point.x; icol >= 0;)
+                                pglyph[icol-- + point.y * side_length] = true;
                             break;
 
                         case DIR_RIGHT:
                             for (icol = point.x; icol < side_length; icol++)
-                                pglyph[icol + point.y * side_length] = true;
+                                pglyph[icol++ + point.y * side_length] = true;
                             break;
                     }
                 }
@@ -704,7 +553,7 @@ class SANMVideoStream extends VideoInputStream {
     }
 
     private static void copy_block(short[] dst, int dstOff, short[] src, int srcOff, final int block_size, final int pitch) {
-        for(int i = 0; i < block_size; i++) {
+        for (int i = 0; i < block_size; i++) {
             System.arraycopy(src, srcOff, dst, dstOff, block_size);
             dstOff += pitch;
             srcOff += pitch;
@@ -712,14 +561,15 @@ class SANMVideoStream extends VideoInputStream {
     }
 
     private static void fill_block(short[] dst, int dstOff, short color, int block_size, int pitch) {
-        for (int y = 0; y < block_size; y++, dstOff += pitch)
+        for (int y = 0; y < block_size; y++) {
             Arrays.fill(dst, dstOff, dstOff + block_size, color);
+            dstOff += pitch;
+        }
     }
 
     static void draw_glyph(SANMVideoContext ctx, short[] dst, int dstOff, int index, short fg_color,
                            short bg_color, int block_size, int pitch) {
-        boolean [] pglyph;
-        int x, y;
+        boolean[] pglyph;
 
         if (index >= 256) {
             System.err.println("Ignoring nonexistant glyph: " + index);
@@ -727,12 +577,14 @@ class SANMVideoStream extends VideoInputStream {
         }
 
         pglyph = block_size == 8 ? p8x8glyphs[index] : p4x4glyphs[index];
+        System.out.println(pitch + " vs " + block_size);
         int glyphOff = 0;
-        pitch -= block_size;
 
-        for (y = 0; y < block_size; y++, dstOff += pitch)
-            for (x = 0; x < block_size; x++)
-                dst[dstOff++] = pglyph[glyphOff++] ? bg_color : fg_color;
+        for (int y = 0; y < block_size; y++) {
+            for (int x = 0; x < block_size; x++)
+                dst[dstOff+x] = pglyph[glyphOff++] ? bg_color : fg_color;
+            dstOff += pitch;
+        }
     }
 
     private static interface Subcodec {
@@ -824,11 +676,11 @@ class SANMVideoStream extends VideoInputStream {
                     if (blk_size == 2) {
                         opcode_0xf8(ctx, cx, cy, blk_size, ctx.pitch);
                     } else {
-                        blk_size /= 2;
-                        codec2subblock(ctx, cx, cy, blk_size);
-                        codec2subblock(ctx, cx + blk_size, cy, blk_size);
-                        codec2subblock(ctx, cx, cy + blk_size, blk_size);
-                        codec2subblock(ctx, cx + blk_size, cy + blk_size, blk_size);
+                        int nblk_size = blk_size / 2;
+                        codec2subblock(ctx, cx, cy, nblk_size);
+                        codec2subblock(ctx, cx + nblk_size, cy, nblk_size);
+                        codec2subblock(ctx, cx, cy + nblk_size, nblk_size);
+                        codec2subblock(ctx, cx + nblk_size, cy + nblk_size, nblk_size);
                     }
                     break;
             }
@@ -842,20 +694,17 @@ class SANMVideoStream extends VideoInputStream {
             if (block_size == 2) {
                 int indices;
                 indices = source.readIntLE();
-                dst[dstOff + 0] = ctx.readCodebook(indices & 0xFF);
-                indices >>>= 8;
-                dst[dstOff + 1] = ctx.readCodebook(indices & 0xFF);
-                indices >>>= 8;
-                dst[dstOff + pitch] = ctx.readCodebook(indices & 0xFF);
-                indices >>>= 8;
-                dst[dstOff + pitch + 1] = ctx.readCodebook(indices & 0xFF);
+                dst[dstOff] = ctx.readCodebook((indices>>0) & 0xFF);
+                dst[dstOff + 1] = ctx.readCodebook((indices>>8) & 0xFF);
+                dst[dstOff + pitch] = ctx.readCodebook((indices>>16) & 0xFF);
+                dst[dstOff + pitch + 1] = ctx.readCodebook((indices>>24) & 0xFF);
             } else {
                 short fgcolor, bgcolor;
                 int glyph;
 
                 glyph = source.readUnsignedByte();
-                bgcolor = ctx.readCodebook(source.readUnsignedByte());
                 fgcolor = ctx.readCodebook(source.readUnsignedByte());
+                bgcolor = ctx.readCodebook(source.readUnsignedByte());
 
                 draw_glyph(ctx, dst, dstOff, glyph, fgcolor, bgcolor, block_size, pitch);
             }
@@ -876,8 +725,8 @@ class SANMVideoStream extends VideoInputStream {
                 int glyph;
 
                 glyph = source.readUnsignedByte();
-                bgcolor = source.readShortLE();
                 fgcolor = source.readShortLE();
+                bgcolor = source.readShortLE();
 
                 draw_glyph(ctx, dst, dstOff, glyph, fgcolor, bgcolor, block_size, pitch);
             }
@@ -914,22 +763,22 @@ class SANMVideoStream extends VideoInputStream {
         public void decode(SANMVideoContext ctx) throws IOException {
             DataSource source = ctx.source;
             int remaining = ctx.current_frame.rle_output_size;
-            if(buf == null || buf.length < remaining)
+            if (buf == null || buf.length < remaining)
                 buf = new byte[remaining];
             int dstOff = 0;
-            while(remaining != 0) {
+            while (remaining > 0) {
                 int code = source.readUnsignedByte();
                 int line_length = (code >> 1) + 1;
 
-                if((code & 1) != 0) { // RLE run
-                    Arrays.fill(buf, dstOff, dstOff+line_length, source.readByte());
+                if ((code & 1) != 0) { // RLE run
+                    Arrays.fill(buf, dstOff, dstOff + line_length, source.readByte());
                 } else
                     source.readFully(buf, dstOff, line_length);
                 dstOff += line_length;
                 remaining -= line_length;
             }
-            for(int i = 0; i < ctx.npixels*2; i+=2) {
-                ctx.frm0[i/2] = (short) (((buf[i+1] & 0xff) << 8) | (buf[i] & 0xff));
+            for (int i = 0; i < ctx.npixels * 2; i += 2) {
+                ctx.frm0[i / 2] = (short) (((buf[i + 1] & 0xff) << 8) | (buf[i] & 0xff));
             }
         }
     }

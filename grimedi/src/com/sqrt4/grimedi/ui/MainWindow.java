@@ -4,13 +4,11 @@
 
 package com.sqrt4.grimedi.ui;
 
-import java.awt.event.*;
-import java.beans.*;
 import com.sqrt.liblab.LabCollection;
-import com.sqrt.liblab.entry.LabEntry;
 import com.sqrt.liblab.LabFile;
 import com.sqrt.liblab.codec.CodecMapper;
 import com.sqrt.liblab.codec.EntryCodec;
+import com.sqrt.liblab.entry.LabEntry;
 import com.sqrt.liblab.io.DataSource;
 import com.sqrt4.grimedi.Main;
 import com.sqrt4.grimedi.ui.component.BusyDialog;
@@ -19,22 +17,27 @@ import com.sqrt4.grimedi.ui.editor.EditorPanel;
 import com.sqrt4.grimedi.ui.editor.HexView;
 import com.sqrt4.grimedi.util.CachedPredicate;
 import com.sqrt4.grimedi.util.Predicate;
+import com.sqrt4.grimedi.util.Size;
+import org.netbeans.swing.outline.DefaultOutlineModel;
+import org.netbeans.swing.outline.Outline;
+import org.netbeans.swing.outline.RenderDataProvider;
+import org.netbeans.swing.outline.RowModel;
 
 import javax.swing.*;
 import javax.swing.event.*;
-import javax.swing.tree.*;
+import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
-
-import com.sqrt4.grimedi.util.Size;
-import org.netbeans.swing.outline.*;
 
 /**
  * @author James Lawrence
@@ -49,13 +52,6 @@ public class MainWindow extends JFrame {
     private final JFileChooser fileChooser = new JFileChooser(".");
 
     static {
-        SplashScreenController.setPercentage(100);
-        SplashScreenController.setText("GrimEdi v" + Main.VERSION + " by James Lawrence");
-        try {
-            Thread.sleep(3000);
-        } catch(Exception e) {
-            /**/
-        }
         SplashScreenController.setPercentage(10);
         SplashScreenController.setText("Registering codecs...");
         CodecMapper.registerDefaults();
@@ -63,6 +59,15 @@ public class MainWindow extends JFrame {
         SplashScreenController.setText("Registering views...");
         EditorMapper.registerDefaults();
         SplashScreenController.setPercentage(80);
+        SplashScreenController.setPercentage(100);
+        SplashScreenController.setText("GrimEdi v" + Main.VERSION + " by James Lawrence");
+        if (SplashScreenController.supported()) {
+            try {
+                Thread.sleep(3000);
+            } catch (Exception e) {
+            /**/
+            }
+        }
     }
 
     public MainWindow() {
@@ -90,13 +95,14 @@ public class MainWindow extends JFrame {
             }
 
             ImageIcon labIcon = new ImageIcon(getClass().getResource("/lab.png"));
+
             public Icon getIcon(Object o) {
 
-                if(o instanceof LabFile)
+                if (o instanceof LabFile)
                     return labIcon;
-                else if(o instanceof DataSource) {
+                else if (o instanceof DataSource) {
                     EditorPanel panel = EditorMapper.editorPanelForProvider((DataSource) o);
-                    return panel == null? EditorPanel.defaultIcon: panel.getIcon();
+                    return panel == null ? EditorPanel.defaultIcon : panel.getIcon();
                 }
                 return null;
             }
@@ -131,17 +137,18 @@ public class MainWindow extends JFrame {
         filterableEntries.applyFilters();
     }
 
-    public void runAsyncWithPopup(String popupTitle, String message, final Runnable r) {
-        new Thread() {
+    public void runAsyncWithPopup(String message, final Runnable r, boolean canCancel) {
+        final Thread asyncThread = new Thread() {
             public void run() {
                 while (_busy == null || !_busy.isVisible()) {
                     try {
-                        Thread.sleep(100); // Wait until the busy dialog is shown...
+                        Thread.sleep(10); // Wait until the busy dialog is shown...
                     } catch (InterruptedException ignore) {
                     }
                 }
                 try {
                     r.run(); // Do it...
+
                 } catch (Throwable e) {
                     e.printStackTrace(); // Catch any errors
                 } finally {
@@ -149,11 +156,19 @@ public class MainWindow extends JFrame {
                     _busy = null;
                 }
             }
-        }.start();
+        };
+        asyncThread.setDaemon(true);
+        asyncThread.start();
         try {
             if (_busy == null)
                 _busy = new BusyDialog(this);
-            _busy.setTitle(popupTitle);
+            _busy.setCancellable(canCancel);
+            _busy.setCancelCallback(new AbstractAction() {
+                public void actionPerformed(ActionEvent e) {
+                    asyncThread.interrupt();
+                }
+            });
+            _busy.setTitle("Please wait...");
             _busy.setMessage(message);
             _busy.pack();
             _busy.setVisible(true);
@@ -164,6 +179,10 @@ public class MainWindow extends JFrame {
             }
             t.printStackTrace();
         }
+    }
+
+    public void runAsyncWithPopup(String message, final Runnable r) {
+        runAsyncWithPopup(message, r, false);
     }
 
     public void setBusyMessage(String message) {
@@ -179,7 +198,7 @@ public class MainWindow extends JFrame {
             return;
         final DataSource selected = (DataSource) selObj;
 
-        runAsyncWithPopup("Please wait...", "Loading " + selected.getName() + "...", new Runnable() {
+        runAsyncWithPopup("Loading " + selected.getName() + "...", new Runnable() {
             public void run() {
                 while (editorPane.getComponentCount() > 0) {
                     Component c = editorPane.getComponent(0);
@@ -220,11 +239,11 @@ public class MainWindow extends JFrame {
                 editorPane.revalidate();
                 editorPane.repaint();
             }
-        });
+        }, true);
     }
 
     private void fileListMousePressed(MouseEvent e) {
-        if(context == null)
+        if (context == null)
             return;
         TreePath selPath = fileList.getClosestPathForLocation(e.getX(), e.getY());
         if (selPath == null)
@@ -253,6 +272,7 @@ public class MainWindow extends JFrame {
     }
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
+    // Generated using JFormDesigner non-commercial license
     private JMenuBar menuBar1;
     private JMenu menu1;
     private JMenuItem menuItem1;
@@ -282,6 +302,7 @@ public class MainWindow extends JFrame {
     private class OpenAction extends AbstractAction {
         private OpenAction() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "Open");
             putValue(SHORT_DESCRIPTION, "Open a LAB file");
             putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyEvent.CTRL_MASK));
@@ -292,7 +313,7 @@ public class MainWindow extends JFrame {
             fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             if (fileChooser.showOpenDialog(MainWindow.this) != JFileChooser.APPROVE_OPTION)
                 return;
-            runAsyncWithPopup("Please wait...", "Loading LAB files...", new Runnable() {
+            runAsyncWithPopup("Loading LAB files...", new Runnable() {
                 public void run() {
                     File f = fileChooser.getSelectedFile();
                     try {
@@ -309,6 +330,7 @@ public class MainWindow extends JFrame {
     private class CloseAction extends AbstractAction {
         private CloseAction() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "Close");
             putValue(SHORT_DESCRIPTION, "Close the current LAB file");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
@@ -417,15 +439,15 @@ public class MainWindow extends JFrame {
         }
 
         public Object getValueFor(Object o, int i) {
-            switch(i) {
+            switch (i) {
                 case 0:
                     String s = o.toString();
                     int idx = s.lastIndexOf('.');
-                    if(idx == -1)
+                    if (idx == -1)
                         return "None";
-                    return s.substring(idx+1);
+                    return s.substring(idx + 1);
                 case 1:
-                    if(o instanceof DataSource)
+                    if (o instanceof DataSource)
                         return new Size(((DataSource) o).getLength());
                     return null;
             }
@@ -433,7 +455,7 @@ public class MainWindow extends JFrame {
         }
 
         public Class getColumnClass(int i) {
-            switch(i) {
+            switch (i) {
                 case 0:
                     return String.class;
                 case 1:
@@ -450,7 +472,7 @@ public class MainWindow extends JFrame {
         }
 
         public String getColumnName(int i) {
-            switch(i) {
+            switch (i) {
                 case 0:
                     return "Type";
                 case 1:
@@ -464,6 +486,7 @@ public class MainWindow extends JFrame {
     private class ExtractEntryAction extends AbstractAction {
         private ExtractEntryAction() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "Extract");
             putValue(SHORT_DESCRIPTION, "Extract this entry to a file");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
@@ -474,7 +497,7 @@ public class MainWindow extends JFrame {
             jfc.setSelectedFile(new File(popupSource.getName()));
             if (jfc.showSaveDialog(MainWindow.this) != JFileChooser.APPROVE_OPTION)
                 return;
-            runAsyncWithPopup("Please wait...", "Extracting " + popupSource.getName() + "...", new Runnable() {
+            runAsyncWithPopup("Extracting " + popupSource.getName() + "...", new Runnable() {
                 public void run() {
                     try {
                         FileOutputStream fos = new FileOutputStream(jfc.getSelectedFile());
@@ -501,6 +524,7 @@ public class MainWindow extends JFrame {
     private class DeleteEntryAction extends AbstractAction {
         private DeleteEntryAction() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "Delete");
             putValue(SHORT_DESCRIPTION, "Delete the entry from the LAB file");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
@@ -516,6 +540,7 @@ public class MainWindow extends JFrame {
     private class ExtractAllAction extends AbstractAction {
         private ExtractAllAction() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "Extract all...");
             putValue(SHORT_DESCRIPTION, "Extract all the entries in this LAB file to the specified directory...");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
@@ -529,7 +554,7 @@ public class MainWindow extends JFrame {
 
             final File dir = jfc.getSelectedFile();
             final String pre = "<html>Extracting " + labPopupSource.toString() + "...<br/>";
-            runAsyncWithPopup("Please wait...", pre, new Runnable() {
+            runAsyncWithPopup(pre, new Runnable() {
                 public void run() {
                     final byte[] buf = new byte[5000];
                     for (DataSource source : labPopupSource.entries) {
@@ -556,6 +581,7 @@ public class MainWindow extends JFrame {
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+        // Generated using JFormDesigner non-commercial license
         menuBar1 = new JMenuBar();
         menu1 = new JMenu();
         menuItem1 = new JMenuItem();
@@ -623,11 +649,12 @@ public class MainWindow extends JFrame {
                 {
 
                     //---- fileList ----
-                    fileList.setRootVisible(false);
-                    fileList.setColumnHidingAllowed(false);
-                    fileList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
                     fileList.setFillsViewportHeight(true);
-                    fileList.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+                    fileList.setAutoResizeMode(JTable.AUTO_RESIZE_NEXT_COLUMN);
+                    fileList.setFullyNonEditable(true);
+                    fileList.setSurrendersFocusOnKeystroke(false);
+                    fileList.setRootVisible(false);
+                    fileList.setShowHorizontalLines(true);
                     fileList.addMouseListener(new MouseAdapter() {
                         @Override
                         public void mousePressed(MouseEvent e) {

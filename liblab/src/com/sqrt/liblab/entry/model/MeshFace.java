@@ -1,8 +1,8 @@
 package com.sqrt.liblab.entry.model;
 
 import com.sqrt.liblab.threed.Bounds3;
-import com.sqrt.liblab.threed.Vector2;
-import com.sqrt.liblab.threed.Vector3;
+import com.sqrt.liblab.threed.Vector2f;
+import com.sqrt.liblab.threed.Vector3f;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -19,19 +19,19 @@ public class MeshFace {
     /**
      * The normal of this face
      */
-    public Vector3 normal;
+    public Vector3f normal;
     /**
      * The vertices that make up this face
      */
-    public List<Vector3> vertices = new LinkedList<Vector3>();
+    public List<Vector3f> vertices = new LinkedList<Vector3f>();
     /**
      * The vertex normals
      */
-    public List<Vector3> normals = new LinkedList<Vector3>();
+    public List<Vector3f> normals = new LinkedList<Vector3f>();
     /**
      * The texture mapping coordinates
      */
-    public List<Vector2> uv = new LinkedList<Vector2>();
+    public List<Vector2f> uv = new LinkedList<Vector2f>();
     /**
      * The texture that should be mapped onto this face
      */
@@ -42,11 +42,11 @@ public class MeshFace {
      * @param pos the offset of this face from the origin
      * @return the calculated bounds
      */
-    public Bounds3 getBounds(Vector3 pos) {
+    public Bounds3 getBounds(Vector3f pos) {
         float mx, my, mz, MX, MY, MZ;
         mx=my=mz=9999;
         MX=MY=MZ=-9999;
-        for(Vector3 v: vertices) {
+        for(Vector3f v: vertices) {
             v = v.add(pos);
             mx = Math.min(mx, v.x);
             my = Math.min(my, v.y);
@@ -55,6 +55,6 @@ public class MeshFace {
             MY = Math.max(MY, v.y);
             MZ = Math.max(MZ, v.z);
         }
-        return new Bounds3(new Vector3(mx, my, mz), new Vector3(MX, MY, MZ));
+        return new Bounds3(new Vector3f(mx, my, mz), new Vector3f(MX, MY, MZ));
     }
 }

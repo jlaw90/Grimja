@@ -4,9 +4,10 @@
 
 package com.sqrt4.grimedi.ui.component;
 
+import com.sqrt.liblab.threed.Angle;
+
 import java.beans.*;
 import javax.swing.event.*;
-import com.sqrt.liblab.threed.Angle;
 
 import java.awt.*;
 import java.text.NumberFormat;
@@ -33,23 +34,31 @@ public class AngleEditor extends JPanel {
     }
 
     public void setAngle(Angle angle) {
-        Angle old = getAngle();
+        setAngle(angle.degrees);
+    }
+
+    public void setAngle(float degrees) {
+        float old = getDegrees();
         adjusting = true;
-        angleDisplay.setValue(angle.degrees);
-        angleslider.setValue((int) angle.degrees);
+        angleDisplay.setValue(degrees);
+        angleslider.setValue((int) degrees);
         adjusting = false;
 
         if(listeners.isEmpty())
             return;
-        PropertyChangeEvent pce = new PropertyChangeEvent(this, "angle", old, angle);
+        PropertyChangeEvent pce = new PropertyChangeEvent(this, "angle", old, degrees);
         for(int i = 0; i < listeners.size(); i++)
             listeners.get(i).propertyChange(pce);
     }
 
-    public Angle getAngle() {
+    public float getDegrees() {
         if(angleDisplay == null || angleDisplay.getValue() == null)
-            return Angle.zero;
-        return new Angle(((Number) angleDisplay.getValue()).floatValue()); // more precise...
+            return 0;
+        return ((Number) angleDisplay.getValue()).floatValue(); // more precise...
+    }
+
+    public Angle getAngle() {
+        return new Angle(getDegrees());
     }
 
     public void setEnabled(boolean enabled) {
@@ -87,9 +96,11 @@ public class AngleEditor extends JPanel {
         //---- angleslider ----
         angleslider.setMaximum(180);
         angleslider.setPaintTicks(true);
-        angleslider.setMajorTickSpacing(45);
+        angleslider.setMajorTickSpacing(90);
         angleslider.setValue(0);
         angleslider.setMinimum(-180);
+        angleslider.setMinorTickSpacing(30);
+        angleslider.setSnapToTicks(true);
         angleslider.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {

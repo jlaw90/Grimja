@@ -79,7 +79,7 @@ new FormModel {
 					"value": "South"
 				} )
 			}, new FormLayoutConstraints( class java.lang.String ) {
-				"value": "Last"
+				"value": "South"
 			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 0, 0 )
