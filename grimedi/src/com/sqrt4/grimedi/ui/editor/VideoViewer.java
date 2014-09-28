@@ -6,8 +6,10 @@ package com.sqrt4.grimedi.ui.editor;
 
 import com.sqrt.liblab.entry.video.AudioTrack;
 import com.sqrt.liblab.entry.video.Video;
-import com.sqrt4.grimedi.util.AnimatedGifEncoder;
+import com.sqrt4.grimedi.util.AnimatedGifCreator;
 
+import javax.imageio.ImageIO;
+import javax.imageio.stream.ImageOutputStream;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
@@ -18,7 +20,6 @@ import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 
 /**
@@ -222,26 +223,22 @@ public class VideoViewer extends EditorPanel<Video> {
                 public void run() {
                     window.setBusyMessage("Generating GIF (frame 1/" + data.numFrames + ")");
                     try {
-                        AnimatedGifEncoder age = new AnimatedGifEncoder();
-                        age.setSize(data.width, data.height);
-                        age.setRepeat(0);
-                        age.setFrameRate(14.99992f);
-                        age.setQuality(10);
                         File temp = File.createTempFile("anim", ".gif");
-                        FileOutputStream fos = new FileOutputStream(temp);
-                        age.start(fos);
+                        ImageOutputStream ios = ImageIO.createImageOutputStream(temp);
+                        AnimatedGifCreator agc = new AnimatedGifCreator(ios, BufferedImage.TYPE_INT_RGB, 14.99992f, true, 0);
+
                         WritableRaster raster = surface.getRaster();
                         for (int i1 = 0; i1 < data.numFrames; i1++) {
                             data.stream.setFrame(i1);
                             boolean cont = data.stream.readFrame(raster, data.width, data.height);
                             viewer.repaint();
-                            age.addFrame(surface);
+                            agc.addFrame(surface);
                             window.setBusyMessage("Generating GIF (frame " + (i1 + 1) + "/" + data.numFrames + ")");
                             if(!cont)
                                 break;
                         }
-                        age.finish();
-                        fos.close();
+                        agc.finish();
+                        ios.close();
                         if (Desktop.isDesktopSupported())
                             Desktop.getDesktop().open(temp);
                     } catch (Exception e) {

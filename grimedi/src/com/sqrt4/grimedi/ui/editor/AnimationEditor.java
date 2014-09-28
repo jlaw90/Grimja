@@ -20,8 +20,12 @@ import com.sqrt.liblab.threed.Angle;
 import com.sqrt.liblab.threed.Vector3f;
 import com.sqrt4.grimedi.ui.component.FrameCallback;
 import com.sqrt4.grimedi.ui.component.ModelRenderer;
-import com.sqrt4.grimedi.util.AnimatedGifEncoder;
+import com.sqrt4.grimedi.util.AnimatedGifCreator;
 
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
+import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -30,8 +34,10 @@ import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
 import java.io.File;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Vector;
@@ -362,15 +368,11 @@ public class AnimationEditor extends EditorPanel<Animation> {
             window.runAsyncWithPopup("Rendering animation (frame 1/" + data.numFrames + ")", new Runnable() {
                 public void run() {
                     try {
-                        final Queue<BufferedImage> images = new LinkedList<BufferedImage>();
-                        final AnimatedGifEncoder age = new AnimatedGifEncoder();
-                        age.setQuality(10);
-                        age.setFrameRate(15);
-                        age.setRepeat(0);
-                        File file = File.createTempFile("anim", ".gif");
-                        age.start(file.getAbsolutePath());
+                        final Queue<BufferedImage> images = new LinkedList<>();
+                        File temp = File.createTempFile("anim", ".gif");
+                        ImageOutputStream ios = ImageIO.createImageOutputStream(temp);
+                        AnimatedGifCreator agc = new AnimatedGifCreator(ios, BufferedImage.TYPE_INT_RGB, 14.99992f, true, 0);
                         frameSlider.setValue(0);
-                        final AWTGLReadBufferUtil screenshot = new AWTGLReadBufferUtil(renderer.getGL().getGLProfile(), true);
                         FrameCallback screenshotCallback = new FrameCallback() {
                             public void preDisplay(GL2 gl2) {
                             }
@@ -379,7 +381,30 @@ public class AnimationEditor extends EditorPanel<Animation> {
                                 int frame = frameSlider.getValue();
 
                                 synchronized (images) {
-                                    images.add(screenshot.readPixelsToBufferedImage(gl2, true));
+                                    gl2.glReadBuffer(GL.GL_BACK);
+                                    int w = renderer.getViewportWidth(), h = renderer.getViewportHeight();
+                                    ByteBuffer glBB = ByteBuffer.allocateDirect(4 * w * h);
+                                    int[] buf = new int[w*h];
+                                    gl2.glReadPixels(0, 0, w, h, GL.GL_RGBA, GL.GL_BYTE, glBB);
+                                    BufferedImage bi = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+
+                                    // build RGB buffer
+                                    int off = (h-1) * w;
+                                    for(int y = 0; y < h; y++) {
+                                        for(int x = 0; x < w; x++) {
+                                            int r = 2 * glBB.get();
+                                            int g = 2 * glBB.get();
+                                            int b = 2 * glBB.get();
+                                            int a = glBB.get();
+
+                                            buf[off + x] = (r << 16) | (g << 8) | b;
+                                        }
+                                        off -= w;
+                                    }
+
+                                    bi.setRGB(0, 0, w, h, buf, 0, w);
+
+                                    images.add(bi);
                                     images.notify();
                                 }
                                 frameSlider.setValue(frameSlider.getValue() + 1);
@@ -407,12 +432,12 @@ public class AnimationEditor extends EditorPanel<Animation> {
                             }
                             if(renderer.getCallback() != screenshotCallback)
                                 window.setBusyMessage("Generating GIF (frame " + processed + " / " + data.numFrames + ")");
-                            age.addFrame(image);
+                            agc.addFrame(image);
                             processed++;
                             if(processed >= data.numFrames) {
-                                age.finish();
+                                agc.finish();
                                 if (Desktop.isDesktopSupported())
-                                    Desktop.getDesktop().open(file);
+                                    Desktop.getDesktop().open(temp);
                             }
                         }
                     } catch (Exception e) {

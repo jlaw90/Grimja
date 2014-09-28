@@ -577,7 +577,6 @@ class SANMVideoStream extends VideoInputStream {
         }
 
         pglyph = block_size == 8 ? p8x8glyphs[index] : p4x4glyphs[index];
-        System.out.println(pitch + " vs " + block_size);
         int glyphOff = 0;
 
         for (int y = 0; y < block_size; y++) {
