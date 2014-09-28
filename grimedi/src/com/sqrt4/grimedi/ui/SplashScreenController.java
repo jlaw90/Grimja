@@ -33,54 +33,49 @@ public class SplashScreenController {
         frame += framesElapsed;
 
         Graphics graphics = splash.createGraphics();
+        graphics.setFont(Font.decode("Helvetica 12 bold"));
         FontMetrics metrics = graphics.getFontMetrics();
 
         // y offset for text...
         Dimension size = splash.getSize();
+        final Insets insets = new Insets(4, 0, 6, 0);
         int y = size.height - metrics.getHeight();
 
         // Clear previous text and percentage...
         graphics.setColor(Color.BLACK);
-        graphics.setClip(0, 0, size.width, size.height);
-        graphics.clearRect(0, y - metrics.getHeight(), size.width, size.height - y + metrics.getHeight());
+        graphics.setClip(0, y - metrics.getHeight(), size.width, size.height);
+        graphics.clearRect(0, 0, size.width, size.height);
+
+        // Draw loading text...
+        graphics.setColor(Color.WHITE);
+        graphics.drawString(loadingText, (size.width - metrics.stringWidth(loadingText)) / 2, y);
+        y += insets.top;
 
         // Draw progress bar...
-        final int border = 3;
-        final int border2 = border * 2;
-        final int xOff = border;
-        final int yOff = y + border;
-        final int progWidth = ((int) ((float) size.width * (percentage / 100f))) - border2;
-        final int progHeight = size.height - y - border2;
+        graphics.setClip(insets.left, y + insets.top, size.width - insets.right - insets.left, size.height - insets.bottom - insets.top);
+        final int xOff = insets.left;
+        final int yOff = y;
+        final int progWidth = ((int) ((float) size.width * (percentage / 100f))) - (insets.left+insets.right);
+        final int progHeight = size.height - y - insets.bottom;
         graphics.setClip(xOff, yOff, progWidth, progHeight);
         graphics.setColor(Color.LIGHT_GRAY);
         if (progWidth > 0) {
-            final float bStart = 0.3f;
-            final float bEnd = 0.8f;
-            final float bDif = (bEnd - bStart) / (float) progHeight;
-            for (int y1 = 0; y1 < progHeight; y1++) {
-                float b = bStart + (bDif * y1);
-                int rgba = (int) (b * 256);
-                graphics.setColor(new Color(rgba, rgba, rgba));
-                graphics.drawLine(xOff, yOff + y1, xOff+progWidth, yOff + y1);
-            }
+            graphics.setColor(Color.WHITE);
+            graphics.fillRect(xOff, yOff, progWidth, progHeight);
 
 
             final int stripDistance = 20;
-            final int stripeWidth = 5;
+            final int stripeWidth = 8;
             int stripeOff = frame % (stripDistance+stripeWidth);
-            graphics.setColor(Color.RED);
+            graphics.setColor(Color.BLACK);
 
-            for (int x1 = stripeOff; x1 < progWidth; x1 += stripDistance) {
+            for (int x1 = -stripeOff; x1 < progWidth; x1 += stripDistance) {
                 for (int i = 0; i < stripeWidth; i++, x1++) {
                     int x = x1 + xOff;
                     graphics.drawLine(x, yOff, x + progHeight-1, yOff + progHeight-1);
                 }
             }
         }
-
-        graphics.setClip(0, 0, size.width, size.height);
-        graphics.setColor(Color.YELLOW);
-        graphics.drawString(loadingText, (size.width - metrics.stringWidth(loadingText)) / 2, y);
         splash.update();
     }
 

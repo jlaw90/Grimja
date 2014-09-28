@@ -61,6 +61,8 @@ public class MainWindow extends JFrame {
         SplashScreenController.setPercentage(80);
         SplashScreenController.setPercentage(100);
         SplashScreenController.setText("GrimEdi v" + Main.VERSION + " by James Lawrence");
+
+        // It loads too fast, add artificial delay so people can appreciate the splash screen...
         if (SplashScreenController.supported()) {
             try {
                 Thread.sleep(3000);
