@@ -43,7 +43,7 @@ public class ColorMapSelector extends JPanel {
     public ColorMap getSelected() {
         DataSource edp = (DataSource) colorMapSelector.getSelectedItem();
         try {
-            edp.seek(0);
+            edp.position(0);
             return (ColorMap) CodecMapper.codecForProvider(edp).read(edp);
         } catch (IOException e) {
             e.printStackTrace();

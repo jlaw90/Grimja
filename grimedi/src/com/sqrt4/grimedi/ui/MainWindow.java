@@ -32,7 +32,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -206,6 +205,8 @@ public class MainWindow extends JFrame {
                     if (c instanceof EditorPanel) {
                         EditorPanel ep = (EditorPanel) c;
                         ep.onHide();
+
+                        // Todo: check if modified, save in temporary file if it is, cleanup if not - etc.
                     }
                     editorPane.remove(0);
                 }
@@ -213,7 +214,7 @@ public class MainWindow extends JFrame {
                 boolean fallback = true;
                 LabEntry data = null;
                 try {
-                    selected.seek(0);
+                    selected.position(0);
                     if (codec != null) {
                         try {
                             data = codec.read(selected);
@@ -449,11 +450,11 @@ public class MainWindow extends JFrame {
                     return s.substring(idx + 1);
                 case 1:
                     if (o instanceof DataSource)
-                        return new Size(((DataSource) o).getLength());
+                        return new Size(((DataSource) o).limit());
                     else if(o instanceof LabFile) {
                         long length = 0;
                         for(DataSource ds: ((LabFile) o).entries)
-                            length += ds.getLength();
+                            length += ds.limit();
                         return new Size(length);
                     }
                     return null;
@@ -510,13 +511,13 @@ public class MainWindow extends JFrame {
                         FileOutputStream fos = new FileOutputStream(jfc.getSelectedFile());
                         byte[] buf = new byte[5000];
                         int copied = 0;
-                        long len = popupSource.getLength();
-                        popupSource.seek(0);
+                        long len = popupSource.limit();
+                        popupSource.position(0);
                         while (copied < len) {
                             int toRead = (int) Math.min(buf.length, len - copied);
-                            int read = popupSource.read(buf, 0, toRead);
-                            fos.write(buf, 0, read);
-                            copied += read;
+                            popupSource.get(buf, 0, toRead);
+                            fos.write(buf, 0, toRead);
+                            copied += toRead;
                         }
                         fos.close();
                     } catch (IOException e1) {
@@ -571,13 +572,13 @@ public class MainWindow extends JFrame {
                             File f = new File(dir, source.getName());
                             FileOutputStream fos = new FileOutputStream(f);
                             int copied = 0;
-                            long len = source.getLength();
-                            source.seek(0);
+                            long len = source.limit();
+                            source.position(0);
                             while (!cancelled.get() && copied < len) {
                                 int toRead = (int) Math.min(buf.length, len - copied);
-                                int read = source.read(buf, 0, toRead);
-                                fos.write(buf, 0, read);
-                                copied += read;
+                                source.get(buf, 0, toRead);
+                                fos.write(buf, 0, toRead);
+                                copied += toRead;
                             }
                             fos.close();
                             if(cancelled.get()) {

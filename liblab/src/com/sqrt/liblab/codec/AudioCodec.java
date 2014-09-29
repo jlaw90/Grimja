@@ -20,15 +20,16 @@ public class AudioCodec extends EntryCodec<Audio> {
             final int headerSize = parseSoundHeader(audio, source);
             audio.stream = new AudioInputStream() {
                 public void seek(int pos) throws IOException {
-                    source.seek(pos + headerSize);
+                    source.position(pos + headerSize);
                 }
 
                 public int read() throws IOException {
-                    return source.read();
+                    return source.getUByte();
                 }
 
                 public int read(byte[] dst, int off, int len) throws IOException {
-                    return source.read(dst, off, len);
+                    source.get(dst, off, len);
+                    return len;
                 }
             };
         } else {
@@ -52,53 +53,53 @@ public class AudioCodec extends EntryCodec<Audio> {
 
     private int parseSoundHeader(Audio audio, final DataSource source) throws IOException {
         List<UnresolvedJump> unresolvedJumps = new LinkedList<UnresolvedJump>();
-        int tag = source.readInt();
+        int tag = source.getInt();
         if (tag == (('R' << 24) | ('I' << 16) | ('F' << 8) | 'F')) {
             Region main = new Region();
             audio.regions.add(main);
             main.offset = 0;
             source.skip(18);
-            audio.channels = source.readByte();
+            audio.channels = source.get();
             source.skip(1);
-            audio.sampleRate = source.readIntLE();
+            audio.sampleRate = source.getIntLE();
             source.skip(6);
-            audio.bits = source.readByte();
+            audio.bits = source.get();
             source.skip(5);
-            main.length = source.readIntLE();
+            main.length = source.getIntLE();
         } else if (tag == (('i' << 24) | ('M' << 16) | ('U' << 8) | 'S')) {
             int size;
-            final int headerStart = (int) source.getPosition();
+            final int headerStart = (int) source.position();
             source.skip(12);
 
             Map<Integer, String> unmappedComments = new HashMap<Integer, String>();
             do {
-                tag = source.readInt();
+                tag = source.getInt();
                 switch (tag) {
                     case (('F' << 24) | ('R' << 16) | ('M' << 8) | 'T'):
                         source.skip(12);
-                        audio.bits = source.readInt();
-                        audio.sampleRate = source.readInt();
-                        audio.channels = source.readInt();
+                        audio.bits = source.getInt();
+                        audio.sampleRate = source.getInt();
+                        audio.channels = source.getInt();
                         break;
                     case (('T' << 24) | ('E' << 16) | ('X' << 8) | 'T'):
-                        size = source.readInt();
-                        int offset = source.readInt();
-                        String s = source.readString(size-4);
+                        size = source.getInt();
+                        int offset = source.getInt();
+                        String s = source.getString(size - 4);
                         if(!unmappedComments.containsKey(offset))
                             unmappedComments.put(offset, s);
                         else
                             unmappedComments.put(offset, unmappedComments.get(offset) + "\n" + s);
                         break;
                     case (('S' << 24) | ('T' << 16) | ('O' << 8) | 'P'):
-                        size = source.readInt();
-                        int off = source.readInt();
+                        size = source.getInt();
+                        int off = source.getInt();
                         source.skip(size-4);
                         break;
                     case (('R' << 24) | ('E' << 16) | ('G' << 8) | 'N'):
                         source.skip(4);
                         Region r = new Region();
-                        r.offset = source.readInt();
-                        r.length = source.readInt();
+                        r.offset = source.getInt();
+                        r.length = source.getInt();
                         audio.regions.add(r);
                         break;
                     case (('J' << 24) | ('U' << 16) | ('M' << 8) | 'P'):
@@ -107,10 +108,10 @@ public class AudioCodec extends EntryCodec<Audio> {
                         UnresolvedJump uj = new UnresolvedJump();
                         unresolvedJumps.add(uj);
                         uj.wrap = j;
-                        uj.offset = source.readInt();
-                        uj.dest = source.readInt();
-                        j.hookId = source.readInt();
-                        j.fadeDelay = source.readInt();
+                        uj.offset = source.getInt();
+                        uj.dest = source.getInt();
+                        j.hookId = source.getInt();
+                        j.fadeDelay = source.getInt();
                         break;
                     case (('D' << 24) | ('A' << 16) | ('T' << 8) | 'A'):
                         source.skip(4);
@@ -119,7 +120,7 @@ public class AudioCodec extends EntryCodec<Audio> {
                         System.err.println("Unknown MAP tag: " + tag);
                 }
             } while (tag != (('D' << 24) | ('A' << 16) | ('T' << 8) | 'A'));
-            final int headerSize = (int) (source.getPosition() - headerStart);
+            final int headerSize = (int) (source.position() - headerStart);
             for (Region r : audio.regions) {
                 r.comments = unmappedComments.remove(r.offset);
                 r.offset -= headerSize;
@@ -172,31 +173,31 @@ class McmpStream extends AudioInputStream {
 
     public McmpStream(DataSource src) throws IOException {
         this.source = new NullPaddedDataSource(src);
-        if (source.readInt() != (('M' << 24) | ('C' << 16) | ('M' << 8) | 'P'))
+        if (source.getInt() != (('M' << 24) | ('C' << 16) | ('M' << 8) | 'P'))
             throw new IOException("Invalid MCMP format :S");
-        int numCompItems = source.readUnsignedShort();
-        int offset = (int) (source.getPosition() + (numCompItems * 9) + 2);
+        int numCompItems = source.getUShort();
+        int offset = (int) (source.position() + (numCompItems * 9) + 2);
         numCompItems--;
         source.skip(5);
         compEntries = new CompressionEntry[numCompItems];
         for (int i = 0; i < compEntries.length; i++)
             compEntries[i] = new CompressionEntry();
-        headerSize = source.readInt();
+        headerSize = source.getInt();
         offset += headerSize;
         int i;
         for (i = 0; i < numCompItems; i++) {
-            compEntries[i].codec = source.readByte();
-            compEntries[i].decompressedSize = source.readInt();
-            compEntries[i].compressedSize = source.readInt();
+            compEntries[i].codec = source.get();
+            compEntries[i].decompressedSize = source.getInt();
+            compEntries[i].compressedSize = source.getInt();
             compEntries[i].offset = offset;
             offset += compEntries[i].compressedSize;
         }
-        int sizeCodecs = source.readUnsignedShort();
+        int sizeCodecs = source.getUShort();
         for (i = 0; i < numCompItems; i++) {
             compEntries[i].offset += sizeCodecs;
         }
         source.skip(sizeCodecs);
-        headerSize += (int) source.getPosition();
+        headerSize += (int) source.position();
     }
 
     public synchronized void seek(int pos) throws IOException {
@@ -255,7 +256,7 @@ class McmpStream extends AudioInputStream {
         if (entryIdx >= compEntries.length)
             return null;
         CompressionEntry entry = compEntries[entryIdx++];
-        source.seek(entry.offset);
+        source.position(entry.offset);
         return Vima.decompress(source, entry.decompressedSize).toByteArray();
     }
 }
@@ -279,19 +280,34 @@ class NullPaddedDataSource extends DataSource {
         this.source = source;
     }
 
-    public void seek(long pos) throws IOException {
-        source.seek(pos);
+    public void position(long pos) throws IOException {
+        source.position(pos);
     }
 
-    public long getPosition() throws IOException {
-        return source.getPosition();
+    public long position() throws IOException {
+        return source.position();
     }
 
-    public long getLength() {
-        return source.getLength();
+    public long limit() {
+        return source.limit();
     }
 
-    public int read() throws IOException {
-        return getPosition() < getLength() ? source.read() : 0;
+    @Override
+    public void get(byte[] b, int off, int len) throws IOException {
+        source.get(b, off, len);
+    }
+
+    @Override
+    public void put(byte[] b, int off, int len) throws IOException {
+        source.put(b, off, len);
+    }
+
+    public byte get() throws IOException {
+        return position() < limit() ? source.get() : 0;
+    }
+
+    @Override
+    public void put(byte b) throws IOException {
+        source.put(b);
     }
 }

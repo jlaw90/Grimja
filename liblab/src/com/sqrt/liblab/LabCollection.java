@@ -77,6 +77,12 @@ public class LabCollection {
         return null;
     }
 
+    public void save(File dir) throws IOException {
+        for(LabFile lf: labs) {
+            lf.save(new File(dir, lf.getName() + ".lab"));
+        }
+    }
+
     /**
      * Finds all LAB files in the specified directory and loads them into this collection
      * @param dir the directory to load the LAB files from
@@ -94,7 +100,7 @@ public class LabCollection {
 
         Arrays.sort(labs, new Comparator<File>() {
             public int compare(File o1, File o2) {
-                return o1.getName().compareTo(o2.getName());
+                return o1.getName().compareToIgnoreCase(o2.getName());
             }
         });
         LabCollection lc = new LabCollection();

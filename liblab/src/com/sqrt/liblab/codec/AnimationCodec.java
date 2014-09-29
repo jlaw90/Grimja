@@ -11,10 +11,10 @@ import java.io.IOException;
 
 public class AnimationCodec extends EntryCodec<Animation> {
     protected Animation _read(DataSource source) throws IOException {
-        if (source.readIntLE() == (('K' << 24) | ('E' << 16) | ('Y' << 8) | 'F'))
+        if (source.getIntLE() == (('K' << 24) | ('E' << 16) | ('Y' << 8) | 'F'))
             return loadBinary(source);
         else {
-            source.seek(0);
+            source.position(0);
             return loadText(source);
         }
     }
@@ -75,34 +75,34 @@ public class AnimationCodec extends EntryCodec<Animation> {
 
     private Animation loadBinary(DataSource source) throws IOException {
         Animation anim = new Animation(source.container, source.getName());
-        source.seek(40);
-        anim.flags = source.readIntLE();
+        source.position(40);
+        anim.flags = source.getIntLE();
         source.skip(4);
-        anim.type = source.readIntLE();
-        source.seek(56);
-        anim.numFrames = source.readIntLE();
-        int numJoints = source.readIntLE();
+        anim.type = source.getIntLE();
+        source.position(56);
+        anim.numFrames = source.getIntLE();
+        int numJoints = source.getIntLE();
         source.skip(4);
-        int numMarkers = source.readIntLE();
-        source.seek(72);
+        int numMarkers = source.getIntLE();
+        source.position(72);
         for(int i = 0; i < numMarkers; i++) {
             Marker m = new Marker();
-            m.frame = source.readFloatLE();
+            m.frame = source.getFloatLE();
             anim.markers.add(m);
         }
-        source.seek(104);
+        source.position(104);
         for(int i = 0; i < numMarkers; i++)
-           anim.markers.get(i).val = source.readIntLE();
+           anim.markers.get(i).val = source.getIntLE();
 
-        source.seek(136);
+        source.position(136);
          // allocate
         for(int i = 0; i < numJoints; i++)
             anim.nodes.add(null);
         for(int i = 0; i < numJoints; i++) {
-            String meshName = source.readString(32);
+            String meshName = source.getString(32);
             if(meshName.isEmpty())
                 meshName = "(null)";
-            int nodeNum = source.readIntLE();
+            int nodeNum = source.getIntLE();
             if(nodeNum >= numJoints) {
                 System.err.println("Invalid node number (" + nodeNum + "/" + numJoints + ")");
                 continue;
@@ -113,20 +113,20 @@ public class AnimationCodec extends EntryCodec<Animation> {
             }
             AnimationNode node = new AnimationNode();
             node.meshName = meshName;
-            int count = source.readIntLE();
+            int count = source.getIntLE();
             source.skip(4);
             for(int j = 0; j < count; j++) {
                 KeyFrame kfe = new KeyFrame();
-                kfe.frame = source.readFloatLE();
-                kfe.flags = source.readIntLE();
-                kfe.pos = source.readVector3f();
-                kfe.pitch = source.readAngle();
-                kfe.yaw = source.readAngle();
-                kfe.roll = source.readAngle();
-                kfe.dpos = source.readVector3f();
-                kfe.dpitch = source.readAngle();
-                kfe.dyaw = source.readAngle();
-                kfe.droll = source.readAngle();
+                kfe.frame = source.getFloatLE();
+                kfe.flags = source.getIntLE();
+                kfe.pos = source.getVector3f();
+                kfe.pitch = source.getAngle();
+                kfe.yaw = source.getAngle();
+                kfe.roll = source.getAngle();
+                kfe.dpos = source.getVector3f();
+                kfe.dpitch = source.getAngle();
+                kfe.dyaw = source.getAngle();
+                kfe.droll = source.getAngle();
                 node.entries.add(kfe);
             }
             anim.nodes.set(nodeNum, node);

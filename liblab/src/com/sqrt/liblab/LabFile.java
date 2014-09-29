@@ -24,12 +24,11 @@ public class LabFile {
      * The names and data for the entries of this LabFile
      */
     public final List<DataSource> entries = new LinkedList<DataSource>();
+    private int version;
     private String name;
 
     private File path;
     private RandomAccessFile source;
-
-
 
     LabFile(LabCollection container) {
         this.container = container;
@@ -55,7 +54,7 @@ public class LabFile {
         int stringTableOffset = 16 * (entries + 1);
 
         for (int i = 0; i < entries; i++) {
-            source.seek(16 + i * 16); // seek...
+            source.seek(16 + i * 16); // position...
             int nameOff = Integer.reverseBytes(source.readInt());
             int start = Integer.reverseBytes(source.readInt());
             int size = Integer.reverseBytes(source.readInt());
@@ -81,13 +80,21 @@ public class LabFile {
         });
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     /**
      * Returns all the LabEntry's contained in this LabFile that have a model of the specified type
      * @param type the type of the model
      * @param <T> the type of the model
      * @return a list containing the results
      */
-    public <T extends LabEntry> List<DataSource> findByType(Class<T> type) {
+    public List<DataSource> findByType(Class<? extends LabEntry> type) {
         List<DataSource> res = new LinkedList<DataSource>();
         for (DataSource edp : entries) {
             EntryCodec<?> codec = CodecMapper.codecForProvider(edp);
@@ -112,7 +119,7 @@ public class LabFile {
                 EntryCodec c = CodecMapper.codecForProvider(edp);
                 if(c == null)
                     continue;
-                edp.seek(0);
+                edp.position(0);
                 return c.read(edp);
             }
         }
@@ -121,5 +128,11 @@ public class LabFile {
 
     public String toString() {
         return name;
+    }
+
+    public void save(File file) throws IOException {
+        // Todo: save!
+        RandomAccessFile raf = new RandomAccessFile(file, "rw");
+        raf.writeInt((('L' << 24) | ('A' << 16) | ('B' << 8) | ('N')));
     }
 }

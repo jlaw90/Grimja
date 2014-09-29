@@ -3,34 +3,24 @@ package com.sqrt.liblab.codec;
 import com.sqrt.liblab.entry.LabEntry;
 import com.sqrt.liblab.io.DataSource;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public final class CodecMapper {
     private CodecMapper() {
     }
 
-    private static List<EntryCodec<? extends LabEntry>> codecs = new LinkedList<EntryCodec<? extends LabEntry>>();
+    private static List<EntryCodec<? extends LabEntry>> codecs = new LinkedList<>();
+    private static Map<String, EntryCodec<? extends LabEntry>> extMap = new HashMap<>();
+    private static Map<Class<? extends LabEntry>, EntryCodec<? extends LabEntry>> typeMap = new HashMap<>();
 
     public static <T extends LabEntry> EntryCodec<T> codecForClass(Class<T> clazz) {
-        for (EntryCodec<?> ec : codecs) {
-            if (ec.getEntryClass() == clazz)
-                return (EntryCodec<T>) ec;
-        }
-        return null;
+        return (EntryCodec<T>) typeMap.get(clazz);
     }
 
     public static EntryCodec<?> codecForExtension(String ext) {
         if (ext == null)
             return null;
-        for (EntryCodec<?> ec : codecs) {
-            if (ec.getFileExtensions() == null)
-                continue;
-            for (String s : ec.getFileExtensions())
-                if (ext.equalsIgnoreCase(s))
-                    return ec;
-        }
-        return null;
+        return extMap.get(ext.toLowerCase());
     }
 
     public static EntryCodec<?> codecForProvider(DataSource provider) {
@@ -50,10 +40,16 @@ public final class CodecMapper {
 
     public static void registerCodec(EntryCodec<?> codec) {
         codecs.add(codec);
+        typeMap.put(codec.getEntryClass(), codec);
+        for(String ext: codec.getFileExtensions())
+            extMap.put(ext.toLowerCase(), codec);
     }
 
     public static void unregisterCodec(EntryCodec<?> codec) {
         codecs.remove(codec);
+        typeMap.remove(codec.getEntryClass());
+        for(String ext: codec.getFileExtensions())
+            extMap.put(ext.toLowerCase(), codec);
     }
 
     public static void registerDefaults() {

@@ -51,38 +51,37 @@ public class HexView extends JPanel {
                 if (col == -1 || row == -1)
                     return null;
                 int idx = row * 16 + col;
-                int bytes = (int) (source.getLength() - idx);
+                int bytes = (int) (source.limit() - idx);
                 if (bytes <= 0)
                     return null;
                 StringBuilder sb = new StringBuilder("<html>");
                 sb.append(String.format("Offset: %06x<br/>", idx));
                 try {
-                    source.close();
-                    source.seek(idx);
-                    byte b = source.readByte();
+                    source.position(idx);
+                    byte b = source.get();
                     sb.append(String.format("Byte: hex: %02x, s: %d, u: %d<br/>", b, b, b & 0xff));
                     if (bytes >= 2) {
-                        source.seek(idx);
-                        int s = source.readShort();
-                        source.seek(idx);
-                        int sle = source.readShortLE();
+                        source.position(idx);
+                        int s = source.getShort();
+                        source.position(idx);
+                        int sle = source.getShortLE();
                         sb.append(String.format("Short (BE): hex: %04x, s: %d, u: %d<br/>", s, s, s & 0xffff));
                         sb.append(String.format("Short (LE): hex: %04x, s: %d, u: %d<br/>", sle, sle, sle & 0xffff));
                         if (bytes >= 4) {
-                            source.seek(idx);
-                            int i = source.readInt();
-                            source.seek(idx);
-                            int ile = source.readIntLE();
+                            source.position(idx);
+                            int i = source.getInt();
+                            source.position(idx);
+                            int ile = source.getIntLE();
                             sb.append(String.format("Int (BE): hex: %08x, s: %d, u: %d<br/>", i, i, i & 0xffffffffL));
                             sb.append(String.format("Int (LE): hex: %08x, s: %d, u: %d<br/>", ile, ile, ile & 0xffffffffL));
                         }
                     }
-                    source.seek(idx);
+                    source.position(idx);
                     StringBuilder str = new StringBuilder();
                     int slen = 0;
                     boolean cleanString = false;
-                    while (source.getRemaining() > 0 && slen < 32) {
-                        byte o = source.readByte();
+                    while (source.remaining() > 0 && slen < 32) {
+                        byte o = source.get();
                         if (o == 0) {
                             cleanString = true;
                             break;
@@ -145,7 +144,7 @@ public class HexView extends JPanel {
 
         hexTable.setModel(new TableModel() {
             public int getRowCount() {
-                return (int) ((source.getLength() + 15) / 16);
+                return (int) ((source.limit() + 15) / 16);
             }
 
             public int getColumnCount() {
@@ -172,10 +171,10 @@ public class HexView extends JPanel {
                     if (ascii)
                         columnIndex -= 17;
                     int pos = rowIndex * 16 + columnIndex;
-                    if (pos >= source.getLength())
+                    if (pos >= source.limit())
                         return null;
-                    source.seek(pos);
-                    int b = source.read();
+                    source.position(pos);
+                    int b = source.getUByte();
                     return ascii ? new String(new char[]{(char) b}) : String.format("%02x", b);
                 } catch (IOException e) {
                     return "xx";

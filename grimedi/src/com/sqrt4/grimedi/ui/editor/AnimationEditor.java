@@ -5,8 +5,7 @@
 package com.sqrt4.grimedi.ui.editor;
 
 import java.awt.event.*;
-import com.jogamp.opengl.util.GLReadBufferUtil;
-import com.jogamp.opengl.util.awt.AWTGLReadBufferUtil;
+
 import com.sqrt.liblab.LabCollection;
 import com.sqrt.liblab.codec.CodecMapper;
 import com.sqrt.liblab.codec.EntryCodec;
@@ -23,7 +22,6 @@ import com.sqrt4.grimedi.ui.component.ModelRenderer;
 import com.sqrt4.grimedi.util.AnimatedGifCreator;
 
 import javax.imageio.ImageIO;
-import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
@@ -34,7 +32,6 @@ import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferInt;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -160,7 +157,7 @@ public class AnimationEditor extends EditorPanel<Animation> {
     private void modelSelectorItemStateChanged(ItemEvent e) {
         DataSource selected = (DataSource) modelSelector.getSelectedItem();
         try {
-            selected.seek(0);
+            selected.position(0);
             EntryCodec<GrimModel> codec = (EntryCodec<GrimModel>) CodecMapper.codecForProvider(selected);
             GrimModel model = codec.read(selected);
             if (model == renderer.getModel())

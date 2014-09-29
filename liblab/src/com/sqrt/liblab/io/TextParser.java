@@ -15,8 +15,8 @@ public class TextParser {
 
     public TextParser(DataSource dataSource) throws IOException {
         this.source = dataSource;
-        while(dataSource.getRemaining() > 0) {
-            String line = dataSource.readLine();
+        while(dataSource.remaining() > 0) {
+            String line = dataSource.getLine();
             line = line.trim();
             if(line.isEmpty() || line.charAt(0) == '#')
                 continue;

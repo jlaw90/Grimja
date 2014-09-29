@@ -8,16 +8,20 @@ import com.sqrt.liblab.threed.Vector3f;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * Provides an abstract way to read data from an unspecified source
  */
-public abstract class DataSource extends InputStream {
+public abstract class DataSource {
     /**
      * The LabFile that we are providing data from/for
      */
     public final LabFile container;
     private String name;
+    private long mark;
+    private DataSourceInputStream in;
+    private DataSourceOutputStream out;
 
     /**
      * The only constructor.  Enforces implementations to provide a container and a name
@@ -46,32 +50,41 @@ public abstract class DataSource extends InputStream {
     }
 
     /**
-     * Seeks to the specified position in the data stream
-     * @param pos the position from the beginning of this source
-     * @throws IOException
-     */
-    public abstract void seek(long pos) throws IOException;
-
-    /**
      * Returns the position we are currently at in the data stream
      * @return the position
      * @throws IOException
      */
-    public abstract long getPosition() throws IOException;
+    public abstract long position() throws IOException;
+
+    /**
+     * Seeks to the specified position in the data stream
+     * @param pos the position from the beginning of this source
+     * @throws IOException
+     */
+    public abstract void position(long pos) throws IOException;
+
+    /**
+     * Skips the specified number of bytes in the DataSource
+     * @param count the number of bytes to advance over
+     * @throws IOException
+     */
+    public void skip(long count) throws IOException {
+        position(position() + count);
+    }
 
     /**
      * Returns the total length of the data stream
      * @return the total length of the data stream
      */
-    public abstract long getLength();
+    public abstract long limit();
 
     /**
      * Returns the number of bytes remaining in the data stream to be consumed
      * @return the number of bytes remaining in the data stream to be consumed
      * @throws IOException
      */
-    public final long getRemaining() throws IOException {
-        return getLength() - getPosition();
+    public long remaining() throws IOException {
+        return limit() - position();
     }
 
     /**
@@ -80,9 +93,9 @@ public abstract class DataSource extends InputStream {
      * @return the string with all nulls removed
      * @throws IOException
      */
-    public String readString(int maxLen) throws IOException {
+    public String getString(int maxLen) throws IOException {
         byte[] data = new byte[maxLen];
-        readFully(data);
+        get(data);
         String s = new String(data);
         int idx = s.indexOf(0);
         if (idx != -1)
@@ -91,14 +104,25 @@ public abstract class DataSource extends InputStream {
     }
 
     /**
+     * Writes a null-padded string to this DataSource
+     * @param s the String
+     * @throws IOException
+     */
+    public void putString(String s, int len) throws IOException {
+        byte[] data = s.getBytes();
+        int e = Math.min(data.length, len);
+        put(data, 0, e);
+    }
+
+    /**
      * Returns a string containing all encountered bytes up to the next \n character
      * @return the string
      * @throws IOException
      */
-    public String readLine() throws IOException {
+    public String getLine() throws IOException {
         StringBuilder sb = new StringBuilder();
-        while(getRemaining() > 0) {
-            char c = (char) readByte();
+        while(remaining() > 0) {
+            char c = (char) get();
             if(c == '\n')
                 break;
             sb.append(c);
@@ -113,23 +137,33 @@ public abstract class DataSource extends InputStream {
      * @param len the number of bytes to read into the destination
      * @throws IOException
      */
-    public void readFully(byte[] b, int off, int len) throws IOException {
-        while (len > 0) {
-            int read = read(b, off, len);
-            if (read < 0)
-                throw new EOFException();
-            off += read;
-            len -= read;
-        }
-    }
+    public abstract void get(byte[] b, int off, int len) throws IOException;
+
+    /**
+     * Writes len bytes to the stream
+     * @param b the data to write
+     * @param off the offset into the supplied data that we start copying from
+     * @param len the number of bytes to write
+     * @throws IOException
+     */
+    public abstract void put(byte[] b, int off, int len) throws IOException;
 
     /**
      * Reads dest.length bytes into dest from index 0
      * @param dest the destination of the read data
      * @throws IOException
      */
-    public void readFully(byte[] dest) throws IOException {
-        readFully(dest, 0, dest.length);
+    public void get(byte[] dest) throws IOException {
+        get(dest, 0, dest.length);
+    }
+
+    /**
+     * Writes data.length bytes to this stream
+     * @param data the bytes to write
+     * @throws IOException
+     */
+    public void put(byte[] data) throws IOException {
+        put(data, 0, data.length);
     }
 
     /**
@@ -137,20 +171,22 @@ public abstract class DataSource extends InputStream {
      * @return a byte
      * @throws IOException
      */
-    public byte readByte() throws IOException {
-        int i = read();
-        if (i < 0)
-            throw new EOFException();
-        return (byte) i;
-    }
+    public abstract byte get() throws IOException;
+
+    /**
+     * Writes a byte to the stream
+     * @param b the byte to write
+     * @throws IOException
+     */
+    public abstract void put(byte b) throws IOException;
 
     /**
      * Reads an unsigned byte from the stream
      * @return and unsigned byte
      * @throws IOException
      */
-    public int readUnsignedByte() throws IOException {
-        return readByte() & 0xff;
+    public int getUByte() throws IOException {
+        return get() & 0xff;
     }
 
     /**
@@ -158,20 +194,38 @@ public abstract class DataSource extends InputStream {
      * @return an integer
      * @throws IOException
      */
-    public int readInt() throws IOException {
-        int c1 = read(), c2 = read(), c3 = read(), c4 = read();
-        if ((c1 | c2 | c3 | c4) < 0)
-            throw new EOFException();
+    public int getInt() throws IOException {
+        int c1 = getUByte(), c2 = getUByte(), c3 = getUByte(), c4 = getUByte();
         return (c1 << 24) | (c2 << 16) | (c3 << 8) | c4;
     }
 
     /**
-     * Reads a boolean from the stream (readIntLE() != 0).  Not efficient, but how grimE formats seem to work.
+     * Writes an integer to the stream
+     * @param i the integer to write
+     * @throws IOException
+     */
+    public void putInt(int i) throws IOException {
+        put((byte) ((i >> 24) & 0xff));
+        put((byte) ((i >> 16) & 0xff));
+        put((byte) ((i >> 8) & 0xff));
+        put((byte) (i & 0xff));
+    }
+
+    /**
+     * Reads a boolean from the stream (getIntLE() != 0).  Not efficient, but how grimE formats seem to work.
      * @return the boolean value
      * @throws IOException
      */
-    public boolean readBoolean() throws IOException {
-        return readIntLE() != 0; // As grimE does it...
+    public boolean getBoolean() throws IOException {
+        return getIntLE() != 0; // As grimE does it...
+    }
+
+    /**
+     * Writes a boolean to the data stream in grimE format
+     * @param b the boolean to write
+     */
+    public void putBoolean(boolean b) throws IOException {
+        putIntLE(b? 1: 0);
     }
 
     /**
@@ -179,8 +233,17 @@ public abstract class DataSource extends InputStream {
      * @return an integer
      * @throws IOException
      */
-    public int readIntLE() throws IOException {
-        return Integer.reverseBytes(readInt());
+    public int getIntLE() throws IOException {
+        return Integer.reverseBytes(getInt());
+    }
+
+    /**
+     * Writes an integer to the stream with little endian ordering
+     * @param i the integer to write
+     * @throws IOException
+     */
+    public void putIntLE(int i) throws IOException{
+        putInt(Integer.reverseBytes(i));
     }
 
     /**
@@ -188,8 +251,8 @@ public abstract class DataSource extends InputStream {
      * @return an integer
      * @throws IOException
      */
-    public long readUnsignedIntLE() throws IOException {
-        return (long) readIntLE() & 0xffffffffL;
+    public long getUIntLE() throws IOException {
+        return (long) getIntLE() & 0xffffffffL;
     }
 
     /**
@@ -197,11 +260,21 @@ public abstract class DataSource extends InputStream {
      * @return a short
      * @throws IOException
      */
-    public short readShort() throws IOException {
-        int c1 = read(), c2 = read();
+    public short getShort() throws IOException {
+        int c1 = getUByte(), c2 = getUByte();
         if ((c1 | c2) < 0)
             throw new EOFException();
         return (short) ((c1 << 8) | c2);
+    }
+
+    /**
+     * Writes a short to the stream
+     * @param s the short to write
+     * @throws IOException
+     */
+    public void putShort(short s) throws IOException {
+        put((byte) ((s >> 8) & 0xff));
+        put((byte) (s & 0xff));
     }
 
     /**
@@ -209,8 +282,8 @@ public abstract class DataSource extends InputStream {
      * @return an unsigned short
      * @throws IOException
      */
-    public int readUnsignedShort() throws IOException {
-        return readShort() & 0xffff;
+    public int getUShort() throws IOException {
+        return getShort() & 0xffff;
     }
 
     /**
@@ -218,8 +291,17 @@ public abstract class DataSource extends InputStream {
      * @return a short
      * @throws IOException
      */
-    public short readShortLE() throws IOException {
-        return Short.reverseBytes(readShort());
+    public short getShortLE() throws IOException {
+        return Short.reverseBytes(getShort());
+    }
+
+    /**
+     * Writes a short to the stream in little endian byte order
+     * @param s the short to write
+     * @throws IOException
+     */
+    public void putShortLE(short s) throws IOException {
+        putShort(Short.reverseBytes(s));
     }
 
     /**
@@ -227,8 +309,8 @@ public abstract class DataSource extends InputStream {
      * @return an unsigned short
      * @throws IOException
      */
-    public int readUnsignedShortLE() throws IOException {
-        return readShortLE() & 0xffff;
+    public int getUShortLE() throws IOException {
+        return getShortLE() & 0xffff;
     }
 
     /**
@@ -236,8 +318,16 @@ public abstract class DataSource extends InputStream {
      * @return a float
      * @throws IOException
      */
-    public float readFloatLE() throws IOException {
-        return Float.intBitsToFloat(readIntLE());
+    public float getFloatLE() throws IOException {
+        return Float.intBitsToFloat(getIntLE());
+    }
+
+    /**
+     * Writes a float to the stream in little endian byte order
+     * @param f
+     */
+    public void putFloatLE(float f) throws IOException {
+        putIntLE(Float.floatToIntBits(f));
     }
 
     /**
@@ -245,8 +335,16 @@ public abstract class DataSource extends InputStream {
      * @return the angle
      * @throws IOException
      */
-    public Angle readAngle() throws IOException {
-        return new Angle(readFloatLE());
+    public Angle getAngle() throws IOException {
+        return new Angle(getFloatLE());
+    }
+
+    /**
+     * Writes an angle to the data stream
+     * @param a the angle to write
+     */
+    public void putAngle(Angle a) throws IOException {
+        putFloatLE(a.degrees);
     }
 
     /**
@@ -254,8 +352,18 @@ public abstract class DataSource extends InputStream {
      * @return the vector
      * @throws IOException
      */
-    public Vector2f readVector2f() throws IOException {
-        return new Vector2f(readFloatLE(), readFloatLE());
+    public Vector2f getVector2f() throws IOException {
+        return new Vector2f(getFloatLE(), getFloatLE());
+    }
+
+    /**
+     * Writes a vector2f to the stream
+     * @param v the vector to write
+     * @throws IOException
+     */
+    public void putVector2f(Vector2f v) throws IOException {
+        putFloatLE(v.x);
+        putFloatLE(v.y);
     }
 
     /**
@@ -263,11 +371,94 @@ public abstract class DataSource extends InputStream {
      * @return the vector
      * @throws IOException
      */
-    public Vector3f readVector3f() throws IOException {
-        return new Vector3f(readFloatLE(), readFloatLE(), readFloatLE());
+    public Vector3f getVector3f() throws IOException {
+        return new Vector3f(getFloatLE(), getFloatLE(), getFloatLE());
+    }
+
+    /**
+     * Writes a 3d vector to the stream
+     * @param v the vector to write
+     */
+    public void putVector3f(Vector3f v) throws IOException {
+        putFloatLE(v.x);
+        putFloatLE(v.y);
+        putFloatLE(v.z);
+    }
+
+    public synchronized void mark(int readlimit) throws IOException {
+        mark = position();
+    }
+
+    public synchronized void reset() throws IOException {
+        position(mark);
+    }
+
+    public boolean markSupported() {
+        return true;
+    }
+
+    public InputStream asInputStream() {
+        if(in == null)
+            in = new DataSourceInputStream();
+        return in;
+    }
+
+    public OutputStream asOutputStream() {
+        if(out == null)
+            out = new DataSourceOutputStream();
+        return out;
     }
 
     public String toString() {
         return name;
+    }
+
+    private class DataSourceInputStream extends InputStream {
+        public int read() throws IOException {
+            return remaining() < 0? -1: getUByte();
+        }
+
+        public int read(byte[] b, int off, int len) throws IOException {
+            int l = (int) Math.min(remaining(), len);
+            if(l == 0)
+                return -1;
+            get(b, off, l);
+            return l;
+        }
+
+        public long skip(long n) throws IOException {
+            DataSource.this.skip(n);
+            return n;
+        }
+
+        public int available() throws IOException {
+            return (int) DataSource.this.remaining();
+        }
+
+        public synchronized void mark(int readlimit) {
+            try {
+                DataSource.this.mark(readlimit);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        public synchronized void reset() throws IOException {
+            DataSource.this.reset();
+        }
+
+        public boolean markSupported() {
+            return DataSource.this.markSupported();
+        }
+    }
+
+    private class DataSourceOutputStream extends OutputStream {
+        public void write(int b) throws IOException {
+            put((byte) b);
+        }
+
+        public void write(byte[] b, int off, int len) throws IOException {
+            put(b, off, len);
+        }
     }
 }

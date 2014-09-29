@@ -13,21 +13,21 @@ public class Vima {
         short[] sWords = new short[2];
 
         // Left step index hint
-        sBytes[0] = source.readByte();
+        sBytes[0] = source.get();
         if ((sBytes[0] & 0x80) != 0) { // Now in stereo!
             sBytes[0] = (byte) ~sBytes[0];
             numChannels = 2;
         }
         // Left PCM hint
-        sWords[0] = source.readShort();
+        sWords[0] = source.getShort();
         if (numChannels > 1) {
-            sBytes[1] = source.readByte(); // Right step index hint
-            sWords[1] = source.readShort(); // Right PCM hint
+            sBytes[1] = source.get(); // Right step index hint
+            sWords[1] = source.getShort(); // Right PCM hint
         }
 
         int numSamples = len / (numChannels * 2);
         SeekableByteArrayOutputStream ibaos = new SeekableByteArrayOutputStream(8192);
-        int bits = source.readShort();
+        int bits = source.getShort();
         int bitPtr = 0;
 
         for (int channel = 0; channel < numChannels; channel++) {
@@ -43,7 +43,7 @@ public class Vima {
                 int val = (bits >> (16 - bitPtr)) & (highBit | lowBits);
 
                 if (bitPtr > 7) { // refresh...
-                    bits = ((bits & 0xff) << 8) | source.readUnsignedByte();
+                    bits = ((bits & 0xff) << 8) | source.getUByte();
                     bitPtr -= 8;
                 }
 
@@ -54,9 +54,9 @@ public class Vima {
 
                 if (val == lowBits) {
                     pcm = (short) ((bits << bitPtr) & 0xffffff00);
-                    bits = ((bits & 0xff) << 8) | source.readUnsignedByte();
+                    bits = ((bits & 0xff) << 8) | source.getUByte();
                     pcm |= ((bits >>> (8 - bitPtr)) & 0xff);
-                    bits = ((bits & 0xff) << 8) | source.readUnsignedByte();
+                    bits = ((bits & 0xff) << 8) | source.getUByte();
                 } else {
                     int delta = predict_table[(val << (7 - numBits)) | (stepIndexHint << 6)];
 

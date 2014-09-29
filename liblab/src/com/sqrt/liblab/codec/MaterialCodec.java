@@ -8,25 +8,25 @@ import java.io.IOException;
 
 public class MaterialCodec extends EntryCodec<Material> {
     public Material _read(DataSource source) throws IOException {
-        if(source.readInt() != (('M' << 24) | ('A' << 16) | ('T' << 8) | ' '))
+        if(source.getInt() != (('M' << 24) | ('A' << 16) | ('T' << 8) | ' '))
             throw new IOException("Invalid material header");
-        source.seek(12);
-        int numImages = source.readIntLE();
+        source.position(12);
+        int numImages = source.getIntLE();
         Material mat = new Material(source.container, source.getName());
-        source.seek(0x4c);
-        int offset = source.readIntLE();
+        source.position(0x4c);
+        int offset = source.getIntLE();
         if(offset == 8)
             offset = 16;
         else if(offset != 0)
             System.err.println("Unknown offset: " + offset);
-        source.seek(60 + numImages*40+offset);
+        source.position(60 + numImages * 40 + offset);
         for(int i = 0; i < numImages; i++) {
-            int width = source.readIntLE();
-            int height = source.readIntLE();
-            boolean hasAlpha = source.readBoolean();
+            int width = source.getIntLE();
+            int height = source.getIntLE();
+            boolean hasAlpha = source.getBoolean();
             byte[] data = new byte[width*height];
             source.skip(12);
-            source.readFully(data);
+            source.get(data);
             Texture t = new Texture(width, height, data);
             t.hasAlpha = hasAlpha;
             mat.textures.add(t);

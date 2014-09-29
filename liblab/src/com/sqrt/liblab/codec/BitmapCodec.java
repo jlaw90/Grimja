@@ -13,7 +13,7 @@ import java.nio.BufferOverflowException;
 
 public class BitmapCodec extends EntryCodec<GrimBitmap> {
     public GrimBitmap _read(DataSource source) throws IOException {
-        int tag = source.readInt();
+        int tag = source.getInt();
         switch (tag) {
             case ('B' << 24) | ('M' << 16) | (' ' << 8) | ' ':
                 return readBm(source);
@@ -23,40 +23,40 @@ public class BitmapCodec extends EntryCodec<GrimBitmap> {
     }
 
     private GrimBitmap readBm(DataSource source) throws IOException {
-        int tag = source.readInt();
+        int tag = source.getInt();
         if (tag != ('F' << 24))
             throw new IllegalArgumentException("Unknown BM tag");
         GrimBitmap result = new GrimBitmap(source.container, source.getName());
-        int codec = source.readIntLE();
-        int paletteIncluded = source.readIntLE();
-        int numImages = source.readIntLE();
-        int x = source.readIntLE();
-        int y = source.readIntLE();
-        int transparentColor = source.readIntLE();
-        int format = source.readIntLE();
-        int bpp = source.readIntLE();
-        int redBits = source.readIntLE();
-        int greenBits = source.readIntLE();
-        int blueBits = source.readIntLE();
-        int redShift = source.readIntLE();
-        int greenShift = source.readIntLE();
-        int blueShift = source.readIntLE();
+        int codec = source.getIntLE();
+        int paletteIncluded = source.getIntLE();
+        int numImages = source.getIntLE();
+        int x = source.getIntLE();
+        int y = source.getIntLE();
+        int transparentColor = source.getIntLE();
+        int format = source.getIntLE();
+        int bpp = source.getIntLE();
+        int redBits = source.getIntLE();
+        int greenBits = source.getIntLE();
+        int blueBits = source.getIntLE();
+        int redShift = source.getIntLE();
+        int greenShift = source.getIntLE();
+        int blueShift = source.getIntLE();
 
-        source.seek(128);
-        int width = source.readIntLE();
-        int height = source.readIntLE();
-        source.seek(128);
+        source.position(128);
+        int width = source.getIntLE();
+        int height = source.getIntLE();
+        source.position(128);
         byte[][] data = new byte[numImages][];
         int expectedDataLength = width * height * (bpp / 8);
         for (int i = 0; i < numImages; i++) {
             source.skip(8);
             data[i] = new byte[expectedDataLength];
             if (codec == 0)
-                source.readFully(data[i]);
+                source.get(data[i]);
             else if (codec == 3) {
-                int compressedLen = source.readIntLE();
+                int compressedLen = source.getIntLE();
                 byte[] compressed = new byte[compressedLen];
-                source.readFully(compressed);
+                source.get(compressed);
                 data[i] = decompress_codec3(compressed, expectedDataLength);
             } else throw new UnsupportedOperationException("Invalid image codec: " + codec);
 

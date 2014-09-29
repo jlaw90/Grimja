@@ -25,7 +25,7 @@ public class SmushCodec extends EntryCodec<Video> {
         byte[] buf = new byte[5000];
         File temp = File.createTempFile("video_decomp", ".snm.raw");
         FileOutputStream fos = new FileOutputStream(temp);
-        GZIPInputStream gzis = new GZIPInputStream(compressed);
+        GZIPInputStream gzis = new GZIPInputStream(compressed.asInputStream());
         while (true) {
             int len = gzis.read(buf, 0, buf.length);
             if (len < 0)
@@ -36,16 +36,16 @@ public class SmushCodec extends EntryCodec<Video> {
         fos.close();
         RandomAccessFile raf = new RandomAccessFile(temp, "r");
         DataSource source = new DiskDataSource(compressed.container, compressed.getName(), raf);
-        source.seek(0);
+        source.position(0);
         ctx.source = source;
         ctx.video.stream = new SANMVideoStream(ctx);
-        if (source.readInt() != (('S' << 24) | ('A' << 16) | ('N' << 8) | 'M')) {
+        if (source.getInt() != (('S' << 24) | ('A' << 16) | ('N' << 8) | 'M')) {
             System.err.println("Not a SANM file?");
             return null;
         }
 
-        int size = source.readInt();
-        while (source.getPosition() < size)
+        int size = source.getInt();
+        while (source.position() < size)
             processBlock(ctx, source);
         temp.delete();
         ctx.video.fps = 14.99992f;
@@ -53,120 +53,120 @@ public class SmushCodec extends EntryCodec<Video> {
     }
 
     private void processBlock(SANMVideoContext ctx, DataSource source) throws IOException {
-        int tag = source.readInt();
-        int size = source.readInt();
-        long end = source.getPosition() + size;
+        int tag = source.getInt();
+        int size = source.getInt();
+        long end = source.position() + size;
         switch (tag) {
             // Header
             case (('S' << 24) | ('H' << 16) | ('D' << 8) | 'R'):
-                ctx.ver = source.readUnsignedShort();
-                ctx.video.numFrames = source.readUnsignedShortLE();
-                int vidX = source.readUnsignedShortLE();
-                int vidY = source.readUnsignedShortLE();
-                ctx.width = source.readUnsignedShortLE();
-                ctx.height = source.readUnsignedShortLE();
+                ctx.ver = source.getUShort();
+                ctx.video.numFrames = source.getUShortLE();
+                int vidX = source.getUShortLE();
+                int vidY = source.getUShortLE();
+                ctx.width = source.getUShortLE();
+                ctx.height = source.getUShortLE();
                 ctx.video.width = ctx.width;
                 ctx.video.height = ctx.height;
                 ctx.aligned_width = align(ctx.width, 8);
                 ctx.aligned_height = align(ctx.height, 8);
                 ctx.npixels = ctx.width * ctx.height;
-                int type = source.readUnsignedShortLE();
-                int frameDelay = source.readIntLE(); // microseconds...
-                int frame_buf_size = source.readIntLE();
+                int type = source.getUShortLE();
+                int frameDelay = source.getIntLE(); // microseconds...
+                int frame_buf_size = source.getIntLE();
                 ctx.buf_size = ctx.aligned_width * ctx.aligned_height;
                 ctx.frm0 = new short[ctx.buf_size];
                 ctx.frm1 = new short[ctx.buf_size];
                 ctx.frm2 = new short[ctx.buf_size];
                 ctx.pitch = ctx.width;
                 for (int i = 0; i < 256; i++)
-                    ctx.palette[i] = source.readIntLE();
+                    ctx.palette[i] = source.getIntLE();
                 break;
             // Frame header...
             case (('F' << 24) | ('L' << 16) | ('H' << 8) | 'D'):
-                while (source.getPosition() < end - 5) // I use 5 because sometimes the Wave metadata has an extra 4 bytes
+                while (source.position() < end - 5) // I use 5 because sometimes the Wave metadata has an extra 4 bytes
                     readFrameMetadata(ctx, source);
                 break;
             // Frame
             case (('F' << 24) | ('R' << 16) | ('M' << 8) | 'E'):
-                while (source.getPosition() < end - 1) {
+                while (source.position() < end - 1) {
                     readFrameData(ctx, source);
                 }
                 break;
             case (('A' << 24) | ('N' << 16) | ('N' << 8) | 'O'):
-                System.out.println("ANNO: " + source.readString(size));
+                System.out.println("ANNO: " + source.getString(size));
                 break;
             default:
                 System.out.println("Unknown chunk tag " + tagToString(tag));
         }
-        source.skip(end - source.getPosition()); // skip any padding...
+        source.skip(end - source.position()); // skip any padding...
     }
 
     private void readFrameMetadata(SANMVideoContext ctx, DataSource source) throws IOException {
-        int tag = source.readInt();
-        int size = source.readInt();
-        long end = source.getPosition() + size;
+        int tag = source.getInt();
+        int size = source.getInt();
+        long end = source.position() + size;
         switch (tag) {
             case (('B' << 24) | ('l' << 16) | ('1' << 8) | '6'):
                 source.skip(10);
-                //int width = source.readIntLE();
-                //int height = source.readIntLE();
+                //int width = source.getIntLE();
+                //int height = source.getIntLE();
                 //ctx.blockDimensions.add(new Dimension(width, height));
                 break;
             case (('W' << 24) | ('a' << 16) | ('v' << 8) | 'e'):
                 Video vid = ctx.video;
-                vid.audio.sampleRate = source.readIntLE();
-                vid.audio.channels = source.readIntLE();
+                vid.audio.sampleRate = source.getIntLE();
+                vid.audio.channels = source.getIntLE();
                 vid.audio.bits = 16;
                 vid.audio.stream = new VimaStream(source);
                 break;
             default:
                 System.out.println("Unknown frame metadata tag: " + tagToString(tag));
         }
-        source.skip(end - source.getPosition());
+        source.skip(end - source.position());
     }
 
     private void readFrameData(SANMVideoContext ctx, DataSource source) throws IOException {
-        int tag = source.readInt();
-        int size = source.readInt();
-        long end = source.getPosition() + size;
+        int tag = source.getInt();
+        int size = source.getInt();
+        long end = source.position() + size;
         switch (tag) {
             case (('B' << 24) | ('l' << 16) | ('1' << 8) | ('6')):
                 source.skip(8);
                 FrameHeader fh = new FrameHeader();
-                fh.width = source.readIntLE();
-                fh.height = source.readIntLE();
-                fh.seq_num = source.readUnsignedShortLE();
-                fh.codec = source.readUnsignedByte();
+                fh.width = source.getIntLE();
+                fh.height = source.getIntLE();
+                fh.seq_num = source.getUShortLE();
+                fh.codec = source.getUByte();
                 fh.keyframe = fh.codec == 0 || fh.seq_num == 0; // Keyframe?
-                fh.rotate_code = source.readUnsignedByte();
+                fh.rotate_code = source.getUByte();
                 source.skip(4);
                 for (int i = 0; i < 4; i++)
-                    ctx.small_codebook[i] = source.readShortLE();
-                fh.bg_color = source.readShortLE();
+                    ctx.small_codebook[i] = source.getShortLE();
+                fh.bg_color = source.getShortLE();
                 source.skip(2);
-                fh.rle_output_size = source.readIntLE();
+                fh.rle_output_size = source.getIntLE();
                 for (int i = 0; i < 256; i++)
-                    ctx.codebook[i] = source.readShortLE();
+                    ctx.codebook[i] = source.getShortLE();
                 source.skip(8);
-                fh.off = source.getPosition();
+                fh.off = source.position();
                 fh.size = (int) (end - fh.off);
                 ((SANMVideoStream) ctx.video.stream).frames.add(fh);
                 break;
             case (('W' << 24) | ('a' << 16) | ('v' << 8) | 'e'):
-                int samples = source.readInt();
+                int samples = source.getInt();
                 if (samples < 0) {
                     source.skip(4);
-                    samples = source.readInt();
+                    samples = source.getInt();
                 }
                 Video vid = ctx.video;
                 VimaStream stream = (VimaStream) vid.audio.stream;
-                stream.offsets.add((int) source.getPosition());
+                stream.offsets.add((int) source.position());
                 stream.lengths.add(samples * vid.audio.channels * 2);
                 break;
             default:
                 System.out.println("Unknown frame data tag: " + tagToString(tag));
         }
-        source.skip(end - source.getPosition());
+        source.skip(end - source.position());
     }
 
     public DataSource write(Video source) throws IOException {
@@ -265,7 +265,7 @@ class VimaStream extends com.sqrt.liblab.entry.audio.AudioInputStream {
             return null;
         int offset = offsets.get(offsetIdx);
         int length = lengths.get(offsetIdx++);
-        source.seek(offset);
+        source.position(offset);
         return Vima.decompress(source, length).toByteArray();
     }
 
@@ -455,9 +455,9 @@ class SANMVideoStream extends VideoInputStream {
         ctx.current_frame = header;
 
         DataSource source = ctx.source;
-        source.seek(header.off);
+        source.position(header.off);
 
-        long start = ctx.source.getPosition();
+        long start = ctx.source.position();
         if (header.codec < v1_decoders.length) {
             v1_decoders[header.codec].decode(ctx);
         } else {
@@ -605,7 +605,7 @@ class SANMVideoStream extends VideoInputStream {
     private static class Subcodec0 implements Subcodec {
         public void decode(SANMVideoContext ctx) throws IOException {
             for (int i = 0; i < ctx.npixels; i++)
-                ctx.frm0[i] = ctx.source.readShortLE();
+                ctx.frm0[i] = ctx.source.getShortLE();
         }
     }
 
@@ -622,7 +622,7 @@ class SANMVideoStream extends VideoInputStream {
             int mx, my, index, opcode;
 
             DataSource source = ctx.source;
-            opcode = source.readUnsignedByte();
+            opcode = source.getUByte();
             switch (opcode) {
                 default:
                     mx = motion_vectors[opcode][0];
@@ -632,7 +632,7 @@ class SANMVideoStream extends VideoInputStream {
                         copy_block(ctx.frm0, cx + ctx.pitch * cy, ctx.frm2, cx + mx + ctx.pitch * (cy + my), blk_size, ctx.pitch);
                     break;
                 case 0xF5:
-                    index = source.readShortLE();
+                    index = source.getShortLE();
                     mx = index % ctx.width;
                     my = index / ctx.width;
                     if (good_mvec(ctx, cx, cy, mx, my, blk_size))
@@ -662,12 +662,12 @@ class SANMVideoStream extends VideoInputStream {
 
                 // Fill from codebook
                 case 0xFD:
-                    fill_block(ctx.frm0, cx + cy * ctx.pitch, ctx.readCodebook(source.readUnsignedByte()), blk_size, ctx.pitch);
+                    fill_block(ctx.frm0, cx + cy * ctx.pitch, ctx.readCodebook(source.getUByte()), blk_size, ctx.pitch);
                     break;
 
                 // Fill with specified color
                 case 0xFE:
-                    fill_block(ctx.frm0, cx + cy * ctx.pitch, source.readShortLE(), blk_size, ctx.pitch);
+                    fill_block(ctx.frm0, cx + cy * ctx.pitch, source.getShortLE(), blk_size, ctx.pitch);
                     break;
 
                 // Complicated...
@@ -692,7 +692,7 @@ class SANMVideoStream extends VideoInputStream {
 
             if (block_size == 2) {
                 int indices;
-                indices = source.readIntLE();
+                indices = source.getIntLE();
                 dst[dstOff] = ctx.readCodebook((indices>>0) & 0xFF);
                 dst[dstOff + 1] = ctx.readCodebook((indices>>8) & 0xFF);
                 dst[dstOff + pitch] = ctx.readCodebook((indices>>16) & 0xFF);
@@ -701,9 +701,9 @@ class SANMVideoStream extends VideoInputStream {
                 short fgcolor, bgcolor;
                 int glyph;
 
-                glyph = source.readUnsignedByte();
-                fgcolor = ctx.readCodebook(source.readUnsignedByte());
-                bgcolor = ctx.readCodebook(source.readUnsignedByte());
+                glyph = source.getUByte();
+                fgcolor = ctx.readCodebook(source.getUByte());
+                bgcolor = ctx.readCodebook(source.getUByte());
 
                 draw_glyph(ctx, dst, dstOff, glyph, fgcolor, bgcolor, block_size, pitch);
             }
@@ -715,17 +715,17 @@ class SANMVideoStream extends VideoInputStream {
             int dstOff = cx + cy * ctx.pitch;
 
             if (block_size == 2) {
-                dst[dstOff] = source.readShortLE();
-                dst[dstOff + 1] = source.readShortLE();
-                dst[dstOff + pitch] = source.readShortLE();
-                dst[dstOff + pitch + 1] = source.readShortLE();
+                dst[dstOff] = source.getShortLE();
+                dst[dstOff + 1] = source.getShortLE();
+                dst[dstOff + pitch] = source.getShortLE();
+                dst[dstOff + pitch + 1] = source.getShortLE();
             } else {
                 short fgcolor, bgcolor;
                 int glyph;
 
-                glyph = source.readUnsignedByte();
-                fgcolor = source.readShortLE();
-                bgcolor = source.readShortLE();
+                glyph = source.getUByte();
+                fgcolor = source.getShortLE();
+                bgcolor = source.getShortLE();
 
                 draw_glyph(ctx, dst, dstOff, glyph, fgcolor, bgcolor, block_size, pitch);
             }
@@ -766,13 +766,13 @@ class SANMVideoStream extends VideoInputStream {
                 buf = new byte[remaining];
             int dstOff = 0;
             while (remaining > 0) {
-                int code = source.readUnsignedByte();
+                int code = source.getUByte();
                 int line_length = (code >> 1) + 1;
 
                 if ((code & 1) != 0) { // RLE run
-                    Arrays.fill(buf, dstOff, dstOff + line_length, source.readByte());
+                    Arrays.fill(buf, dstOff, dstOff + line_length, source.get());
                 } else
-                    source.readFully(buf, dstOff, line_length);
+                    source.get(buf, dstOff, line_length);
                 dstOff += line_length;
                 remaining -= line_length;
             }

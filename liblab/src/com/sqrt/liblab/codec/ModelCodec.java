@@ -9,7 +9,7 @@ import java.io.*;
 
 public class ModelCodec extends EntryCodec<GrimModel> {
     public GrimModel _read(DataSource source) throws IOException {
-        if (source.readIntLE() != (('M' << 24) | ('O' << 16) | ('D' << 8) | 'L'))
+        if (source.getIntLE() != (('M' << 24) | ('O' << 16) | ('D' << 8) | 'L'))
             throw new IOException("Invalid model format (text format W.I.P)"); // Todo
         GrimModel mod = loadBinary(source);
         //exportWavefront(new File(source.getName() + ".obj"), mod);
@@ -17,23 +17,23 @@ public class ModelCodec extends EntryCodec<GrimModel> {
     }
 
     private GrimModel loadBinary(DataSource source) throws IOException {
-        int numMaterials = source.readIntLE();
+        int numMaterials = source.getIntLE();
         Material[] materials = new Material[numMaterials];
         for (int i = 0; i < numMaterials; i++) {
-            String name = source.readString(32);
+            String name = source.getString(32);
             materials[i] = (Material) source.container.container.findByName(name);
             if(materials[i] == null) {
                 System.out.println("No material named: " + name);
             }
         }
         GrimModel model = new GrimModel(source.container, source.getName());
-        String name = source.readString(32);
+        String name = source.getString(32);
         source.skip(4);
-        int numGeosets = source.readIntLE();
+        int numGeosets = source.getIntLE();
         for (int i = 0; i < numGeosets; i++)
             model.geosets.add(loadGeosetBinary(source, materials));
         source.skip(4);
-        int numNodes = source.readIntLE();
+        int numNodes = source.getIntLE();
         for(int i = 0; i < numNodes; i++)
             model.hierarchy.add(loadModelNodeBinary(source, model.geosets.get(0)));
         for(ModelNode node: model.hierarchy) {
@@ -44,45 +44,45 @@ public class ModelCodec extends EntryCodec<GrimModel> {
             if(node.siblingIdx >= 0)
                 node.sibling = model.hierarchy.get(node.siblingIdx);
         }
-        model.radius = source.readFloatLE();
+        model.radius = source.getFloatLE();
         source.skip(36);
-        model.off = source.readVector3f();
+        model.off = source.getVector3f();
         return model;
     }
 
     private ModelNode loadModelNodeBinary(DataSource source, Geoset geoset) throws IOException {
         ModelNode node = new ModelNode();
-        node.name = source.readString(64);
-        node.flags = source.readIntLE();
+        node.name = source.getString(64);
+        node.flags = source.getIntLE();
         source.skip(4);
-        node.type = source.readIntLE();
-        int meshNum = source.readIntLE();
+        node.type = source.getIntLE();
+        int meshNum = source.getIntLE();
         node.mesh = meshNum < 0? null: geoset.meshes.get(meshNum);
-        node.depth = source.readIntLE();
-        boolean hasParent = source.readBoolean();
-        int numChildren = source.readIntLE();
-        boolean hasChild = source.readBoolean();
-        boolean hasSibling = source.readBoolean();
-        node.pivot = source.readVector3f();
-        node.pos = source.readVector3f();
-        node.pitch = source.readAngle();
-        node.yaw = source.readAngle();
-        node.roll = source.readAngle();
+        node.depth = source.getIntLE();
+        boolean hasParent = source.getBoolean();
+        int numChildren = source.getIntLE();
+        boolean hasChild = source.getBoolean();
+        boolean hasSibling = source.getBoolean();
+        node.pivot = source.getVector3f();
+        node.pos = source.getVector3f();
+        node.pitch = source.getAngle();
+        node.yaw = source.getAngle();
+        node.roll = source.getAngle();
 
         source.skip(48);
         ModelNode parent, sibling, child;
         if(hasParent)
-            node.parentIdx = source.readIntLE();
+            node.parentIdx = source.getIntLE();
         if(hasChild)
-            node.childIdx = source.readIntLE();
+            node.childIdx = source.getIntLE();
         if(hasSibling)
-            node.siblingIdx = source.readIntLE();
+            node.siblingIdx = source.getIntLE();
         return node;
     }
 
     private Geoset loadGeosetBinary(DataSource source, Material[] materials) throws IOException {
         Geoset g = new Geoset();
-        int numMeshes = source.readIntLE();
+        int numMeshes = source.getIntLE();
         for (int i = 0; i < numMeshes; i++)
             g.meshes.add(loadMeshBinary(source, materials));
         return g;
@@ -90,39 +90,39 @@ public class ModelCodec extends EntryCodec<GrimModel> {
 
     private Mesh loadMeshBinary(DataSource source, Material[] materials) throws IOException {
         Mesh m = new Mesh();
-        m.name = source.readString(32);
+        m.name = source.getString(32);
         source.skip(4);
-        m.geomMode = source.readIntLE();
-        m.lightMode = source.readIntLE();
-        m.texMode = source.readIntLE();
-        int numVertices = source.readIntLE();
-        int numTextureVerts = source.readIntLE();
-        int numFaces = source.readIntLE();
+        m.geomMode = source.getIntLE();
+        m.lightMode = source.getIntLE();
+        m.texMode = source.getIntLE();
+        int numVertices = source.getIntLE();
+        int numTextureVerts = source.getIntLE();
+        int numFaces = source.getIntLE();
 
         Vector3f[] vertices = new Vector3f[numVertices];
         float[] verticesI = new float[numVertices];
         Vector3f[] normals = new Vector3f[numVertices];
         Vector2f[] textureVerts = new Vector2f[numTextureVerts];
         for (int i = 0; i < numVertices; i++)
-            vertices[i] =source.readVector3f();
+            vertices[i] =source.getVector3f();
         for (int i = 0; i < numTextureVerts; i++)
-            textureVerts[i] = source.readVector2f();
+            textureVerts[i] = source.getVector2f();
         for (int i = 0; i < numVertices; i++)
-            verticesI[i] = source.readFloatLE();
+            verticesI[i] = source.getFloatLE();
         source.skip(numVertices * 4);
         int[][] normalTemp = new int[numFaces][];
         for (int i = 0; i < numFaces; i++)
             m.faces.add(loadMeshFaceBinary(source, materials, vertices, normalTemp, i, textureVerts));
         for (int i = 0; i < numVertices; i++)
-            normals[i] = source.readVector3f();
+            normals[i] = source.getVector3f();
         for (int i = 0; i < numFaces; i++) {
             MeshFace mf = m.faces.get(i);
             for (int index : normalTemp[i])
                 mf.normals.add(normals[index]);
         }
-        m.shadow = source.readIntLE();
+        m.shadow = source.getIntLE();
         source.skip(4);
-        m.radius = source.readFloatLE();
+        m.radius = source.getFloatLE();
         source.skip(24);
 
         return m;
@@ -132,31 +132,31 @@ public class ModelCodec extends EntryCodec<GrimModel> {
                                         Vector3f[] vertexTable, int[][] normalTemp, int normalOff,
                                         Vector2f[] texVertexTable) throws IOException {
         source.skip(4);
-        int type = source.readIntLE();
-        int geo = source.readIntLE();
-        int light = source.readIntLE();
-        int tex = source.readIntLE();
-        int numVertices = source.readIntLE();
+        int type = source.getIntLE();
+        int geo = source.getIntLE();
+        int light = source.getIntLE();
+        int tex = source.getIntLE();
+        int numVertices = source.getIntLE();
         normalTemp[normalOff] = new int[numVertices];
         source.skip(4);
-        boolean hasTexture = source.readBoolean();
-        boolean hasMaterial = source.readBoolean();
+        boolean hasTexture = source.getBoolean();
+        boolean hasMaterial = source.getBoolean();
         source.skip(12);
-        float extraLight = source.readFloatLE();
+        float extraLight = source.getFloatLE();
         source.skip(12);
-        Vector3f normal = source.readVector3f();
+        Vector3f normal = source.getVector3f();
         MeshFace mf = new MeshFace();
         for (int i = 0; i < numVertices; i++) {
-            int vid = source.readIntLE();
+            int vid = source.getIntLE();
             mf.vertices.add(vertexTable[vid]);
             normalTemp[normalOff][i] = vid;
         }
         if (hasTexture) {
             for (int i = 0; i < numVertices; i++)
-                mf.uv.add(texVertexTable[source.readIntLE()]);
+                mf.uv.add(texVertexTable[source.getIntLE()]);
         }
         if (hasMaterial) {
-            int matIdx = source.readIntLE();
+            int matIdx = source.getIntLE();
             Material mat = materials[matIdx];
             if(tex >= 0)
                 mf.texture = mat.textures.get(tex);

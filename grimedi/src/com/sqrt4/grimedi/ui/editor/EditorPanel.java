@@ -15,6 +15,10 @@ public abstract class EditorPanel<T extends LabEntry> extends JPanel {
         onNewData();
     }
 
+    public T getData() {
+        return this.data;
+    }
+
     public abstract void onNewData();
 
     public final void setWindow(MainWindow mw) {
