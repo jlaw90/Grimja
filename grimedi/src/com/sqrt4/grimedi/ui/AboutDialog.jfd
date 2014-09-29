@@ -1,0 +1,28 @@
+JFDML JFormDesigner: "5.2.0.0.109" Java: "1.7.0_60" encoding: "UTF-8"
+
+new FormModel {
+	contentType: "form/swing"
+	root: new FormRoot {
+		add( new FormWindow( "javax.swing.JDialog", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+			name: "this"
+			"title": "About GrimEdi"
+			"defaultCloseOperation": 2
+			"modal": true
+			add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+				name: "scrollPane1"
+				add( new FormComponent( "javax.swing.JEditorPane" ) {
+					name: "aboutHtml"
+					"contentType": "text/html"
+					"editable": false
+					"text": "<p color=\"black\" align=\"center\">GrimEdi Copyright 2013 James Lawrence<br/>\n<br/>\nThe source code is available on GitHub, you can find it <a href=\"https://github.com/jlaw90/Grimja/\">here</a>.<br/>\nPlease feel free to make improvements/fixes and send a pull request - the more the merrier.<br/>\nIf you find any problems with this software, please create an issue in the <a href=\"https://github.com/jlaw90/Grimja/issues\">issue tracker</a><br/>\n<br/>\nGrimEdit is protected by the GPLv3 license, to understand what this means, please <a href=\"http://www.gnu.org/copyleft/gpl.html\">read it here</a><br/>\n<br/>\nAdditionally, GrimEdi uses the following components which also have their own licenses:<br/>\n<br/>\n<a href=\"http://jogamp.org/jogl/www/\">JOGL</a> for 3d rendering (<a href=\"http://jogamp.org/git/?p=jogl.git;a=blob;f=LICENSE.txt\">view license</a>)\n<br/>\nGlueGen as a dependency of JOGL (<a href=\"http://jogamp.org/git/?p=gluegen.git;a=blob;f=LICENSE.txt\">view license</a>)<br/>\nNetbeans Outline component for rendering the pretty tree table (<a href=\"https://netbeans.org/cddl-gplv2.html\">view license</a>)"
+					addEvent( new FormEvent( "javax.swing.event.HyperlinkListener", "hyperlinkUpdate", "aboutHtmlHyperlinkUpdate", true ) )
+				} )
+			}, new FormLayoutConstraints( class java.lang.String ) {
+				"value": "Center"
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 0 )
+			"size": new java.awt.Dimension( 595, 315 )
+		} )
+	}
+}

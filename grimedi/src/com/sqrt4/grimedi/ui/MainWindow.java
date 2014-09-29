@@ -1,3 +1,22 @@
+
+
+/*
+ * Copyright (C) 2014  James Lawrence.
+ *
+ *     This program is free software: you can redistribute it and/or modify
+ *     it under the terms of the GNU General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ *
+ *     This program is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *     GNU General Public License for more details.
+ *
+ *     You should have received a copy of the GNU General Public License
+ *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 /*
  * Created by JFormDesigner on Fri Mar 15 22:29:38 GMT 2013
  */
@@ -281,6 +300,8 @@ public class MainWindow extends JFrame {
     private JMenuItem menuItem2;
     private JSeparator separator1;
     private JMenuItem menuItem3;
+    private JMenu menu2;
+    private JMenuItem menuItem7;
     private JSplitPane splitPane1;
     private JPanel panel1;
     private JScrollPane scrollPane1;
@@ -299,6 +320,7 @@ public class MainWindow extends JFrame {
     private ExtractEntryAction extractEntryAction;
     private DeleteEntryAction deleteEntryAction;
     private ExtractAllAction extractAllAction;
+    private OpenAboutDialogAction openAboutDialogAction;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
     private class OpenAction extends AbstractAction {
@@ -608,6 +630,8 @@ public class MainWindow extends JFrame {
         menuItem2 = new JMenuItem();
         separator1 = new JSeparator();
         menuItem3 = new JMenuItem();
+        menu2 = new JMenu();
+        menuItem7 = new JMenuItem();
         splitPane1 = new JSplitPane();
         panel1 = new JPanel();
         scrollPane1 = new JScrollPane();
@@ -626,6 +650,7 @@ public class MainWindow extends JFrame {
         extractEntryAction = new ExtractEntryAction();
         deleteEntryAction = new DeleteEntryAction();
         extractAllAction = new ExtractAllAction();
+        openAboutDialogAction = new OpenAboutDialogAction();
 
         //======== this ========
         setTitle("GrimEdi");
@@ -655,6 +680,16 @@ public class MainWindow extends JFrame {
                 menu1.add(menuItem3);
             }
             menuBar1.add(menu1);
+
+            //======== menu2 ========
+            {
+                menu2.setText("Help");
+
+                //---- menuItem7 ----
+                menuItem7.setAction(openAboutDialogAction);
+                menu2.add(menuItem7);
+            }
+            menuBar1.add(menu2);
         }
         setJMenuBar(menuBar1);
 
@@ -751,5 +786,20 @@ public class MainWindow extends JFrame {
             labPopupMenu.add(menuItem6);
         }
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
+    }
+
+    private class OpenAboutDialogAction extends AbstractAction {
+        private OpenAboutDialogAction() {
+            // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+            // Generated using JFormDesigner non-commercial license
+            putValue(NAME, "About");
+            // JFormDesigner - End of action initialization  //GEN-END:initComponents
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            AboutDialog dialog = new AboutDialog(MainWindow.this);
+            dialog.pack();
+            dialog.setVisible(true);
+        }
     }
 }
