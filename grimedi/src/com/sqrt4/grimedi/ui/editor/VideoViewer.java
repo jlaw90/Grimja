@@ -21,6 +21,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author James Lawrence
@@ -37,6 +38,7 @@ public class VideoViewer extends EditorPanel<Video> {
             final WritableRaster raster = surface.getRaster();
             try {
                 // Attempt to sync to the audio stream...
+                // Todo: sync is WAY off
                 if (data.audio.stream != null) {
                     AudioTrack audio = data.audio;
                     AudioFormat af = new AudioFormat(audio.sampleRate, audio.bits, audio.channels, true, true);
@@ -219,6 +221,7 @@ public class VideoViewer extends EditorPanel<Video> {
         }
 
         public void actionPerformed(ActionEvent e) {
+            final AtomicBoolean cancel = new AtomicBoolean(false);
             window.runAsyncWithPopup("Decoding video...", new Runnable() {
                 public void run() {
                     window.setBusyMessage("Generating GIF (frame 1/" + data.numFrames + ")");
@@ -229,6 +232,8 @@ public class VideoViewer extends EditorPanel<Video> {
 
                         WritableRaster raster = surface.getRaster();
                         for (int i1 = 0; i1 < data.numFrames; i1++) {
+                            if(cancel.get())
+                                break;
                             data.stream.setFrame(i1);
                             boolean cont = data.stream.readFrame(raster, data.width, data.height);
                             viewer.repaint();
@@ -239,13 +244,19 @@ public class VideoViewer extends EditorPanel<Video> {
                         }
                         agc.finish();
                         ios.close();
-                        if (Desktop.isDesktopSupported())
-                            Desktop.getDesktop().open(temp);
+                        if(!cancel.get())
+                            if (Desktop.isDesktopSupported())
+                                Desktop.getDesktop().open(temp);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
-            }, true);
+            }, true, new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    cancel.set(true);
+                }
+            });
         }
     }
 }

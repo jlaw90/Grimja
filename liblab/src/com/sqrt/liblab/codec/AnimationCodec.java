@@ -20,6 +20,7 @@ public class AnimationCodec extends EntryCodec<Animation> {
     }
 
     private Animation loadText(DataSource data) throws IOException {
+        // Todo: this has some major bugs, not sure what the issue is yet
         TextParser source = new TextParser(data);
         source.expectString("section: header");
         Animation anim = new Animation(data.container, data.getName());
@@ -134,7 +135,7 @@ public class AnimationCodec extends EntryCodec<Animation> {
     }
 
     public DataSource write(Animation source) throws IOException {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException(); // Todo
     }
 
     public String[] getFileExtensions() {

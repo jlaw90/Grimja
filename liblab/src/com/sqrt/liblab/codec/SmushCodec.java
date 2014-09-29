@@ -170,7 +170,7 @@ public class SmushCodec extends EntryCodec<Video> {
     }
 
     public DataSource write(Video source) throws IOException {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException(); // Todo (haha, yeah right)
     }
 
     public String[] getFileExtensions() {

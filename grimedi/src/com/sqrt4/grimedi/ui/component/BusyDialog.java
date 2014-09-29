@@ -39,6 +39,7 @@ public class BusyDialog extends JDialog {
     public void setCancellable(boolean b) {
         canCancel = b;
         cancelAction.setEnabled(canCancel);
+        cancelButton.setVisible(b);
         pack();
     }
 
@@ -49,9 +50,9 @@ public class BusyDialog extends JDialog {
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+        // Generated using JFormDesigner non-commercial license
         label1 = new JLabel();
         progressBar1 = new JProgressBar();
-        panel1 = new JPanel();
         cancelButton = new JButton();
         cancelAction = new CancelAction();
 
@@ -69,45 +70,39 @@ public class BusyDialog extends JDialog {
         });
         Container contentPane = getContentPane();
         contentPane.setLayout(new GridBagLayout());
-        ((GridBagLayout) contentPane.getLayout()).columnWidths = new int[]{0, 0};
-        ((GridBagLayout) contentPane.getLayout()).rowHeights = new int[]{0, 0, 0, 0};
-        ((GridBagLayout) contentPane.getLayout()).columnWeights = new double[]{1.0, 1.0E-4};
-        ((GridBagLayout) contentPane.getLayout()).rowWeights = new double[]{0.0, 1.0, 0.0, 1.0E-4};
+        ((GridBagLayout)contentPane.getLayout()).columnWidths = new int[] {0, 0};
+        ((GridBagLayout)contentPane.getLayout()).rowHeights = new int[] {0, 0, 0, 0};
+        ((GridBagLayout)contentPane.getLayout()).columnWeights = new double[] {1.0, 1.0E-4};
+        ((GridBagLayout)contentPane.getLayout()).rowWeights = new double[] {1.0, 1.0, 0.0, 1.0E-4};
 
         //---- label1 ----
         label1.setText("text");
         label1.setHorizontalAlignment(SwingConstants.CENTER);
         contentPane.add(label1, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                new Insets(5, 5, 5, 5), 0, 0));
+            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+            new Insets(5, 5, 5, 5), 0, 0));
 
         //---- progressBar1 ----
         progressBar1.setIndeterminate(true);
         contentPane.add(progressBar1, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
-                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                new Insets(5, 5, 5, 5), 0, 0));
+            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+            new Insets(5, 5, 5, 5), 0, 0));
 
-        //======== panel1 ========
-        {
-            panel1.setLayout(new FlowLayout());
-
-            //---- cancelButton ----
-            cancelButton.setVisible(false);
-            cancelButton.setAction(cancelAction);
-            panel1.add(cancelButton);
-        }
-        contentPane.add(panel1, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
-                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                new Insets(0, 0, 0, 0), 0, 0));
+        //---- cancelButton ----
+        cancelButton.setText("text");
+        cancelButton.setAction(cancelAction);
+        contentPane.add(cancelButton, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
+            GridBagConstraints.CENTER, GridBagConstraints.VERTICAL,
+            new Insets(0, 0, 0, 0), 0, 0));
         pack();
         setLocationRelativeTo(getOwner());
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
+    // Generated using JFormDesigner non-commercial license
     private JLabel label1;
     private JProgressBar progressBar1;
-    private JPanel panel1;
     private JButton cancelButton;
     private CancelAction cancelAction;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
@@ -115,6 +110,7 @@ public class BusyDialog extends JDialog {
     private class CancelAction extends AbstractAction {
         private CancelAction() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "Cancel");
             putValue(SHORT_DESCRIPTION, "Cancel this operation");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents

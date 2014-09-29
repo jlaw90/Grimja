@@ -38,6 +38,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author James Lawrence
@@ -127,7 +128,7 @@ public class MainWindow extends JFrame {
             filterableEntries.applyFilters();
             return;
         }
-        final String search = searchField.getText();
+        final String search = searchField.getText().toLowerCase();
         final String regex = search.replace(".", "\\.").replace("*", ".*").replace("?", ".");
         searchPredicate = new CachedPredicate<DataSource>(new Predicate<DataSource>() {
             public boolean accept(DataSource dataSource) {
@@ -139,7 +140,8 @@ public class MainWindow extends JFrame {
         filterableEntries.applyFilters();
     }
 
-    public void runAsyncWithPopup(String message, final Runnable r, boolean canCancel) {
+    public void runAsyncWithPopup(String message, final Runnable r, boolean canCancel, Action cancelCallback) {
+        final AtomicBoolean abort = new AtomicBoolean(false);
         final Thread asyncThread = new Thread() {
             public void run() {
                 while (_busy == null || !_busy.isVisible()) {
@@ -148,11 +150,12 @@ public class MainWindow extends JFrame {
                     } catch (InterruptedException ignore) {
                     }
                 }
-                try {
-                    r.run(); // Do it...
 
-                } catch (Throwable e) {
-                    e.printStackTrace(); // Catch any errors
+                try {
+                    if(!abort.get())
+                        r.run(); // Do it...
+                } catch (Throwable t) {
+                    t.printStackTrace(); // Catch any errors
                 } finally {
                     _busy.setVisible(false);
                     _busy = null;
@@ -165,32 +168,28 @@ public class MainWindow extends JFrame {
             if (_busy == null)
                 _busy = new BusyDialog(this);
             _busy.setCancellable(canCancel);
-            _busy.setCancelCallback(new AbstractAction() {
-                public void actionPerformed(ActionEvent e) {
-                    asyncThread.interrupt();
-                }
-            });
+            _busy.setCancelCallback(cancelCallback);
             _busy.setTitle("Please wait...");
             _busy.setMessage(message);
             _busy.pack();
             _busy.setVisible(true);
         } catch (Throwable t) {
-            if (_busy != null) {
-                _busy.setVisible(false);
-                _busy = null;
-            }
+            abort.set(true);
+            if (_busy != null)
+                _busy.setVisible(true);
             t.printStackTrace();
         }
     }
 
     public void runAsyncWithPopup(String message, final Runnable r) {
-        runAsyncWithPopup(message, r, false);
+        runAsyncWithPopup(message, r, false, null);
     }
 
     public void setBusyMessage(String message) {
         if (_busy == null || !_busy.isVisible())
             return;
         _busy.setMessage(message);
+        _busy.pack();
     }
 
     private void fileSelected(ListSelectionEvent e) {
@@ -241,7 +240,7 @@ public class MainWindow extends JFrame {
                 editorPane.revalidate();
                 editorPane.repaint();
             }
-        }, true);
+        });
     }
 
     private void fileListMousePressed(MouseEvent e) {
@@ -451,6 +450,12 @@ public class MainWindow extends JFrame {
                 case 1:
                     if (o instanceof DataSource)
                         return new Size(((DataSource) o).getLength());
+                    else if(o instanceof LabFile) {
+                        long length = 0;
+                        for(DataSource ds: ((LabFile) o).entries)
+                            length += ds.getLength();
+                        return new Size(length);
+                    }
                     return null;
             }
             return null;
@@ -555,6 +560,7 @@ public class MainWindow extends JFrame {
                 return;
 
             final File dir = jfc.getSelectedFile();
+            final AtomicBoolean cancelled = new AtomicBoolean(false);
             final String pre = "<html>Extracting " + labPopupSource.toString() + "...<br/>";
             runAsyncWithPopup(pre, new Runnable() {
                 public void run() {
@@ -562,20 +568,31 @@ public class MainWindow extends JFrame {
                     for (DataSource source : labPopupSource.entries) {
                         _busy.setMessage(pre + "\n" + "\t" + source.getName());
                         try {
-                            FileOutputStream fos = new FileOutputStream(new File(dir, source.getName()));
+                            File f = new File(dir, source.getName());
+                            FileOutputStream fos = new FileOutputStream(f);
                             int copied = 0;
                             long len = source.getLength();
                             source.seek(0);
-                            while (copied < len) {
+                            while (!cancelled.get() && copied < len) {
                                 int toRead = (int) Math.min(buf.length, len - copied);
                                 int read = source.read(buf, 0, toRead);
                                 fos.write(buf, 0, read);
                                 copied += read;
                             }
+                            fos.close();
+                            if(cancelled.get()) {
+                                f.delete();
+                                return;
+                            }
+                            Thread.sleep(1000);
                         } catch (Exception e1) {
                             e1.printStackTrace();
                         }
                     }
+                }
+            }, true, new AbstractAction() {
+                public void actionPerformed(ActionEvent e) {
+                    cancelled.set(true);
                 }
             });
         }

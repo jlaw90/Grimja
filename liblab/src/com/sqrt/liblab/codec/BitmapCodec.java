@@ -58,7 +58,7 @@ public class BitmapCodec extends EntryCodec<GrimBitmap> {
                 byte[] compressed = new byte[compressedLen];
                 source.readFully(compressed);
                 data[i] = decompress_codec3(compressed, expectedDataLength);
-            } else throw new UnsupportedOperationException("Invalid image codec");
+            } else throw new UnsupportedOperationException("Invalid image codec: " + codec);
 
             if (data[i].length != expectedDataLength)
                 throw new UnsupportedOperationException("Invalid data length, got: " + data[i].length + ", expected " + (width * height * (bpp / 8)) + " with " + bpp + "bpp");
@@ -81,7 +81,7 @@ public class BitmapCodec extends EntryCodec<GrimBitmap> {
     }
 
     public DataSource write(GrimBitmap source) throws IOException {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException(); // Todo
     }
 
     public String[] getFileExtensions() {

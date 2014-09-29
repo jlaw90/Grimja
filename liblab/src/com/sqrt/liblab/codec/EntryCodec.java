@@ -72,6 +72,7 @@ public abstract class EntryCodec<T extends LabEntry> {
      * @return the name of the format we convert to/from
      */
     public String getFormatName() {
+        // Todo: this was never implemented in subclasses, wtf was its intention?
         return null; // Optional, null by default
     }
 
@@ -86,7 +87,7 @@ public abstract class EntryCodec<T extends LabEntry> {
      * @param tag the integer
      * @return the 4 bytes of the integer converted to ASCII
      */
-    public static String tagToString(int tag) {
+    protected static String tagToString(int tag) {
         return new String(new char[] {(char) ((tag >> 24)&0xff),
                 (char) ((tag >> 16) & 0xff), (char) ((tag >> 8) & 0xff), (char) (tag & 0xff)});
     }

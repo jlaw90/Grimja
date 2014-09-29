@@ -907,7 +907,7 @@ public class AudioEditor extends EditorPanel<Audio> {
                             e1.printStackTrace();
                         }
                     }
-                }, true);
+                });
             }
         }
     }
@@ -959,7 +959,7 @@ public class AudioEditor extends EditorPanel<Audio> {
                             e1.printStackTrace();
                         }
                     }
-                }, true);
+                });
             }
         }
     }
@@ -1019,7 +1019,7 @@ public class AudioEditor extends EditorPanel<Audio> {
                             e1.printStackTrace();
                         }
                     }
-                }, true);
+                });
             }
         }
     }

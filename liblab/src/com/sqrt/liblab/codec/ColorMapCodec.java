@@ -17,7 +17,7 @@ public class ColorMapCodec extends EntryCodec<ColorMap> {
     }
 
     public DataSource write(ColorMap source) throws IOException {
-        return null;
+        throw new UnsupportedOperationException(); // Todo
     }
 
     public String[] getFileExtensions() {

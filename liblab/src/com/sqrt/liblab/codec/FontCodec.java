@@ -62,7 +62,7 @@ public class FontCodec extends EntryCodec<GrimFont> {
     }
 
     public DataSource write(GrimFont source) throws IOException {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException(); // Todo
     }
 
     public String[] getFileExtensions() {

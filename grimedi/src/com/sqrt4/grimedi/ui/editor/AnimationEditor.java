@@ -41,6 +41,7 @@ import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Vector;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author James Lawrence
@@ -365,6 +366,7 @@ public class AnimationEditor extends EditorPanel<Animation> {
 
         public void actionPerformed(ActionEvent e) {
             stopAction.actionPerformed(null);
+            final AtomicBoolean cancel = new AtomicBoolean(false);
             window.runAsyncWithPopup("Rendering animation (frame 1/" + data.numFrames + ")", new Runnable() {
                 public void run() {
                     try {
@@ -410,19 +412,19 @@ public class AnimationEditor extends EditorPanel<Animation> {
                                 frameSlider.setValue(frameSlider.getValue() + 1);
                                 window.setBusyMessage("Rendering animation (frame " + frameSlider.getValue() + "/" + data.numFrames + ")");
 
-                                if (frame >= data.numFrames - 1)
+                                if (frame >= data.numFrames - 1 || cancel.get())
                                     renderer.setCallback(null);
                             }
                         };
                         renderer.setCallback(screenshotCallback);
                         int processed = 0;
-                        while (processed < data.numFrames) {
+                        while (processed < data.numFrames && !cancel.get()) {
                             // Wait for notify...
                             BufferedImage image = null;
                             synchronized (images) {
                                 if (images.isEmpty()) {
                                     try {
-                                        images.wait();
+                                        images.wait(10);
                                     } catch (InterruptedException ignore) {
                                     }
                                 }
@@ -434,17 +436,29 @@ public class AnimationEditor extends EditorPanel<Animation> {
                                 window.setBusyMessage("Generating GIF (frame " + processed + " / " + data.numFrames + ")");
                             agc.addFrame(image);
                             processed++;
-                            if(processed >= data.numFrames) {
+
+                            if(processed >= data.numFrames && !cancel.get()) {
                                 agc.finish();
+                                ios.close();
                                 if (Desktop.isDesktopSupported())
                                     Desktop.getDesktop().open(temp);
                             }
+                        }
+
+                        if(cancel.get()) {
+                            agc.finish();
+                            ios.close();
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
-            }, true);
+            }, true, new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    cancel.set(true);
+                }
+            });
         }
     }
 }

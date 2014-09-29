@@ -26,6 +26,11 @@ public class LabFile {
     public final List<DataSource> entries = new LinkedList<DataSource>();
     private String name;
 
+    private File path;
+    private RandomAccessFile source;
+
+
+
     LabFile(LabCollection container) {
         this.container = container;
         name = "New";
@@ -33,8 +38,8 @@ public class LabFile {
 
     LabFile(LabCollection container, File path) throws IOException {
         this(container);
+        this.path = path;
         name = path.getName().toUpperCase();
-        RandomAccessFile source;
         try {
             source = new RandomAccessFile(path, "rw");
         } catch (IOException ioe) {
@@ -71,7 +76,7 @@ public class LabFile {
         // Sort them for convenience...
         Collections.sort(this.entries, new Comparator<DataSource>() {
             public int compare(DataSource o1, DataSource o2) {
-                return o1.getName().compareTo(o2.getName());
+                return o1.getName().compareToIgnoreCase(o2.getName());
             }
         });
     }

@@ -67,10 +67,12 @@ public final class CodecMapper {
         CodecMapper.registerCodec(new AnimationCodec());
         CodecMapper.registerCodec(new AudioCodec());
         CodecMapper.registerCodec(new SmushCodec());
+
+        // Todo .set
         // Todo .cos (costume)
         // Todo .lip (lip sync)
-        // Todo .snm (movie)
         // Todo .lua
+        // Todo .txt
     }
 
     static {

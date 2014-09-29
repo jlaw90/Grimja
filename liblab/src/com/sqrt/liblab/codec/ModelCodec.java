@@ -218,7 +218,7 @@ public class ModelCodec extends EntryCodec<GrimModel> {
     }
 
     public DataSource write(GrimModel source) throws IOException {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException(); // Todo: write encoder...
     }
 
     public String[] getFileExtensions() {

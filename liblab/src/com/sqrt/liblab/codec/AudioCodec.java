@@ -39,7 +39,7 @@ public class AudioCodec extends EntryCodec<Audio> {
     }
 
     public DataSource write(Audio source) throws IOException {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException(); // Todo
     }
 
     public String[] getFileExtensions() {
