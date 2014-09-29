@@ -21,7 +21,6 @@ new FormModel {
 							"autoResizeMode": 1
 							"fullyNonEditable": true
 							"surrendersFocusOnKeystroke": false
-							"rootVisible": false
 							"showHorizontalLines": true
 							auxiliary() {
 								"showHorizontalLines.forceValue": true
@@ -129,6 +128,10 @@ new FormModel {
 				name: "menuItem6"
 				"action": new FormReference( "extractAllAction" )
 			} )
+			add( new FormComponent( "javax.swing.JMenuItem" ) {
+				name: "menuItem8"
+				"action": new FormReference( "saveLabAction" )
+			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 250, 665 )
 		} )
@@ -191,6 +194,16 @@ new FormModel {
 			}
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 0, 838 )
+		} )
+		add( new FormNonVisual( "javax.swing.AbstractAction" ) {
+			name: "saveLabAction"
+			"$action.Name": "Save LAB"
+			"$action.ShortDescription": "Rebuild and save this LAB"
+			auxiliary() {
+				"JavaCodeGenerator.className": "SaveLabAction"
+			}
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 892 )
 		} )
 	}
 }

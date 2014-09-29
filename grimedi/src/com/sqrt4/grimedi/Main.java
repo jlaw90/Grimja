@@ -29,8 +29,7 @@ public class Main {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             JFrame.setDefaultLookAndFeelDecorated(true);
             JPopupMenu.setDefaultLightWeightPopupEnabled(false);
-        } catch(Exception e) {
-
+        } catch(Exception ignore) {
         }
         System.setProperty("sun.java2d.opengl","True");
         MainWindow mw = new MainWindow();

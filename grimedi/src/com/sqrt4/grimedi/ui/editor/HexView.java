@@ -24,6 +24,7 @@
 package com.sqrt4.grimedi.ui.editor;
 
 import com.sqrt.liblab.io.DataSource;
+import com.sqrt4.grimedi.ui.MainWindow;
 import sun.swing.SwingUtilities2;
 
 import javax.swing.*;
@@ -70,7 +71,7 @@ public class HexView extends JPanel {
                 if (col == -1 || row == -1)
                     return null;
                 int idx = row * 16 + col;
-                int bytes = (int) (source.limit() - idx);
+                int bytes = (int) (source.length() - idx);
                 if (bytes <= 0)
                     return null;
                 StringBuilder sb = new StringBuilder("<html>");
@@ -116,7 +117,7 @@ public class HexView extends JPanel {
                         sb.append("String: ").append(string);
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    MainWindow.getInstance().handleException(e);
                 }
                 sb.append("</html>");
                 return sb.toString();
@@ -163,7 +164,7 @@ public class HexView extends JPanel {
 
         hexTable.setModel(new TableModel() {
             public int getRowCount() {
-                return (int) ((source.limit() + 15) / 16);
+                return (int) ((source.length() + 15) / 16);
             }
 
             public int getColumnCount() {
@@ -190,12 +191,13 @@ public class HexView extends JPanel {
                     if (ascii)
                         columnIndex -= 17;
                     int pos = rowIndex * 16 + columnIndex;
-                    if (pos >= source.limit())
+                    if (pos >= source.length())
                         return null;
                     source.position(pos);
                     int b = source.getUByte();
                     return ascii ? new String(new char[]{(char) b}) : String.format("%02x", b);
                 } catch (IOException e) {
+                    MainWindow.getInstance().handleException(e);
                     return "xx";
                 }
             }

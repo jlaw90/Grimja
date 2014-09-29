@@ -80,11 +80,11 @@ public final class CodecMapper {
         CodecMapper.registerCodec(new AnimationCodec());
         CodecMapper.registerCodec(new AudioCodec());
         CodecMapper.registerCodec(new SmushCodec());
+        CodecMapper.registerCodec(new LuaChunkCodec());
 
         // Todo .set
         // Todo .cos (costume)
         // Todo .lip (lip sync)
-        // Todo .lua
         // Todo .txt
     }
 

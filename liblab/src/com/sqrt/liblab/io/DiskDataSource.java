@@ -105,7 +105,7 @@ public class DiskDataSource extends DataSource {
         map.position((int) (pos - _pos));
     }
 
-    public long limit() {
+    public long length() {
         return len;
     }
 

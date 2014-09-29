@@ -26,6 +26,8 @@ package com.sqrt4.grimedi.ui.editor;
 import com.sqrt.liblab.entry.audio.Audio;
 import com.sqrt.liblab.entry.audio.Jump;
 import com.sqrt.liblab.entry.audio.Region;
+import com.sqrt4.grimedi.Main;
+import com.sqrt4.grimedi.ui.MainWindow;
 
 import javax.sound.sampled.*;
 import javax.swing.*;
@@ -85,7 +87,7 @@ public class AudioEditor extends EditorPanel<Audio> {
                         updateTimeDisplay();
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    MainWindow.getInstance().handleException(e);
                 }
                 int idx = data.regions.indexOf(_playRegion);
                 if (idx == data.regions.size() - 1)
@@ -923,7 +925,7 @@ public class AudioEditor extends EditorPanel<Audio> {
                             wos.finish();
                             wos.close();
                         } catch (IOException e1) {
-                            e1.printStackTrace();
+                            MainWindow.getInstance().handleException(e1);
                         }
                     }
                 });
@@ -975,7 +977,7 @@ public class AudioEditor extends EditorPanel<Audio> {
                             wos.finish();
                             wos.close();
                         } catch (IOException e1) {
-                            e1.printStackTrace();
+                            MainWindow.getInstance().handleException(e1);
                         }
                     }
                 });
@@ -1035,7 +1037,7 @@ public class AudioEditor extends EditorPanel<Audio> {
                                 wos.close();
                             }
                         } catch (IOException e1) {
-                            e1.printStackTrace();
+                            MainWindow.getInstance().handleException(e1);
                         }
                     }
                 });

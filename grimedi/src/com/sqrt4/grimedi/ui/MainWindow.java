@@ -62,6 +62,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author James Lawrence
  */
 public class MainWindow extends JFrame {
+    private static MainWindow inst;
     public LabCollection context;
     private FilterableLabTreeModel filterableEntries;
     private Predicate<DataSource> searchPredicate;
@@ -91,7 +92,12 @@ public class MainWindow extends JFrame {
         }
     }
 
+    public static MainWindow getInstance() {
+        return inst;
+    }
+
     public MainWindow() {
+        inst = this;
         SplashScreenController.setText("Initialising UI...");
         initComponents();
         fileList.setRenderDataProvider(new RenderDataProvider() {
@@ -210,6 +216,10 @@ public class MainWindow extends JFrame {
         _busy.pack();
     }
 
+    public void handleException(Throwable t) {
+        JOptionPane.showMessageDialog(this, t.getLocalizedMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
     private void fileSelected(ListSelectionEvent e) {
         int row = fileList.getSelectionModel().getLeadSelectionIndex();
         Object selObj = fileList.getModel().getValueAt(fileList.convertRowIndexToModel(row), 0);
@@ -243,7 +253,7 @@ public class MainWindow extends JFrame {
                         }
                     }
                 } catch (Throwable e1) {
-                    e1.printStackTrace();
+                    handleException(e1);
                 }
                 EditorPanel panel = EditorMapper.editorPanelForProvider(selected);
                 if (data != null && panel != null) {
@@ -315,12 +325,14 @@ public class MainWindow extends JFrame {
     private JMenuItem menuItem5;
     private JPopupMenu labPopupMenu;
     private JMenuItem menuItem6;
+    private JMenuItem menuItem8;
     private OpenAction openAction;
     private CloseAction closeAction;
     private ExtractEntryAction extractEntryAction;
     private DeleteEntryAction deleteEntryAction;
     private ExtractAllAction extractAllAction;
     private OpenAboutDialogAction openAboutDialogAction;
+    private SaveLabAction saveLabAction;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
     private class OpenAction extends AbstractAction {
@@ -344,7 +356,7 @@ public class MainWindow extends JFrame {
                         context = LabCollection.open(f);
                         onOpen();
                     } catch (IOException e1) {
-                        e1.printStackTrace();
+                        handleException(e1);
                     }
                 }
             });
@@ -468,15 +480,22 @@ public class MainWindow extends JFrame {
                     String s = o.toString();
                     int idx = s.lastIndexOf('.');
                     if (idx == -1)
-                        return "None";
+                        return "";
                     return s.substring(idx + 1);
                 case 1:
                     if (o instanceof DataSource)
-                        return new Size(((DataSource) o).limit());
+                        return new Size(((DataSource) o).length());
                     else if(o instanceof LabFile) {
                         long length = 0;
                         for(DataSource ds: ((LabFile) o).entries)
-                            length += ds.limit();
+                            length += ds.length();
+                        return new Size(length);
+                    } else if(o instanceof LabCollection) {
+                        long length = 0;
+                        for(LabFile lf: ((LabCollection) o).labs) {
+                            for(DataSource ds: lf.entries)
+                                length += ds.length();
+                        }
                         return new Size(length);
                     }
                     return null;
@@ -533,7 +552,7 @@ public class MainWindow extends JFrame {
                         FileOutputStream fos = new FileOutputStream(jfc.getSelectedFile());
                         byte[] buf = new byte[5000];
                         int copied = 0;
-                        long len = popupSource.limit();
+                        long len = popupSource.length();
                         popupSource.position(0);
                         while (copied < len) {
                             int toRead = (int) Math.min(buf.length, len - copied);
@@ -543,7 +562,7 @@ public class MainWindow extends JFrame {
                         }
                         fos.close();
                     } catch (IOException e1) {
-                        e1.printStackTrace();
+                        handleException(e1);
                     }
                 }
             });
@@ -594,7 +613,7 @@ public class MainWindow extends JFrame {
                             File f = new File(dir, source.getName());
                             FileOutputStream fos = new FileOutputStream(f);
                             int copied = 0;
-                            long len = source.limit();
+                            long len = source.length();
                             source.position(0);
                             while (!cancelled.get() && copied < len) {
                                 int toRead = (int) Math.min(buf.length, len - copied);
@@ -609,7 +628,8 @@ public class MainWindow extends JFrame {
                             }
                             Thread.sleep(1000);
                         } catch (Exception e1) {
-                            e1.printStackTrace();
+                            handleException(e1);
+                            break;
                         }
                     }
                 }
@@ -645,12 +665,14 @@ public class MainWindow extends JFrame {
         menuItem5 = new JMenuItem();
         labPopupMenu = new JPopupMenu();
         menuItem6 = new JMenuItem();
+        menuItem8 = new JMenuItem();
         openAction = new OpenAction();
         closeAction = new CloseAction();
         extractEntryAction = new ExtractEntryAction();
         deleteEntryAction = new DeleteEntryAction();
         extractAllAction = new ExtractAllAction();
         openAboutDialogAction = new OpenAboutDialogAction();
+        saveLabAction = new SaveLabAction();
 
         //======== this ========
         setTitle("GrimEdi");
@@ -708,7 +730,6 @@ public class MainWindow extends JFrame {
                     fileList.setAutoResizeMode(JTable.AUTO_RESIZE_NEXT_COLUMN);
                     fileList.setFullyNonEditable(true);
                     fileList.setSurrendersFocusOnKeystroke(false);
-                    fileList.setRootVisible(false);
                     fileList.setShowHorizontalLines(true);
                     fileList.addMouseListener(new MouseAdapter() {
                         @Override
@@ -784,6 +805,10 @@ public class MainWindow extends JFrame {
             //---- menuItem6 ----
             menuItem6.setAction(extractAllAction);
             labPopupMenu.add(menuItem6);
+
+            //---- menuItem8 ----
+            menuItem8.setAction(saveLabAction);
+            labPopupMenu.add(menuItem8);
         }
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
@@ -800,6 +825,35 @@ public class MainWindow extends JFrame {
             AboutDialog dialog = new AboutDialog(MainWindow.this);
             dialog.pack();
             dialog.setVisible(true);
+        }
+    }
+
+    private class SaveLabAction extends AbstractAction {
+        private SaveLabAction() {
+            // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+            // Generated using JFormDesigner non-commercial license
+            putValue(NAME, "Save LAB");
+            putValue(SHORT_DESCRIPTION, "Rebuild and save this LAB");
+            // JFormDesigner - End of action initialization  //GEN-END:initComponents
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            JFileChooser jfc = createFileDialog();
+            jfc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+            if(jfc.showSaveDialog(MainWindow.this) != JFileChooser.APPROVE_OPTION)
+                return;
+
+            final File dest = jfc.getSelectedFile();
+
+            runAsyncWithPopup("Building LAB file, please wait...", new Runnable() {
+                public void run() {
+                    try {
+                        labPopupSource.save(dest);
+                    } catch (IOException e1) {
+                        handleException(e1);
+                    }
+                }
+            });
         }
     }
 }

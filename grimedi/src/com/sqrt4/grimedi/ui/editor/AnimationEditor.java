@@ -34,6 +34,7 @@ import com.sqrt.liblab.entry.model.anim.KeyFrame;
 import com.sqrt.liblab.io.DataSource;
 import com.sqrt.liblab.threed.Angle;
 import com.sqrt.liblab.threed.Vector3f;
+import com.sqrt4.grimedi.ui.MainWindow;
 import com.sqrt4.grimedi.ui.component.FrameCallback;
 import com.sqrt4.grimedi.ui.component.ModelRenderer;
 import com.sqrt4.grimedi.util.AnimatedGifCreator;
@@ -464,7 +465,7 @@ public class AnimationEditor extends EditorPanel<Animation> {
                             ios.close();
                         }
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        MainWindow.getInstance().handleException(e);
                     }
                 }
             }, true, new AbstractAction() {

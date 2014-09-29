@@ -305,8 +305,8 @@ class NullPaddedDataSource extends DataSource {
         return source.position();
     }
 
-    public long limit() {
-        return source.limit();
+    public long length() {
+        return source.length();
     }
 
     @Override
@@ -320,7 +320,7 @@ class NullPaddedDataSource extends DataSource {
     }
 
     public byte get() throws IOException {
-        return position() < limit() ? source.get() : 0;
+        return position() < length() ? source.get() : 0;
     }
 
     @Override

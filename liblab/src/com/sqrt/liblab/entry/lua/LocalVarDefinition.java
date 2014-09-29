@@ -1,5 +1,3 @@
-
-
 /*
  * Copyright (C) 2014  James Lawrence.
  *
@@ -17,23 +15,17 @@
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.sqrt4.grimedi.util;
+package com.sqrt.liblab.entry.lua;
 
-public class Size implements Comparable<Size> {
-    private final static String[] prefixes = {"B", "KB", "MB", "GB"};
-    private long size;
+/**
+ * Created by James on 29/09/2014.
+ */
+public class LocalVarDefinition {
+    public final String name;
+    public final int line;
 
-    public Size(long size) {
-        this.size = size;
-    }
-
-    public String toString() {
-        int idx = Math.min(((int) Math.log10(size)) / 3, prefixes.length);
-        double divisor = Math.pow(1024, idx);
-        return String.format("%2.2f%s", (size/divisor), prefixes[idx]);
-    }
-
-    public int compareTo(Size o) {
-        return Long.compare(size, o.size);
+    public LocalVarDefinition(int line, String name) {
+        this.name = name;
+        this.line = line;
     }
 }

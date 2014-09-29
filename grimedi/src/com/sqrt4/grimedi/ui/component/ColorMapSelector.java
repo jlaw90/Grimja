@@ -26,6 +26,7 @@ import com.sqrt.liblab.LabCollection;
 import com.sqrt.liblab.LabFile;
 import com.sqrt.liblab.codec.CodecMapper;
 import com.sqrt.liblab.entry.model.ColorMap;
+import com.sqrt4.grimedi.ui.MainWindow;
 
 import java.awt.*;
 import java.awt.event.ItemListener;
@@ -63,7 +64,7 @@ public class ColorMapSelector extends JPanel {
             edp.position(0);
             return (ColorMap) CodecMapper.codecForProvider(edp).read(edp);
         } catch (IOException e) {
-            e.printStackTrace();
+            MainWindow.getInstance().handleException(e);
             return null;
         }
     }

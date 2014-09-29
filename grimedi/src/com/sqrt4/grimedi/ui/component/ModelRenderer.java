@@ -28,6 +28,7 @@ import com.sqrt.liblab.threed.Angle;
 import com.sqrt.liblab.threed.Bounds3;
 import com.sqrt.liblab.threed.Vector2f;
 import com.sqrt.liblab.threed.Vector3f;
+import com.sqrt4.grimedi.ui.MainWindow;
 
 import javax.media.opengl.*;
 import javax.media.opengl.awt.GLCanvas;
@@ -656,7 +657,7 @@ class OurAnimator implements GLAnimatorControl {
                         long delta = System.currentTimeMillis() - start;
                         Thread.sleep(Math.max(frameDelta - delta, 5));
                     } catch (Throwable ignore) {
-                        ignore.printStackTrace();
+                        MainWindow.getInstance().handleException(ignore);
                     }
                 }
             } finally {

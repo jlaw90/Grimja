@@ -28,6 +28,7 @@ import javax.imageio.ImageIO;
 import javax.swing.event.*;
 
 import com.sqrt.liblab.entry.graphics.GrimBitmap;
+import com.sqrt4.grimedi.ui.MainWindow;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -324,7 +325,7 @@ public class ImageView extends EditorPanel<GrimBitmap> {
                         try {
                             ImageIO.write((BufferedImage) imageList.getSelectedValue(), "png", f);
                         } catch (IOException e1) {
-                            e1.printStackTrace();
+                            MainWindow.getInstance().handleException(e1);
                         }
                     }
                 });

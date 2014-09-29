@@ -55,7 +55,7 @@ public class AboutDialog extends JDialog {
                 try {
                     Desktop.getDesktop().browse(e.getURL().toURI());
                 } catch (IOException | URISyntaxException e1) {
-                    JOptionPane.showMessageDialog(this, e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                    MainWindow.getInstance().handleException(e1);
                 }
             }
         }

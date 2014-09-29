@@ -25,6 +25,7 @@ package com.sqrt4.grimedi.ui.editor;
 
 import com.sqrt.liblab.entry.video.AudioTrack;
 import com.sqrt.liblab.entry.video.Video;
+import com.sqrt4.grimedi.ui.MainWindow;
 import com.sqrt4.grimedi.util.AnimatedGifCreator;
 
 import javax.imageio.ImageIO;
@@ -119,7 +120,7 @@ public class VideoViewer extends EditorPanel<Video> {
                     }
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                MainWindow.getInstance().handleException(e);
             }
             stopAction.setEnabled(false);
             playAction.setEnabled(true);
@@ -267,7 +268,7 @@ public class VideoViewer extends EditorPanel<Video> {
                             if (Desktop.isDesktopSupported())
                                 Desktop.getDesktop().open(temp);
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        MainWindow.getInstance().handleException(e);
                     }
                 }
             }, true, new AbstractAction() {

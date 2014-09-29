@@ -93,7 +93,7 @@ public abstract class DataSource {
      * Returns the total length of the data stream
      * @return the total length of the data stream
      */
-    public abstract long limit();
+    public abstract long length();
 
     /**
      * Returns the number of bytes remaining in the data stream to be consumed
@@ -101,7 +101,7 @@ public abstract class DataSource {
      * @throws IOException
      */
     public long remaining() throws IOException {
-        return limit() - position();
+        return length() - position();
     }
 
     /**
@@ -331,6 +331,23 @@ public abstract class DataSource {
     }
 
     /**
+     * Reads a float from the stream in big endian format
+     * @return a float
+     * @throws IOException
+     */
+    public float getFloat() throws IOException {
+        return Float.intBitsToFloat(getInt());
+    }
+
+    /**
+     * Writes a float to the stream in big endian byte order
+     * @param f
+     */
+    public void putFloat(float f) throws IOException {
+        putInt(Float.floatToIntBits(f));
+    }
+
+    /**
      * Reads a float from the stream in little endian format
      * @return a float
      * @throws IOException
@@ -456,7 +473,7 @@ public abstract class DataSource {
             try {
                 DataSource.this.mark(readlimit);
             } catch (IOException e) {
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
         }
 

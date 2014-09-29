@@ -125,4 +125,8 @@ public class LabCollection {
             lc.addExisting(f);
         return lc;
     }
+
+    public String toString() {
+        return "LABs";
+    }
 }

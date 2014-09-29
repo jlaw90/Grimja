@@ -41,7 +41,7 @@ public class LabFile {
      * The names and data for the entries of this LabFile
      */
     public final List<DataSource> entries = new LinkedList<DataSource>();
-    private int version;
+    private int version = 256;
     private String name;
 
     private File path;
@@ -64,18 +64,16 @@ public class LabFile {
         int magic;
         if ((magic = source.readInt()) != (('L' << 24) | ('A' << 16) | ('B' << 8) | ('N')))
             throw new IOException(String.format("Invalid LAB file, magic: %08x", magic));
-        source.skipBytes(4); // version
+        version = source.readInt(); // Always 256?
         int entries = Integer.reverseBytes(source.readInt()); // should be uint but the chances of there being over 2147483647 entries is, I assume: slim
-        source.skipBytes(4); // string table size
-        Integer.reverseBytes(source.readInt());
         int stringTableOffset = 16 * (entries + 1);
 
         for (int i = 0; i < entries; i++) {
-            source.seek(16 + i * 16); // position...
+            source.seek((i+1) * 16); // position...
             int nameOff = Integer.reverseBytes(source.readInt());
             int start = Integer.reverseBytes(source.readInt());
             int size = Integer.reverseBytes(source.readInt());
-            //int what = EndianHelper.reverse4(in.getInt());
+            // 4 bytes of 0
 
             // nul terminated string
             StringBuilder sb = new StringBuilder();
@@ -108,7 +106,6 @@ public class LabFile {
     /**
      * Returns all the LabEntry's contained in this LabFile that have a model of the specified type
      * @param type the type of the model
-     * @param <T> the type of the model
      * @return a list containing the results
      */
     public List<DataSource> findByType(Class<? extends LabEntry> type) {
@@ -151,5 +148,51 @@ public class LabFile {
         // Todo: save!
         RandomAccessFile raf = new RandomAccessFile(file, "rw");
         raf.writeInt((('L' << 24) | ('A' << 16) | ('B' << 8) | ('N')));
+        raf.writeInt(version);
+        raf.writeInt(Integer.reverseBytes(entries.size()));
+
+        // Build string table first
+        // This means we have to iterate twice, but we don't have to buffer all file data in memory
+        ByteArrayOutputStream nameBuffer = new ByteArrayOutputStream();
+        int[] nameIndices = new int[entries.size()];
+        int stringTableSize = 0;
+        for(int i = 0; i < entries.size(); i++) {
+            nameIndices[i] = stringTableSize;
+            byte[] nameData = entries.get(i).getName().getBytes();
+            nameBuffer.write(nameData, 0, nameData.length);
+            nameBuffer.write(0);
+            stringTableSize += nameData.length + 1;
+            nameData = null;
+        }
+        raf.writeInt(stringTableSize);
+
+        int stringTableOff = ((entries.size()+1) * 16);
+
+        int dataOff = stringTableOff + stringTableSize;
+
+        byte[] buf = new byte[5000];
+        for (int i = 0; i < entries.size(); i++) {
+            raf.seek((i+1) * 16);
+            DataSource d = entries.get(i);
+            raf.writeInt(Integer.reverseBytes(nameIndices[i]));
+            raf.writeInt(Integer.reverseBytes(dataOff));
+            raf.writeInt(Integer.reverseBytes((int) d.length()));
+            raf.writeInt(0);
+
+            // Write data
+            raf.seek(dataOff);
+            d.position(0);
+            while(d.remaining() > 0) {
+                int read = (int) Math.min(d.remaining(), buf.length);
+                d.get(buf, 0, read);
+                raf.write(buf, 0, read);
+                dataOff += read;
+            }
+        }
+
+        // Write the string table
+        raf.seek(stringTableOff);
+        raf.write(nameBuffer.toByteArray());
+        raf.close();
     }
 }
