@@ -215,8 +215,8 @@ public class FontView extends EditorPanel<GrimFont> {
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+        // Generated using JFormDesigner non-commercial license
         panel2 = new JPanel();
-        panel7 = new JScrollPane();
         fontPreview = new JLabel();
         panel4 = new JPanel();
         previewText = new JTextField();
@@ -229,31 +229,31 @@ public class FontView extends EditorPanel<GrimFont> {
         panel6 = new JPanel();
         label5 = new JLabel();
         charEntry = new JSpinner();
+        label4 = new JLabel();
+        widthEntry = new JSpinner();
         label2 = new JLabel();
         xEntry = new JSpinner();
         label3 = new JLabel();
         yEntry = new JSpinner();
-        label4 = new JLabel();
-        widthEntry = new JSpinner();
 
         //======== this ========
-        setLayout(new BorderLayout());
+        setLayout(new GridBagLayout());
+        ((GridBagLayout)getLayout()).columnWidths = new int[] {0, 0};
+        ((GridBagLayout)getLayout()).rowHeights = new int[] {0, 0, 0};
+        ((GridBagLayout)getLayout()).columnWeights = new double[] {1.0, 1.0E-4};
+        ((GridBagLayout)getLayout()).rowWeights = new double[] {0.0, 1.0, 1.0E-4};
 
         //======== panel2 ========
         {
             panel2.setBorder(new TitledBorder("Font Preview"));
             panel2.setLayout(new BorderLayout());
 
-            //======== panel7 ========
-            {
-                panel7.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
-
-                //---- fontPreview ----
-                fontPreview.setHorizontalAlignment(SwingConstants.CENTER);
-                fontPreview.setBackground(Color.white);
-                panel7.setViewportView(fontPreview);
-            }
-            panel2.add(panel7, BorderLayout.CENTER);
+            //---- fontPreview ----
+            fontPreview.setHorizontalAlignment(SwingConstants.CENTER);
+            fontPreview.setBackground(Color.white);
+            fontPreview.setPreferredSize(new Dimension(0, 50));
+            fontPreview.setMinimumSize(new Dimension(0, 50));
+            panel2.add(fontPreview, BorderLayout.NORTH);
 
             //======== panel4 ========
             {
@@ -283,7 +283,9 @@ public class FontView extends EditorPanel<GrimFont> {
             }
             panel2.add(panel4, BorderLayout.SOUTH);
         }
-        add(panel2, BorderLayout.PAGE_START);
+        add(panel2, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
+            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+            new Insets(0, 0, 0, 0), 0, 0));
 
         //======== panel3 ========
         {
@@ -321,10 +323,10 @@ public class FontView extends EditorPanel<GrimFont> {
                 //======== panel6 ========
                 {
                     panel6.setLayout(new GridBagLayout());
-                    ((GridBagLayout)panel6.getLayout()).columnWidths = new int[] {0, 0, 0};
-                    ((GridBagLayout)panel6.getLayout()).rowHeights = new int[] {0, 0, 0, 0, 0, 0};
-                    ((GridBagLayout)panel6.getLayout()).columnWeights = new double[] {0.0, 0.0, 1.0E-4};
-                    ((GridBagLayout)panel6.getLayout()).rowWeights = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
+                    ((GridBagLayout)panel6.getLayout()).columnWidths = new int[] {0, 0, 0, 0, 0};
+                    ((GridBagLayout)panel6.getLayout()).rowHeights = new int[] {0, 0, 0};
+                    ((GridBagLayout)panel6.getLayout()).columnWeights = new double[] {0.0, 0.0, 0.0, 0.0, 1.0E-4};
+                    ((GridBagLayout)panel6.getLayout()).rowWeights = new double[] {0.0, 0.0, 1.0E-4};
 
                     //---- label5 ----
                     label5.setText("Char: ");
@@ -343,53 +345,13 @@ public class FontView extends EditorPanel<GrimFont> {
                     });
                     panel6.add(charEntry, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
                         GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 5, 0), 0, 0));
-
-                    //---- label2 ----
-                    label2.setText("X: ");
-                    label2.setHorizontalAlignment(SwingConstants.TRAILING);
-                    label2.setLabelFor(xEntry);
-                    panel6.add(label2, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                         new Insets(0, 0, 5, 5), 0, 0));
-
-                    //---- xEntry ----
-                    xEntry.setModel(new SpinnerNumberModel(0, -128, 127, 1));
-                    xEntry.addChangeListener(new ChangeListener() {
-                        @Override
-                        public void stateChanged(ChangeEvent e) {
-                            valueChanged(e);
-                        }
-                    });
-                    panel6.add(xEntry, new GridBagConstraints(1, 1, 1, 1, 2.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 5, 0), 0, 0));
-
-                    //---- label3 ----
-                    label3.setText("Y: ");
-                    label3.setHorizontalAlignment(SwingConstants.TRAILING);
-                    label3.setLabelFor(yEntry);
-                    panel6.add(label3, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 5, 5), 0, 0));
-
-                    //---- yEntry ----
-                    yEntry.setModel(new SpinnerNumberModel(0, -128, 127, 1));
-                    yEntry.addChangeListener(new ChangeListener() {
-                        @Override
-                        public void stateChanged(ChangeEvent e) {
-                            valueChanged(e);
-                        }
-                    });
-                    panel6.add(yEntry, new GridBagConstraints(1, 2, 1, 1, 2.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 5, 0), 0, 0));
 
                     //---- label4 ----
                     label4.setText("Width: ");
                     label4.setHorizontalAlignment(SwingConstants.TRAILING);
                     label4.setLabelFor(widthEntry);
-                    panel6.add(label4, new GridBagConstraints(0, 3, 1, 1, 0.0, 0.0,
+                    panel6.add(label4, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
                         GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                         new Insets(0, 0, 5, 5), 0, 0));
 
@@ -401,21 +363,63 @@ public class FontView extends EditorPanel<GrimFont> {
                             valueChanged(e);
                         }
                     });
-                    panel6.add(widthEntry, new GridBagConstraints(1, 3, 1, 1, 2.0, 0.0,
+                    panel6.add(widthEntry, new GridBagConstraints(3, 0, 1, 1, 2.0, 0.0,
                         GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                         new Insets(0, 0, 5, 0), 0, 0));
+
+                    //---- label2 ----
+                    label2.setText("X: ");
+                    label2.setHorizontalAlignment(SwingConstants.TRAILING);
+                    label2.setLabelFor(xEntry);
+                    panel6.add(label2, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 5), 0, 0));
+
+                    //---- xEntry ----
+                    xEntry.setModel(new SpinnerNumberModel(0, -128, 127, 1));
+                    xEntry.addChangeListener(new ChangeListener() {
+                        @Override
+                        public void stateChanged(ChangeEvent e) {
+                            valueChanged(e);
+                        }
+                    });
+                    panel6.add(xEntry, new GridBagConstraints(1, 1, 1, 1, 2.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 5), 0, 0));
+
+                    //---- label3 ----
+                    label3.setText("Y: ");
+                    label3.setHorizontalAlignment(SwingConstants.TRAILING);
+                    label3.setLabelFor(yEntry);
+                    panel6.add(label3, new GridBagConstraints(2, 1, 1, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 5), 0, 0));
+
+                    //---- yEntry ----
+                    yEntry.setModel(new SpinnerNumberModel(0, -128, 127, 1));
+                    yEntry.addChangeListener(new ChangeListener() {
+                        @Override
+                        public void stateChanged(ChangeEvent e) {
+                            valueChanged(e);
+                        }
+                    });
+                    panel6.add(yEntry, new GridBagConstraints(3, 1, 1, 1, 2.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 0), 0, 0));
                 }
                 panel5.add(panel6, BorderLayout.CENTER);
             }
             panel3.add(panel5, BorderLayout.PAGE_END);
         }
-        add(panel3, BorderLayout.CENTER);
+        add(panel3, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
+            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+            new Insets(0, 0, 0, 0), 0, 0));
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
+    // Generated using JFormDesigner non-commercial license
     private JPanel panel2;
-    private JScrollPane panel7;
     private JLabel fontPreview;
     private JPanel panel4;
     private JTextField previewText;
@@ -428,11 +432,11 @@ public class FontView extends EditorPanel<GrimFont> {
     private JPanel panel6;
     private JLabel label5;
     private JSpinner charEntry;
+    private JLabel label4;
+    private JSpinner widthEntry;
     private JLabel label2;
     private JSpinner xEntry;
     private JLabel label3;
     private JSpinner yEntry;
-    private JLabel label4;
-    private JSpinner widthEntry;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 }
