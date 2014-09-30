@@ -52,8 +52,24 @@ public class TextParser {
     }
 
     public void nextLine() {
-        line = idx >= lines.size()? null: lines.get(idx++);
+        line = idx >= lines.size()? null: lines.get(idx);
+        idx += 1;
         charIdx = 0;
+    }
+
+    public String readString() {
+        skipWhitespace(false);
+        StringBuilder sb = new StringBuilder();
+        int start = charIdx;
+        int end = line.length();
+        for(; start < end; start++) {
+            char c = peek();
+            if(c == ' ' || c == '\n')
+                break;
+            skip(1);
+            sb.append(c);
+        }
+        return sb.toString();
     }
 
     public int remainingChars() {
@@ -74,7 +90,7 @@ public class TextParser {
             int toSkip = Math.min(line.length(), count - skipped);
             skipped += toSkip;
             charIdx += toSkip;
-            if(charIdx == line.length())
+            if(charIdx >= line.length())
                 nextLine();
         }
     }
@@ -102,6 +118,12 @@ public class TextParser {
         return c;
     }
 
+    public String remaining() {
+        String s = line.substring(charIdx, line.length());
+        skip(remainingChars());
+        return s;
+    }
+
     public boolean isNumber(char c) {
         return isCharBetween(c, '0', '9');
     }
@@ -126,9 +148,18 @@ public class TextParser {
         return c >= start && c <= end;
     }
 
+    public void skipWhitespace(boolean skipNewline) {
+        char c;
+        while(isWhitespace(c = peek()) && (skipNewline || c != '\n')) {
+            if(!skipNewline)
+                charIdx++;
+            else
+                skip(1);
+        }
+    }
+
     public void skipWhitespace() {
-        while(isWhitespace(peek()))
-            skip(1);
+        skipWhitespace(true);
     }
 
     public int readHex() throws IOException {
@@ -151,9 +182,10 @@ public class TextParser {
         return negative? -val: val;
     }
 
-    public int readInt() {
+    public int readInt() throws IOException {
         skipWhitespace();
         boolean negative = false;
+        final int start = charIdx;
         if(peek() == '-') {
             negative = true;
             skip(1);
@@ -164,32 +196,54 @@ public class TextParser {
         final int curLine = idx;
         while(curLine == idx && line != null && charIdx < line.length() && isNumber(peek()))
             val = (val * 10) + (read() - '0');
+        if(charIdx - start == 0)
+            error("Number expected");
         return negative? -val : val;
     }
 
-    public float readFloat() {
+    public float readFloat() throws IOException {
+        int startLine = idx;
+        skipWhitespace();
+        boolean negative = peek() == '-';
         float result = readInt();
         if(peek() == '.') {
             skip(1);
             float divisor = 10f;
-            while(peek() == '0') {
+            while(startLine == idx && peek() == '0') {
                 divisor /= 10f;
                 skip(1);
             }
+            char peek = eof()? '\n': peek();
+            if(startLine != idx || peek == ' ' || peek == '\t' || peek=='\r' || peek == '\n') // We've changed line or float ended in all 0's
+                return result;
             int floatPart = readInt();
             while(floatPart >= divisor)
                 divisor *= 10f;
             float asDecimal = ((float) floatPart) / divisor;
-            result += asDecimal;
+            if(result == 0 && negative)
+                result = -(result + asDecimal);
+            else
+                result += asDecimal;
         }
         return result;
     }
 
-    public Vector3f readVector3() {
-        return new Vector3f(readFloat(), readFloat(), readFloat());
+    public boolean checkString(String needle) {
+        return line != null && line.toLowerCase().contains(needle.toLowerCase());
     }
 
-    public Angle readAngle() {
+    public Vector3f readVector3() throws IOException {
+        float x = readFloat();
+        float y = readFloat();
+        float z = readFloat();
+        return new Vector3f(x, y, z);
+    }
+
+    public Angle readAngle() throws IOException {
         return new Angle(readFloat());
+    }
+
+    public boolean eof() {
+        return idx >= lines.size();
     }
 }

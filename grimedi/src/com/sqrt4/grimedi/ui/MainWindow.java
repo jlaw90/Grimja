@@ -243,6 +243,8 @@ public class MainWindow extends JFrame {
                         ep.onHide();
 
                         // Todo: check if modified, save in temporary file if it is, cleanup if not - etc.
+                        // Saving in a temporary file means we can leave it to be GC'd, as we'll have a version on disk
+                        // It also means we don't modify the LAB until it's time to rebuild the entire thing
                     }
                     editorPane.remove(0);
                 }
