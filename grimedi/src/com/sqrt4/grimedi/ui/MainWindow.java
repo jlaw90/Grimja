@@ -217,6 +217,7 @@ public class MainWindow extends JFrame {
     }
 
     public void handleException(Throwable t) {
+        t.printStackTrace();
         JOptionPane.showMessageDialog(this, t.getLocalizedMessage(), "Error", JOptionPane.ERROR_MESSAGE);
     }
 

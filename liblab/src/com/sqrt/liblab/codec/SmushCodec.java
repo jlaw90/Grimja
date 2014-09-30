@@ -22,6 +22,7 @@ import com.sqrt.liblab.entry.video.VideoInputStream;
 import com.sqrt.liblab.io.DataSource;
 import com.sqrt.liblab.io.DiskDataSource;
 
+import javax.activation.FileDataSource;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
@@ -34,6 +35,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 
+/*
+  A lof of code in here has been borrowed from FFMPEG (https://github.com/FFmpeg/FFmpeg/blob/master/libavcodec/sanm.c)
+  although it still doesn't bloody work...
+
+  Todo: sync with latest FFMPEG version, if that still doesn't work then branch the file and sync with residual sources
+  https://github.com/residualvm/residualvm/tree/6d8910ca4b90cbd5d12f28dac9a494c4b4640786/engines/grim/movie/codecs
+  specifically, I think it's the blocky 16 stuff that's having problems:
+  https://github.com/residualvm/residualvm/blob/6d8910ca4b90cbd5d12f28dac9a494c4b4640786/engines/grim/movie/codecs/blocky16.cpp
+ */
 public class SmushCodec extends EntryCodec<Video> {
     protected Video _read(DataSource compressed) throws IOException {
         SANMVideoContext ctx = new SANMVideoContext();
@@ -72,7 +82,7 @@ public class SmushCodec extends EntryCodec<Video> {
     private void processBlock(SANMVideoContext ctx, DataSource source) throws IOException {
         int tag = source.getInt();
         int size = source.getInt();
-        long end = source.position() + size;
+        long end = source.position() + size + (size & 1);
         switch (tag) {
             // Header
             case (('S' << 24) | ('H' << 16) | ('D' << 8) | 'R'):
@@ -89,7 +99,7 @@ public class SmushCodec extends EntryCodec<Video> {
                 ctx.npixels = ctx.width * ctx.height;
                 int type = source.getUShortLE();
                 int frameDelay = source.getIntLE(); // microseconds...
-                int frame_buf_size = source.getIntLE();
+                int frame_buf_size = source.getIntLE(); // According to residual, this is flags
                 ctx.buf_size = ctx.aligned_width * ctx.aligned_height;
                 ctx.frm0 = new short[ctx.buf_size];
                 ctx.frm1 = new short[ctx.buf_size];
@@ -100,8 +110,25 @@ public class SmushCodec extends EntryCodec<Video> {
                 break;
             // Frame header...
             case (('F' << 24) | ('L' << 16) | ('H' << 8) | 'D'):
-                while (source.position() < end - 5) // I use 5 because sometimes the Wave metadata has an extra 4 bytes
-                    readFrameMetadata(ctx, source);
+                do { // I use 5 because sometimes the Wave metadata has an extra 4 bytes
+                    int stag = source.getInt();
+                    int ssize = source.getInt();
+                    switch (stag) {
+                        case (('B' << 24) | ('l' << 16) | ('1' << 8) | '6'):
+                            source.skip(ssize);
+                            break;
+                        case (('W' << 24) | ('a' << 16) | ('v' << 8) | 'e'):
+                            Video vid = ctx.video;
+                            vid.audio.sampleRate = source.getIntLE();
+                            vid.audio.channels = source.getIntLE();
+                            vid.audio.bits = 16;
+                            vid.audio.stream = new VimaStream(source);
+                            source.skip(4);
+                            break;
+                        default:
+                            System.out.println("Unknown frame metadata tag: " + tagToString(stag));
+                    }
+                } while(source.position() < end);
                 break;
             // Frame
             case (('F' << 24) | ('R' << 16) | ('M' << 8) | 'E'):
@@ -115,31 +142,7 @@ public class SmushCodec extends EntryCodec<Video> {
             default:
                 System.out.println("Unknown chunk tag " + tagToString(tag));
         }
-        source.skip(end - source.position()); // skip any padding...
-    }
-
-    private void readFrameMetadata(SANMVideoContext ctx, DataSource source) throws IOException {
-        int tag = source.getInt();
-        int size = source.getInt();
-        long end = source.position() + size;
-        switch (tag) {
-            case (('B' << 24) | ('l' << 16) | ('1' << 8) | '6'):
-                source.skip(10);
-                //int width = source.getIntLE();
-                //int height = source.getIntLE();
-                //ctx.blockDimensions.add(new Dimension(width, height));
-                break;
-            case (('W' << 24) | ('a' << 16) | ('v' << 8) | 'e'):
-                Video vid = ctx.video;
-                vid.audio.sampleRate = source.getIntLE();
-                vid.audio.channels = source.getIntLE();
-                vid.audio.bits = 16;
-                vid.audio.stream = new VimaStream(source);
-                break;
-            default:
-                System.out.println("Unknown frame metadata tag: " + tagToString(tag));
-        }
-        source.skip(end - source.position());
+        source.position(end); // skip any padding...
     }
 
     private void readFrameData(SANMVideoContext ctx, DataSource source) throws IOException {
@@ -545,23 +548,25 @@ class SANMVideoStream extends VideoInputStream {
 
                     interp_point(point, x0, y0, x1, y1, ipoint, width);
 
+                    int off = point.y * side_length;
+
                     switch (dir) {
                         case DIR_UP:
-                            for (irow = point.y; irow >= 0;)
-                                pglyph[point.x + irow-- * side_length] = true;
+                            for (irow = point.y; irow >= 0; irow--, off -= side_length)
+                                pglyph[off] = true;
                             break;
                         case DIR_DOWN:
-                            for (irow = point.y; irow < side_length;)
-                                pglyph[point.x + irow++ * side_length] = true;
+                            for (irow = point.y; irow < side_length; irow++, off += side_length)
+                                pglyph[off] = true;
                             break;
                         case DIR_LEFT:
-                            for (icol = point.x; icol >= 0;)
-                                pglyph[icol-- + point.y * side_length] = true;
+                            for (icol = point.x; icol >= 0; icol--)
+                                pglyph[off + icol] = true;
                             break;
 
                         case DIR_RIGHT:
                             for (icol = point.x; icol < side_length; icol++)
-                                pglyph[icol++ + point.y * side_length] = true;
+                                pglyph[off + icol] = true;
                             break;
                     }
                 }
