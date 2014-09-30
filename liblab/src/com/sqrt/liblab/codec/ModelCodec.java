@@ -196,7 +196,7 @@ public class ModelCodec extends EntryCodec<GrimModel> {
         String name = f.getName();
         int idx = name.lastIndexOf('.');
         if(idx != -1)
-            name = name.substring(0, idx+1);
+            name = name.substring(0, idx);
         File mtlF = new File(f.getParentFile(), name + ".mtl");
         Map<Material, String> materialNames = writeMtl(mtlF, model, colorMap);
         PrintStream ps = new PrintStream(f);
@@ -232,7 +232,6 @@ public class ModelCodec extends EntryCodec<GrimModel> {
             ps.println("Kd 1 1 1");
             ps.println("Ka 1 1 1");
             ps.println("illum 1");
-            // Todo: color and illumination data
             Texture t = mat.textures.get(0);
             BufferedImage bi = t.render(map);
             String texName = name + ".png";
