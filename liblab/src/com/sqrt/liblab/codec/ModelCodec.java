@@ -17,12 +17,17 @@
 
 package com.sqrt.liblab.codec;
 
+import com.sqrt.liblab.entry.model.Texture;
 import com.sqrt.liblab.io.DataSource;
 import com.sqrt.liblab.entry.model.*;
 import com.sqrt.liblab.threed.Vector2f;
 import com.sqrt.liblab.threed.Vector3f;
+import com.sun.prism.*;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.*;
+import java.util.*;
 
 public class ModelCodec extends EntryCodec<GrimModel> {
     public GrimModel _read(DataSource source) throws IOException {
@@ -174,7 +179,7 @@ public class ModelCodec extends EntryCodec<GrimModel> {
         }
         if (hasMaterial) {
             int matIdx = source.getIntLE();
-            Material mat = materials[matIdx];
+            Material mat = mf.material = materials[matIdx];
             if(tex >= 0)
                 mf.texture = mat.textures.get(tex);
         }
@@ -186,27 +191,74 @@ public class ModelCodec extends EntryCodec<GrimModel> {
         return mf;
     }
 
-    private void exportWavefront(File f, GrimModel model) throws FileNotFoundException {
+    public void exportWavefront(File f, GrimModel model, ColorMap colorMap) throws IOException {
+        // Todo: export MTL
+        String name = f.getName();
+        int idx = name.lastIndexOf('.');
+        if(idx != -1)
+            name = name.substring(0, idx+1);
+        File mtlF = new File(f.getParentFile(), name + ".mtl");
+        Map<Material, String> materialNames = writeMtl(mtlF, model, colorMap);
         PrintStream ps = new PrintStream(f);
         _vertexOff = 1;
-        printNode(model, model.hierarchy.get(0), new Vector3f(0, 0, 0), ps);
-        // Todo: export MTL
+        ps.println("o " + name);
+        ps.println("mtllib " + name + ".mtl");
+        printNode(model, model.hierarchy.get(0), new Vector3f(0, 0, 0), ps, materialNames);
         ps.close();
     }
 
-    private void printNode(GrimModel model, ModelNode node, Vector3f offset, PrintStream ps) {
+    private Map<Material,String> writeMtl(File dest, GrimModel model, ColorMap map) throws IOException {
+        PrintStream ps = new PrintStream(dest);
+        Set<Material> materials = new HashSet<>();
+        Map<Material, String> materialNames = new HashMap<>();
+        // Find all the materials...
+        for(ModelNode node: model.hierarchy) {
+            if(node.mesh == null)
+                continue;
+            for(MeshFace face: node.mesh.faces) {
+                if(face.material == null)
+                    continue;
+                materials.add(face.material);
+            }
+        }
+        // Write all the materials & textures...
+        for(Material mat: materials) {
+            String name = mat.getName();
+            int idx = name.lastIndexOf('.');
+            if(idx != -1)
+                name = name.substring(0, idx);
+            materialNames.put(mat, name);
+            ps.println("newmtl " + name);
+            ps.println("Kd 1 1 1");
+            ps.println("Ka 1 1 1");
+            ps.println("illum 1");
+            // Todo: color and illumination data
+            Texture t = mat.textures.get(0);
+            BufferedImage bi = t.render(map);
+            String texName = name + ".png";
+            ImageIO.write(bi, "PNG", new File(dest.getParentFile(), texName));
+            ps.println("map_Ka " + texName);
+            ps.println("map_Kd " + texName);
+            ps.println();
+        }
+        ps.close();
+        return materialNames;
+    }
+
+    private void printNode(GrimModel model, ModelNode node, Vector3f offset, PrintStream ps, Map<Material,String> matNames) {
         Vector3f nodeOffset = offset.add(node.pos);
+
         // The mesh is offset by the pivot
         if(node.mesh != null)
-            printMesh(model, node.mesh, nodeOffset.add(node.pivot), ps);
+            printMesh(model, node.mesh, nodeOffset.add(node.pivot), ps, matNames);
         if(node.child != null)
-            printNode(model, node.child, nodeOffset, ps);
+            printNode(model, node.child, nodeOffset, ps, matNames);
         if(node.sibling != null)
-            printNode(model, node.sibling, offset, ps);
+            printNode(model, node.sibling, offset, ps, matNames);
     }
 
     private int _vertexOff;
-    private void printMesh(GrimModel model, Mesh mesh, Vector3f offset, PrintStream ps) {
+    private void printMesh(GrimModel model, Mesh mesh, Vector3f offset, PrintStream ps, Map<Material,String> matNames) {
         ps.println("g " + mesh.name);
 
         for(MeshFace face: mesh.faces) {
@@ -221,10 +273,12 @@ public class ModelCodec extends EntryCodec<GrimModel> {
                 if(tex != null)
                     t = t.div(new Vector2f(tex.width, tex.height)); // map to 0-1 range...
                 v = v.add(offset);
-                ps.println("v " + v.x + " " + v.y + " " + v.z);
-                ps.println("vn " + n.x + " " + n.y + " " + n.z);
+                ps.println("v " + v.x + " " + v.z + " " + v.y);
+                ps.println("vn " + n.x + " " + n.z + " " + n.y);
                 ps.println("vt " + t.x + " " + t.y);
             }
+            if(face.material != null)
+                ps.println("usemtl " + matNames.get(face.material));
             ps.print("f ");
             for(int i = 0; i < face.vertices.size(); i++) {
                 ps.print(" " + _vertexOff + "/" + _vertexOff + "/" + _vertexOff);

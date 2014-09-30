@@ -23,9 +23,14 @@
 
 package com.sqrt4.grimedi.ui.editor;
 
+import java.awt.event.*;
+
+import com.sqrt.liblab.codec.CodecMapper;
+import com.sqrt.liblab.codec.ModelCodec;
 import com.sqrt.liblab.entry.model.GrimModel;
 import com.sqrt.liblab.entry.model.ModelNode;
 import com.sqrt.liblab.threed.Angle;
+import com.sqrt4.grimedi.ui.MainWindow;
 import com.sqrt4.grimedi.ui.component.AngleEditor;
 import com.sqrt4.grimedi.ui.component.ModelRenderer;
 import com.sqrt4.grimedi.ui.component.Vector3Editor;
@@ -39,6 +44,8 @@ import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 /**
  * @author James Lawrence
@@ -46,6 +53,7 @@ import java.beans.PropertyChangeListener;
 public class ModelView extends EditorPanel<GrimModel> {
     private boolean bonesUpdating;
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
+    // Generated using JFormDesigner non-commercial license
     private ModelRenderer renderer;
     private JPanel splitPane1;
     private JScrollPane scrollPane1;
@@ -56,6 +64,9 @@ public class ModelView extends EditorPanel<GrimModel> {
     private AngleEditor boneYaw;
     private AngleEditor bonePitch;
     private AngleEditor boneRoll;
+    private JPanel panel1;
+    private JButton button1;
+    private ExportObjAction exportObjAction;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
     public ModelView() {
@@ -99,8 +110,6 @@ public class ModelView extends EditorPanel<GrimModel> {
 
     private void boneChanged(PropertyChangeEvent e) {
         boneChanged();
-        ;
-
     }
 
     private void boneChanged(ChangeEvent e) {
@@ -114,6 +123,7 @@ public class ModelView extends EditorPanel<GrimModel> {
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+        // Generated using JFormDesigner non-commercial license
         renderer = new ModelRenderer();
         splitPane1 = new JPanel();
         scrollPane1 = new JScrollPane();
@@ -124,6 +134,9 @@ public class ModelView extends EditorPanel<GrimModel> {
         boneYaw = new AngleEditor();
         bonePitch = new AngleEditor();
         boneRoll = new AngleEditor();
+        panel1 = new JPanel();
+        button1 = new JButton();
+        exportObjAction = new ExportObjAction();
 
         //======== this ========
         setLayout(new BorderLayout());
@@ -206,6 +219,16 @@ public class ModelView extends EditorPanel<GrimModel> {
                     }
                 });
                 panel6.add(boneRoll);
+
+                //======== panel1 ========
+                {
+                    panel1.setLayout(new BorderLayout());
+
+                    //---- button1 ----
+                    button1.setAction(exportObjAction);
+                    panel1.add(button1, BorderLayout.CENTER);
+                }
+                panel6.add(panel1);
             }
             splitPane1.add(panel6, BorderLayout.SOUTH);
         }
@@ -270,5 +293,26 @@ public class ModelView extends EditorPanel<GrimModel> {
         });
         for (int i = 0; i < boneTree.getRowCount(); i++)
             boneTree.expandRow(i);
+    }
+
+    private class ExportObjAction extends AbstractAction {
+        private ExportObjAction() {
+            // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+            // Generated using JFormDesigner non-commercial license
+            putValue(NAME, "Export OBJ");
+            putValue(SHORT_DESCRIPTION, "Export wavefront obj file");
+            // JFormDesigner - End of action initialization  //GEN-END:initComponents
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            JFileChooser jfc = MainWindow.getInstance().createFileDialog();
+            if(jfc.showSaveDialog(ModelView.this) != JFileChooser.APPROVE_OPTION)
+                return;
+            try {
+                ((ModelCodec) CodecMapper.codecForClass(GrimModel.class)).exportWavefront(jfc.getSelectedFile(), renderer.getModel(), renderer.getColorMap());
+            } catch (IOException e1) {
+                MainWindow.getInstance().handleException(e1);
+            }
+        }
     }
 }

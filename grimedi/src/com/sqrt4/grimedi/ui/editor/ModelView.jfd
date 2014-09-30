@@ -1,4 +1,4 @@
-JFDML JFormDesigner: "5.1.0.2.64" Java: "1.7.0_09" encoding: "UTF-8"
+JFDML JFormDesigner: "5.2.0.0.109" Java: "1.7.0_60" encoding: "UTF-8"
 
 new FormModel {
 	contentType: "form/swing"
@@ -56,6 +56,15 @@ new FormModel {
 						"border": new javax.swing.border.TitledBorder( "Roll" )
 						addEvent( new FormEvent( "java.beans.PropertyChangeListener", "propertyChange", "boneChanged", true ) )
 					} )
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+						name: "panel1"
+						add( new FormComponent( "javax.swing.JButton" ) {
+							name: "button1"
+							"action": new FormReference( "exportObjAction" )
+						}, new FormLayoutConstraints( class java.lang.String ) {
+							"value": "Center"
+						} )
+					} )
 				}, new FormLayoutConstraints( class java.lang.String ) {
 					"value": "South"
 				} )
@@ -65,6 +74,16 @@ new FormModel {
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 0, 0 )
 			"size": new java.awt.Dimension( 675, 505 )
+		} )
+		add( new FormNonVisual( "javax.swing.AbstractAction" ) {
+			name: "exportObjAction"
+			"$action.Name": "Export OBJ"
+			"$action.ShortDescription": "Export wavefront obj file"
+			auxiliary() {
+				"JavaCodeGenerator.className": "ExportObjAction"
+			}
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 515 )
 		} )
 	}
 }

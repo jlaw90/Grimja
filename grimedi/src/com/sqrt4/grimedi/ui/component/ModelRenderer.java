@@ -545,6 +545,10 @@ public class ModelRenderer extends JPanel implements GLEventListener {
         return model;
     }
 
+    public ColorMap getColorMap() {
+        return colorMapSelector.getSelected();
+    }
+
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
     private JPanel panel2;
     private JPanel panel4;

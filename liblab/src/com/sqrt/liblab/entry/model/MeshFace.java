@@ -53,6 +53,11 @@ public class MeshFace {
      * The texture that should be mapped onto this face
      */
     public Texture texture;
+    /**
+     * The material for this surface
+     * Texture above is naive, a material can have multiple textures that are chosen at runtime
+     */
+    public Material material;
 
     /**
      * Calculates the bounds of this face
