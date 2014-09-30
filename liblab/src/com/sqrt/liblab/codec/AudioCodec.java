@@ -327,4 +327,8 @@ class NullPaddedDataSource extends DataSource {
     public void put(byte b) throws IOException {
         source.put(b);
     }
+
+    public int hashCode() {
+        return source.hashCode() + 1;
+    }
 }

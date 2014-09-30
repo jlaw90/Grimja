@@ -28,6 +28,8 @@ public class Size implements Comparable<Size> {
     }
 
     public String toString() {
+        if(size == 0)
+            return "0B";
         int idx = Math.min(((int) Math.log10(size)) / 3, prefixes.length);
         double divisor = Math.pow(1024, idx);
         return String.format("%2.2f%s", (size/divisor), prefixes[idx]);

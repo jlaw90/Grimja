@@ -29,6 +29,7 @@ import com.sqrt.liblab.codec.CodecMapper;
 import com.sqrt.liblab.codec.EntryCodec;
 import com.sqrt.liblab.entry.LabEntry;
 import com.sqrt.liblab.io.DataSource;
+import com.sqrt.liblab.io.DiskDataSource;
 import com.sqrt4.grimedi.Main;
 import com.sqrt4.grimedi.ui.component.BusyDialog;
 import com.sqrt4.grimedi.ui.editor.EditorMapper;
@@ -37,6 +38,7 @@ import com.sqrt4.grimedi.ui.editor.HexView;
 import com.sqrt4.grimedi.util.CachedPredicate;
 import com.sqrt4.grimedi.util.Predicate;
 import com.sqrt4.grimedi.util.Size;
+import com.sun.nio.file.ExtendedCopyOption;
 import org.netbeans.swing.outline.DefaultOutlineModel;
 import org.netbeans.swing.outline.Outline;
 import org.netbeans.swing.outline.RenderDataProvider;
@@ -54,6 +56,10 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.file.CopyOption;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -322,9 +328,12 @@ public class MainWindow extends JFrame {
     private JTextField searchField;
     private JPanel editorPane;
     private JPopupMenu entryPopupMenu;
+    private JMenuItem menuItem9;
+    private JMenuItem menuItem10;
     private JMenuItem menuItem4;
     private JMenuItem menuItem5;
     private JPopupMenu labPopupMenu;
+    private JMenuItem menuItem11;
     private JMenuItem menuItem6;
     private JMenuItem menuItem8;
     private OpenAction openAction;
@@ -334,6 +343,8 @@ public class MainWindow extends JFrame {
     private ExtractAllAction extractAllAction;
     private OpenAboutDialogAction openAboutDialogAction;
     private SaveLabAction saveLabAction;
+    private InsertFileAction insertFileAction;
+    private ReplaceFileAction replaceFileAction;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
     private class OpenAction extends AbstractAction {
@@ -413,6 +424,10 @@ public class MainWindow extends JFrame {
                     filtered.put(lb, source);
             }
 
+            fireChange();
+        }
+
+        public void fireChange() {
             if (listeners.isEmpty())
                 return;
             TreeModelEvent tme = new TreeModelEvent(this, new Object[]{source});
@@ -453,6 +468,7 @@ public class MainWindow extends JFrame {
         }
 
         public void valueForPathChanged(TreePath path, Object newValue) {
+            System.out.println(path);
         }
 
         public int getIndexOfChild(Object parent, Object child) {
@@ -582,8 +598,7 @@ public class MainWindow extends JFrame {
 
         public void actionPerformed(ActionEvent e) {
             popupSource.container.entries.remove(popupSource);
-            fileList.revalidate();
-            // Todo: model should be notified...
+            filterableEntries.fireChange();
         }
     }
 
@@ -662,9 +677,12 @@ public class MainWindow extends JFrame {
         searchField = new JTextField();
         editorPane = new JPanel();
         entryPopupMenu = new JPopupMenu();
+        menuItem9 = new JMenuItem();
+        menuItem10 = new JMenuItem();
         menuItem4 = new JMenuItem();
         menuItem5 = new JMenuItem();
         labPopupMenu = new JPopupMenu();
+        menuItem11 = new JMenuItem();
         menuItem6 = new JMenuItem();
         menuItem8 = new JMenuItem();
         openAction = new OpenAction();
@@ -674,6 +692,8 @@ public class MainWindow extends JFrame {
         extractAllAction = new ExtractAllAction();
         openAboutDialogAction = new OpenAboutDialogAction();
         saveLabAction = new SaveLabAction();
+        insertFileAction = new InsertFileAction();
+        replaceFileAction = new ReplaceFileAction();
 
         //======== this ========
         setTitle("GrimEdi");
@@ -789,6 +809,15 @@ public class MainWindow extends JFrame {
         //======== entryPopupMenu ========
         {
 
+            //---- menuItem9 ----
+            menuItem9.setAction(insertFileAction);
+            entryPopupMenu.add(menuItem9);
+            entryPopupMenu.addSeparator();
+
+            //---- menuItem10 ----
+            menuItem10.setAction(replaceFileAction);
+            entryPopupMenu.add(menuItem10);
+
             //---- menuItem4 ----
             menuItem4.setMnemonic('E');
             menuItem4.setAction(extractEntryAction);
@@ -802,6 +831,11 @@ public class MainWindow extends JFrame {
 
         //======== labPopupMenu ========
         {
+
+            //---- menuItem11 ----
+            menuItem11.setText("text");
+            menuItem11.setAction(insertFileAction);
+            labPopupMenu.add(menuItem11);
 
             //---- menuItem6 ----
             menuItem6.setAction(extractAllAction);
@@ -855,6 +889,65 @@ public class MainWindow extends JFrame {
                     }
                 }
             });
+        }
+    }
+
+    private class InsertFileAction extends AbstractAction {
+        private InsertFileAction() {
+            // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+            // Generated using JFormDesigner non-commercial license
+            putValue(NAME, "Insert");
+            // JFormDesigner - End of action initialization  //GEN-END:initComponents
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            JFileChooser jfc = createFileDialog();
+            if(jfc.showOpenDialog(MainWindow.this) != JFileChooser.APPROVE_OPTION)
+                return;
+
+            try {
+                LabFile lf =((JMenuItem) e.getSource()).getParent() == entryPopupMenu? popupSource.container: labPopupSource;
+                File f = jfc.getSelectedFile();
+                File temp = File.createTempFile(f.getName(), "tmp");
+                Files.copy(f.toPath(), temp.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                DataSource ds = new DiskDataSource(lf, f.getName(), new RandomAccessFile(temp, "rw"));
+                lf.entries.add(ds);
+                filterableEntries.fireChange();
+            } catch (IOException e1) {
+                handleException(e1);
+            }
+        }
+    }
+
+    private class ReplaceFileAction extends AbstractAction {
+        private ReplaceFileAction() {
+            // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+            // Generated using JFormDesigner non-commercial license
+            putValue(NAME, "Replace");
+            putValue(SHORT_DESCRIPTION, "Replaces the selected file with one from your hard drive");
+            // JFormDesigner - End of action initialization  //GEN-END:initComponents
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            JFileChooser jfc = createFileDialog();
+            if(jfc.showOpenDialog(MainWindow.this) != JFileChooser.APPROVE_OPTION)
+                return;
+
+            String name = popupSource.getName();
+            LabFile container = popupSource.container;
+            deleteEntryAction.actionPerformed(e);
+            popupSource = null;
+
+            try {
+                File f = jfc.getSelectedFile();
+                File temp = File.createTempFile(name, "tmp");
+                Files.copy(f.toPath(), temp.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                DataSource ds = new DiskDataSource(container, name, new RandomAccessFile(temp, "rw"));
+                popupSource.container.entries.add(ds);
+                filterableEntries.fireChange();
+            } catch (IOException e1) {
+                handleException(e1);
+            }
         }
     }
 }

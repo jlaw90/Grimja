@@ -36,7 +36,7 @@ import java.util.Map;
  * @param <T> The type of the <code>Object</code> that this codec understands
  */
 public abstract class EntryCodec<T extends LabEntry> {
-    private Map<String, WeakReference<T>> cache = new HashMap<String, WeakReference<T>>();
+    private Map<DataSource, WeakReference<T>> cache = new HashMap<>();
 
     /**
      * Reads an object from the specified <code>DataSource</code>
@@ -45,18 +45,17 @@ public abstract class EntryCodec<T extends LabEntry> {
      * @throws IOException
      */
     public final T read(DataSource edp) throws IOException {
-       String key = edp.container.toString() + "." + edp.getName();
-       if(cache.containsKey(key)) {
-           WeakReference<T> ref = cache.get(key);
+       if(cache.containsKey(edp)) {
+           WeakReference<T> ref = cache.get(edp);
            T t = ref.get();
            if(t == null)
-               cache.remove(key);
+               cache.remove(edp);
            else
                return t;
        }
        T t = _read(edp);
        if(t != null)
-           cache.put(key, new WeakReference<T>(t));
+           cache.put(edp, new WeakReference<T>(t));
        return t;
    }
 

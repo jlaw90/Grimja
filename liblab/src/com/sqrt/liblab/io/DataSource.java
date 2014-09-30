@@ -443,6 +443,8 @@ public abstract class DataSource {
         return out;
     }
 
+    public abstract int hashCode();
+
     public String toString() {
         return name;
     }

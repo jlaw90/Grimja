@@ -203,4 +203,9 @@ public class DiskDataSource extends DataSource {
     private void le() {
         map.order(ByteOrder.LITTLE_ENDIAN);
     }
+
+    @Override
+    public int hashCode() {
+        return (int) (source.hashCode() + start + len);
+    }
 }

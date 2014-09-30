@@ -110,6 +110,17 @@ new FormModel {
 		add( new FormContainer( "javax.swing.JPopupMenu", new FormLayoutManager( class javax.swing.JPopupMenu ) ) {
 			name: "entryPopupMenu"
 			add( new FormComponent( "javax.swing.JMenuItem" ) {
+				name: "menuItem9"
+				"action": new FormReference( "insertFileAction" )
+			} )
+			add( new FormComponent( "javax.swing.JPopupMenu$Separator" ) {
+				name: "separator2"
+			} )
+			add( new FormComponent( "javax.swing.JMenuItem" ) {
+				name: "menuItem10"
+				"action": new FormReference( "replaceFileAction" )
+			} )
+			add( new FormComponent( "javax.swing.JMenuItem" ) {
 				name: "menuItem4"
 				"mnemonic": 69
 				"action": new FormReference( "extractEntryAction" )
@@ -124,6 +135,11 @@ new FormModel {
 		} )
 		add( new FormContainer( "javax.swing.JPopupMenu", new FormLayoutManager( class javax.swing.JPopupMenu ) ) {
 			name: "labPopupMenu"
+			add( new FormComponent( "javax.swing.JMenuItem" ) {
+				name: "menuItem11"
+				"text": "text"
+				"action": new FormReference( "insertFileAction" )
+			} )
 			add( new FormComponent( "javax.swing.JMenuItem" ) {
 				name: "menuItem6"
 				"action": new FormReference( "extractAllAction" )
@@ -204,6 +220,25 @@ new FormModel {
 			}
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 0, 892 )
+		} )
+		add( new FormNonVisual( "javax.swing.AbstractAction" ) {
+			name: "insertFileAction"
+			"$action.Name": "Insert"
+			auxiliary() {
+				"JavaCodeGenerator.className": "InsertFileAction"
+			}
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 946 )
+		} )
+		add( new FormNonVisual( "javax.swing.AbstractAction" ) {
+			name: "replaceFileAction"
+			"$action.Name": "Replace"
+			"$action.ShortDescription": "Replaces the selected file with one from your hard drive"
+			auxiliary() {
+				"JavaCodeGenerator.className": "ReplaceFileAction"
+			}
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 1000 )
 		} )
 	}
 }
