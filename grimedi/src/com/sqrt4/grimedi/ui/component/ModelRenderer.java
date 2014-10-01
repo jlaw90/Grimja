@@ -47,6 +47,8 @@ import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.sqrt4.grimedi.ui.layout.WrapLayout;
+
 /**
  * @author James Lawrence
  */
@@ -62,7 +64,7 @@ public class ModelRenderer extends JPanel implements GLEventListener {
     public boolean drawPlane = true;
     public boolean useCallList = true;
     public float planeWidth = 0.5f;
-    public float planeExtent = 5f;
+    public float planeExtent = 10f;
     private Vector3f target;
     private float camDistance = 1f, theta, phi;
     private boolean mouseUpdate, rebuildList = true, builtList;
@@ -117,6 +119,10 @@ public class ModelRenderer extends JPanel implements GLEventListener {
 
     public void setCallback(FrameCallback fc) {
         this.callback = fc;
+    }
+
+    public FrameCallback getCallback() {
+        return callback;
     }
 
     private IntBuffer viewport = Buffers.newDirectIntBuffer(4);
@@ -460,10 +466,21 @@ public class ModelRenderer extends JPanel implements GLEventListener {
         rebuildList = true;
     }
 
+    public GrimModel getModel() {
+        return model;
+    }
+
+    public ColorMap getColorMap() {
+        return colorMapSelector.getSelected();
+    }
+
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+        // Generated using JFormDesigner non-commercial license
         panel2 = new JPanel();
         panel4 = new JPanel();
+        panel1 = new JPanel();
+        label1 = new JLabel();
         colorMapSelector = new ColorMapSelector();
         toggleTextures = new JCheckBox();
         toggleWireframe = new JCheckBox();
@@ -482,76 +499,72 @@ public class ModelRenderer extends JPanel implements GLEventListener {
         //======== panel2 ========
         {
             panel2.setLayout(new BorderLayout());
+        }
+        add(panel2, BorderLayout.CENTER);
 
-            //======== panel4 ========
+        //======== panel4 ========
+        {
+            panel4.setLayout(null);
+            panel4.setLayout(new WrapLayout());
+
+            //======== panel1 ========
             {
-                panel4.setBorder(new TitledBorder("Render options"));
-                panel4.setLayout(new GridBagLayout());
-                ((GridBagLayout) panel4.getLayout()).columnWidths = new int[]{0, 0, 0, 0, 0, 0, 0, 0};
-                ((GridBagLayout) panel4.getLayout()).rowHeights = new int[]{0, 0, 0};
-                ((GridBagLayout) panel4.getLayout()).columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
-                ((GridBagLayout) panel4.getLayout()).rowWeights = new double[]{1.0, 0.0, 1.0E-4};
+                panel1.setLayout(new FlowLayout());
+
+                //---- label1 ----
+                label1.setText("Color Map:");
+                panel1.add(label1);
 
                 //---- colorMapSelector ----
-                colorMapSelector.setBorder(new TitledBorder("Color map"));
+                colorMapSelector.setMinimumSize(new Dimension(100, 20));
+                colorMapSelector.setPreferredSize(new Dimension(100, 20));
                 colorMapSelector.addItemListener(new ItemListener() {
                     @Override
                     public void itemStateChanged(ItemEvent e) {
                         colorMapSelected(e);
                     }
                 });
-                panel4.add(colorMapSelector, new GridBagConstraints(0, 0, 1, 1, 1.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-                        new Insets(0, 0, 0, 0), 0, 0));
-
-                //---- toggleTextures ----
-                toggleTextures.setAction(toggleTextureAction);
-                toggleTextures.setSelected(true);
-                panel4.add(toggleTextures, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-                        new Insets(0, 0, 0, 0), 0, 0));
-
-                //---- toggleWireframe ----
-                toggleWireframe.setAction(toggleWireframeAction);
-                panel4.add(toggleWireframe, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-                        new Insets(0, 0, 0, 0), 0, 0));
-
-                //---- toggleNormals ----
-                toggleNormals.setAction(normalToggleAction);
-                panel4.add(toggleNormals, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-                        new Insets(0, 0, 0, 0), 0, 0));
-
-                //---- toggleSmooth ----
-                toggleSmooth.setAction(toggleSmoothAction);
-                panel4.add(toggleSmooth, new GridBagConstraints(4, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-                        new Insets(0, 0, 0, 0), 0, 0));
-
-                //---- toggleGrid ----
-                toggleGrid.setAction(toggleGridAction);
-                panel4.add(toggleGrid, new GridBagConstraints(5, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-                        new Insets(0, 0, 0, 0), 0, 0));
+                panel1.add(colorMapSelector);
             }
-            panel2.add(panel4, BorderLayout.NORTH);
+            panel4.add(panel1);
+            panel1.setBounds(new Rectangle(new Point(45, 5), panel1.getPreferredSize()));
+
+            //---- toggleTextures ----
+            toggleTextures.setAction(toggleTextureAction);
+            toggleTextures.setSelected(true);
+            panel4.add(toggleTextures);
+            toggleTextures.setBounds(new Rectangle(new Point(217, 8), toggleTextures.getPreferredSize()));
+
+            //---- toggleWireframe ----
+            toggleWireframe.setAction(toggleWireframeAction);
+            panel4.add(toggleWireframe);
+            toggleWireframe.setBounds(new Rectangle(new Point(291, 8), toggleWireframe.getPreferredSize()));
+
+            //---- toggleNormals ----
+            toggleNormals.setAction(normalToggleAction);
+            panel4.add(toggleNormals);
+            toggleNormals.setBounds(new Rectangle(new Point(371, 8), toggleNormals.getPreferredSize()));
+
+            //---- toggleSmooth ----
+            toggleSmooth.setAction(toggleSmoothAction);
+            panel4.add(toggleSmooth);
+            toggleSmooth.setBounds(new Rectangle(new Point(164, 40), toggleSmooth.getPreferredSize()));
+
+            //---- toggleGrid ----
+            toggleGrid.setAction(toggleGridAction);
+            panel4.add(toggleGrid);
+            toggleGrid.setBounds(new Rectangle(new Point(270, 40), toggleGrid.getPreferredSize()));
         }
-        add(panel2, BorderLayout.CENTER);
+        add(panel4, BorderLayout.NORTH);
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
 
-    public GrimModel getModel() {
-        return model;
-    }
-
-    public ColorMap getColorMap() {
-        return colorMapSelector.getSelected();
-    }
-
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
+    // Generated using JFormDesigner non-commercial license
     private JPanel panel2;
     private JPanel panel4;
+    private JPanel panel1;
+    private JLabel label1;
     private ColorMapSelector colorMapSelector;
     private JCheckBox toggleTextures;
     private JCheckBox toggleWireframe;
@@ -563,15 +576,12 @@ public class ModelRenderer extends JPanel implements GLEventListener {
     private ToggleTextures toggleTextureAction;
     private ToggleWireframe toggleWireframeAction;
     private ToggleGridAction toggleGridAction;
-
-    public FrameCallback getCallback() {
-        return callback;
-    }
 // JFormDesigner - End of variables declaration  //GEN-END:variables
 
     private class ToggleSmoothAction extends AbstractAction {
         private ToggleSmoothAction() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "Smooth shading");
             putValue(SHORT_DESCRIPTION, "toggle smooth shading");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
@@ -586,6 +596,7 @@ public class ModelRenderer extends JPanel implements GLEventListener {
     private class NormalToggleAction extends AbstractAction {
         private NormalToggleAction() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "Normals");
             putValue(SHORT_DESCRIPTION, "draw normals");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
@@ -600,6 +611,7 @@ public class ModelRenderer extends JPanel implements GLEventListener {
     private class ToggleTextures extends AbstractAction {
         private ToggleTextures() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "Textured");
             putValue(SHORT_DESCRIPTION, "map face textures");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
@@ -615,6 +627,7 @@ public class ModelRenderer extends JPanel implements GLEventListener {
     private class ToggleWireframe extends AbstractAction {
         private ToggleWireframe() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "Wireframe");
             putValue(SHORT_DESCRIPTION, "draw wireframes");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
@@ -629,6 +642,7 @@ public class ModelRenderer extends JPanel implements GLEventListener {
     private class ToggleGridAction extends AbstractAction {
         private ToggleGridAction() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "Grid");
             putValue(SHORT_DESCRIPTION, "draw a grid");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents

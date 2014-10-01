@@ -54,6 +54,7 @@ public class ModelView extends EditorPanel<GrimModel> {
     private boolean bonesUpdating;
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
     // Generated using JFormDesigner non-commercial license
+    private JSplitPane panel2;
     private ModelRenderer renderer;
     private JPanel splitPane1;
     private JScrollPane scrollPane1;
@@ -61,6 +62,7 @@ public class ModelView extends EditorPanel<GrimModel> {
     private JPanel panel6;
     private Vector3Editor bonePos;
     private Vector3Editor bonePivot;
+    private JPanel panel3;
     private AngleEditor boneYaw;
     private AngleEditor bonePitch;
     private AngleEditor boneRoll;
@@ -80,9 +82,9 @@ public class ModelView extends EditorPanel<GrimModel> {
         } else {
             ModelNode selected = (ModelNode) boneTree.getSelectionPath().getLastPathComponent();
             renderer.setSelectedNode(selected);
-            boneYaw.setAngle(selected.yaw);
-            bonePitch.setAngle(selected.pitch);
-            boneRoll.setAngle(selected.roll);
+            boneYaw.setAngle(selected.yaw.degrees);
+            bonePitch.setAngle(selected.pitch.degrees);
+            boneRoll.setAngle(selected.roll.degrees);
             bonePos.setValue(selected.pos);
             bonePivot.setValue(selected.pivot);
         }
@@ -124,6 +126,7 @@ public class ModelView extends EditorPanel<GrimModel> {
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         // Generated using JFormDesigner non-commercial license
+        panel2 = new JSplitPane();
         renderer = new ModelRenderer();
         splitPane1 = new JPanel();
         scrollPane1 = new JScrollPane();
@@ -131,6 +134,7 @@ public class ModelView extends EditorPanel<GrimModel> {
         panel6 = new JPanel();
         bonePos = new Vector3Editor();
         bonePivot = new Vector3Editor();
+        panel3 = new JPanel();
         boneYaw = new AngleEditor();
         bonePitch = new AngleEditor();
         boneRoll = new AngleEditor();
@@ -140,99 +144,112 @@ public class ModelView extends EditorPanel<GrimModel> {
 
         //======== this ========
         setLayout(new BorderLayout());
-        add(renderer, BorderLayout.CENTER);
 
-        //======== splitPane1 ========
+        //======== panel2 ========
         {
-            splitPane1.setLayout(new BorderLayout());
+            panel2.setResizeWeight(1.0);
+            panel2.setOneTouchExpandable(true);
+            panel2.setLeftComponent(renderer);
 
-            //======== scrollPane1 ========
+            //======== splitPane1 ========
             {
+                splitPane1.setLayout(new BorderLayout());
 
-                //---- boneTree ----
-                boneTree.addTreeSelectionListener(new TreeSelectionListener() {
-                    @Override
-                    public void valueChanged(TreeSelectionEvent e) {
-                        boneSelected(e);
-                    }
-                });
-                scrollPane1.setViewportView(boneTree);
-            }
-            splitPane1.add(scrollPane1, BorderLayout.CENTER);
-
-            //======== panel6 ========
-            {
-                panel6.setBorder(new TitledBorder("Bone Properties"));
-                panel6.setLayout(new BoxLayout(panel6, BoxLayout.Y_AXIS));
-
-                //---- bonePos ----
-                bonePos.setEnabled(false);
-                bonePos.setBorder(new TitledBorder("Position"));
-                bonePos.addChangeListener(new ChangeListener() {
-                    @Override
-                    public void stateChanged(ChangeEvent e) {
-                        boneChanged(e);
-                    }
-                });
-                panel6.add(bonePos);
-
-                //---- bonePivot ----
-                bonePivot.setEnabled(false);
-                bonePivot.setBorder(new TitledBorder("Pivot"));
-                bonePivot.addChangeListener(new ChangeListener() {
-                    @Override
-                    public void stateChanged(ChangeEvent e) {
-                        boneChanged(e);
-                    }
-                });
-                panel6.add(bonePivot);
-
-                //---- boneYaw ----
-                boneYaw.setEnabled(false);
-                boneYaw.setBorder(new TitledBorder("Yaw"));
-                boneYaw.addPropertyChangeListener(new PropertyChangeListener() {
-                    @Override
-                    public void propertyChange(PropertyChangeEvent e) {
-                        boneChanged(e);
-                    }
-                });
-                panel6.add(boneYaw);
-
-                //---- bonePitch ----
-                bonePitch.setEnabled(false);
-                bonePitch.setBorder(new TitledBorder("Pitch"));
-                bonePitch.addPropertyChangeListener(new PropertyChangeListener() {
-                    @Override
-                    public void propertyChange(PropertyChangeEvent e) {
-                        boneChanged(e);
-                    }
-                });
-                panel6.add(bonePitch);
-
-                //---- boneRoll ----
-                boneRoll.setEnabled(false);
-                boneRoll.setBorder(new TitledBorder("Roll"));
-                boneRoll.addPropertyChangeListener(new PropertyChangeListener() {
-                    @Override
-                    public void propertyChange(PropertyChangeEvent e) {
-                        boneChanged(e);
-                    }
-                });
-                panel6.add(boneRoll);
-
-                //======== panel1 ========
+                //======== scrollPane1 ========
                 {
-                    panel1.setLayout(new BorderLayout());
 
-                    //---- button1 ----
-                    button1.setAction(exportObjAction);
-                    panel1.add(button1, BorderLayout.CENTER);
+                    //---- boneTree ----
+                    boneTree.addTreeSelectionListener(new TreeSelectionListener() {
+                        @Override
+                        public void valueChanged(TreeSelectionEvent e) {
+                            boneSelected(e);
+                        }
+                    });
+                    scrollPane1.setViewportView(boneTree);
                 }
-                panel6.add(panel1);
+                splitPane1.add(scrollPane1, BorderLayout.CENTER);
+
+                //======== panel6 ========
+                {
+                    panel6.setBorder(new TitledBorder("Bone Properties"));
+                    panel6.setLayout(new BoxLayout(panel6, BoxLayout.Y_AXIS));
+
+                    //---- bonePos ----
+                    bonePos.setEnabled(false);
+                    bonePos.setBorder(new TitledBorder("Position"));
+                    bonePos.addChangeListener(new ChangeListener() {
+                        @Override
+                        public void stateChanged(ChangeEvent e) {
+                            boneChanged(e);
+                        }
+                    });
+                    panel6.add(bonePos);
+
+                    //---- bonePivot ----
+                    bonePivot.setEnabled(false);
+                    bonePivot.setBorder(new TitledBorder("Pivot"));
+                    bonePivot.addChangeListener(new ChangeListener() {
+                        @Override
+                        public void stateChanged(ChangeEvent e) {
+                            boneChanged(e);
+                        }
+                    });
+                    panel6.add(bonePivot);
+
+                    //======== panel3 ========
+                    {
+                        panel3.setLayout(new BoxLayout(panel3, BoxLayout.X_AXIS));
+
+                        //---- boneYaw ----
+                        boneYaw.setEnabled(false);
+                        boneYaw.setBorder(new TitledBorder("Yaw"));
+                        boneYaw.addPropertyChangeListener(new PropertyChangeListener() {
+                            @Override
+                            public void propertyChange(PropertyChangeEvent e) {
+                                boneChanged(e);
+                            }
+                        });
+                        panel3.add(boneYaw);
+
+                        //---- bonePitch ----
+                        bonePitch.setEnabled(false);
+                        bonePitch.setBorder(new TitledBorder("Pitch"));
+                        bonePitch.addPropertyChangeListener(new PropertyChangeListener() {
+                            @Override
+                            public void propertyChange(PropertyChangeEvent e) {
+                                boneChanged(e);
+                            }
+                        });
+                        panel3.add(bonePitch);
+
+                        //---- boneRoll ----
+                        boneRoll.setEnabled(false);
+                        boneRoll.setBorder(new TitledBorder("Roll"));
+                        boneRoll.addPropertyChangeListener(new PropertyChangeListener() {
+                            @Override
+                            public void propertyChange(PropertyChangeEvent e) {
+                                boneChanged(e);
+                            }
+                        });
+                        panel3.add(boneRoll);
+                    }
+                    panel6.add(panel3);
+
+                    //======== panel1 ========
+                    {
+                        panel1.setLayout(new BorderLayout());
+
+                        //---- button1 ----
+                        button1.setAction(exportObjAction);
+                        panel1.add(button1, BorderLayout.CENTER);
+                    }
+                    panel6.add(panel1);
+                }
+                splitPane1.add(panel6, BorderLayout.SOUTH);
             }
-            splitPane1.add(panel6, BorderLayout.SOUTH);
+            panel2.setRightComponent(splitPane1);
         }
-        add(splitPane1, BorderLayout.EAST);
+        add(panel2, BorderLayout.CENTER);
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
 

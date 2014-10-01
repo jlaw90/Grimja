@@ -79,15 +79,7 @@ public class Angle {
      * @return the result
      */
     public float getDegrees(float low) {
-        float degrees = this.degrees;
-        if (degrees >= low + 360.f) {
-            float x = (float) Math.floor((degrees - low) / 360f);
-            degrees -= 360.f * x;
-        } else if (degrees < low) {
-            float x = (float) Math.floor((degrees - low) / 360.f);
-            degrees -= 360.f * x;
-        }
-        return degrees;
+        return normalize(degrees, low);
     }
 
     /**
@@ -127,6 +119,17 @@ public class Angle {
             hasRads = true;
         }
         return rads;
+    }
+
+    public static float normalize(float degrees, float low) {
+        if (degrees >= low + 360.f) {
+            float x = (float) Math.floor((degrees - low) / 360f);
+            degrees -= 360.f * x;
+        } else if (degrees < low) {
+            float x = (float) Math.floor((degrees - low) / 360.f);
+            degrees -= 360.f * x;
+        }
+        return degrees;
     }
 
     public static Angle fromRadians(float rads) {

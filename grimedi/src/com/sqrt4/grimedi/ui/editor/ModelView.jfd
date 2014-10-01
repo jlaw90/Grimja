@@ -5,71 +5,81 @@ new FormModel {
 	root: new FormRoot {
 		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
 			name: "this"
-			add( new FormComponent( "com.sqrt4.grimedi.ui.component.ModelRenderer" ) {
-				name: "renderer"
+			add( new FormContainer( "javax.swing.JSplitPane", new FormLayoutManager( class javax.swing.JSplitPane ) ) {
+				name: "panel2"
+				"resizeWeight": 1.0
+				"oneTouchExpandable": true
+				add( new FormComponent( "com.sqrt4.grimedi.ui.component.ModelRenderer" ) {
+					name: "renderer"
+				}, new FormLayoutConstraints( class java.lang.String ) {
+					"value": "left"
+				} )
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+					name: "splitPane1"
+					add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+						name: "scrollPane1"
+						add( new FormComponent( "javax.swing.JTree" ) {
+							name: "boneTree"
+							addEvent( new FormEvent( "javax.swing.event.TreeSelectionListener", "valueChanged", "boneSelected", true ) )
+						} )
+					}, new FormLayoutConstraints( class java.lang.String ) {
+						"value": "Center"
+					} )
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
+						"axis": 1
+					} ) {
+						name: "panel6"
+						"border": new javax.swing.border.TitledBorder( "Bone Properties" )
+						add( new FormComponent( "com.sqrt4.grimedi.ui.component.Vector3Editor" ) {
+							name: "bonePos"
+							"enabled": false
+							"border": new javax.swing.border.TitledBorder( "Position" )
+							addEvent( new FormEvent( "javax.swing.event.ChangeListener", "stateChanged", "boneChanged", true ) )
+						} )
+						add( new FormComponent( "com.sqrt4.grimedi.ui.component.Vector3Editor" ) {
+							name: "bonePivot"
+							"enabled": false
+							"border": new javax.swing.border.TitledBorder( "Pivot" )
+							addEvent( new FormEvent( "javax.swing.event.ChangeListener", "stateChanged", "boneChanged", true ) )
+						} )
+						add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) ) {
+							name: "panel3"
+							add( new FormComponent( "com.sqrt4.grimedi.ui.component.AngleEditor" ) {
+								name: "boneYaw"
+								"enabled": false
+								"border": new javax.swing.border.TitledBorder( "Yaw" )
+								addEvent( new FormEvent( "java.beans.PropertyChangeListener", "propertyChange", "boneChanged", true ) )
+							} )
+							add( new FormComponent( "com.sqrt4.grimedi.ui.component.AngleEditor" ) {
+								name: "bonePitch"
+								"enabled": false
+								"border": new javax.swing.border.TitledBorder( "Pitch" )
+								addEvent( new FormEvent( "java.beans.PropertyChangeListener", "propertyChange", "boneChanged", true ) )
+							} )
+							add( new FormComponent( "com.sqrt4.grimedi.ui.component.AngleEditor" ) {
+								name: "boneRoll"
+								"enabled": false
+								"border": new javax.swing.border.TitledBorder( "Roll" )
+								addEvent( new FormEvent( "java.beans.PropertyChangeListener", "propertyChange", "boneChanged", true ) )
+							} )
+						} )
+						add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+							name: "panel1"
+							add( new FormComponent( "javax.swing.JButton" ) {
+								name: "button1"
+								"action": new FormReference( "exportObjAction" )
+							}, new FormLayoutConstraints( class java.lang.String ) {
+								"value": "Center"
+							} )
+						} )
+					}, new FormLayoutConstraints( class java.lang.String ) {
+						"value": "South"
+					} )
+				}, new FormLayoutConstraints( class java.lang.String ) {
+					"value": "right"
+				} )
 			}, new FormLayoutConstraints( class java.lang.String ) {
 				"value": "Center"
-			} )
-			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
-				name: "splitPane1"
-				add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
-					name: "scrollPane1"
-					add( new FormComponent( "javax.swing.JTree" ) {
-						name: "boneTree"
-						addEvent( new FormEvent( "javax.swing.event.TreeSelectionListener", "valueChanged", "boneSelected", true ) )
-					} )
-				}, new FormLayoutConstraints( class java.lang.String ) {
-					"value": "Center"
-				} )
-				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
-					"axis": 1
-				} ) {
-					name: "panel6"
-					"border": new javax.swing.border.TitledBorder( "Bone Properties" )
-					add( new FormComponent( "com.sqrt4.grimedi.ui.component.Vector3Editor" ) {
-						name: "bonePos"
-						"enabled": false
-						"border": new javax.swing.border.TitledBorder( "Position" )
-						addEvent( new FormEvent( "javax.swing.event.ChangeListener", "stateChanged", "boneChanged", true ) )
-					} )
-					add( new FormComponent( "com.sqrt4.grimedi.ui.component.Vector3Editor" ) {
-						name: "bonePivot"
-						"enabled": false
-						"border": new javax.swing.border.TitledBorder( "Pivot" )
-						addEvent( new FormEvent( "javax.swing.event.ChangeListener", "stateChanged", "boneChanged", true ) )
-					} )
-					add( new FormComponent( "com.sqrt4.grimedi.ui.component.AngleEditor" ) {
-						name: "boneYaw"
-						"enabled": false
-						"border": new javax.swing.border.TitledBorder( "Yaw" )
-						addEvent( new FormEvent( "java.beans.PropertyChangeListener", "propertyChange", "boneChanged", true ) )
-					} )
-					add( new FormComponent( "com.sqrt4.grimedi.ui.component.AngleEditor" ) {
-						name: "bonePitch"
-						"enabled": false
-						"border": new javax.swing.border.TitledBorder( "Pitch" )
-						addEvent( new FormEvent( "java.beans.PropertyChangeListener", "propertyChange", "boneChanged", true ) )
-					} )
-					add( new FormComponent( "com.sqrt4.grimedi.ui.component.AngleEditor" ) {
-						name: "boneRoll"
-						"enabled": false
-						"border": new javax.swing.border.TitledBorder( "Roll" )
-						addEvent( new FormEvent( "java.beans.PropertyChangeListener", "propertyChange", "boneChanged", true ) )
-					} )
-					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
-						name: "panel1"
-						add( new FormComponent( "javax.swing.JButton" ) {
-							name: "button1"
-							"action": new FormReference( "exportObjAction" )
-						}, new FormLayoutConstraints( class java.lang.String ) {
-							"value": "Center"
-						} )
-					} )
-				}, new FormLayoutConstraints( class java.lang.String ) {
-					"value": "South"
-				} )
-			}, new FormLayoutConstraints( class java.lang.String ) {
-				"value": "East"
 			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 0, 0 )

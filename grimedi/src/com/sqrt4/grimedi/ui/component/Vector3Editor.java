@@ -78,6 +78,7 @@ public class Vector3Editor extends JPanel {
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+        // Generated using JFormDesigner non-commercial license
         label1 = new JLabel();
         xSpinner = new JSpinner();
         label2 = new JLabel();
@@ -88,43 +89,53 @@ public class Vector3Editor extends JPanel {
         //======== this ========
         setLayout(new GridBagLayout());
         ((GridBagLayout)getLayout()).columnWidths = new int[] {0, 0, 0, 0, 0, 0, 0};
-        ((GridBagLayout)getLayout()).rowHeights = new int[] {0, 0, 0, 0};
-        ((GridBagLayout)getLayout()).columnWeights = new double[] {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
-        ((GridBagLayout)getLayout()).rowWeights = new double[] {1.0, 0.0, 0.0, 1.0E-4};
+        ((GridBagLayout)getLayout()).rowHeights = new int[] {0, 0};
+        ((GridBagLayout)getLayout()).columnWeights = new double[] {0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 1.0E-4};
+        ((GridBagLayout)getLayout()).rowWeights = new double[] {0.0, 1.0E-4};
 
         //---- label1 ----
         label1.setText("X: ");
         label1.setHorizontalAlignment(SwingConstants.TRAILING);
         add(label1, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-            new Insets(0, 0, 0, 0), 0, 0));
-        add(xSpinner, new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0,
+            new Insets(0, 0, 0, 5), 0, 0));
+
+        //---- xSpinner ----
+        xSpinner.setModel(new SpinnerNumberModel(0.0, null, null, 0.01));
+        add(xSpinner, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-            new Insets(0, 0, 0, 0), 0, 0));
+            new Insets(0, 0, 0, 5), 0, 0));
 
         //---- label2 ----
         label2.setText("Y: ");
         label2.setHorizontalAlignment(SwingConstants.TRAILING);
         add(label2, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-            new Insets(0, 0, 0, 0), 0, 0));
-        add(ySpinner, new GridBagConstraints(3, 0, 1, 1, 1.0, 0.0,
+            new Insets(0, 0, 0, 5), 0, 0));
+
+        //---- ySpinner ----
+        ySpinner.setModel(new SpinnerNumberModel(0.0, null, null, 0.01));
+        add(ySpinner, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0,
             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-            new Insets(0, 0, 0, 0), 0, 0));
+            new Insets(0, 0, 0, 5), 0, 0));
 
         //---- label3 ----
         label3.setText("Z: ");
         label3.setHorizontalAlignment(SwingConstants.TRAILING);
         add(label3, new GridBagConstraints(4, 0, 1, 1, 0.0, 0.0,
             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-            new Insets(0, 0, 0, 0), 0, 0));
-        add(zSpinner, new GridBagConstraints(5, 0, 1, 1, 1.0, 0.0,
+            new Insets(0, 0, 0, 5), 0, 0));
+
+        //---- zSpinner ----
+        zSpinner.setModel(new SpinnerNumberModel(0.0, null, null, 0.01));
+        add(zSpinner, new GridBagConstraints(5, 0, 1, 1, 0.0, 0.0,
             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
             new Insets(0, 0, 0, 0), 0, 0));
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
+    // Generated using JFormDesigner non-commercial license
     private JLabel label1;
     private JSpinner xSpinner;
     private JLabel label2;

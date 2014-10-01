@@ -1,4 +1,4 @@
-JFDML JFormDesigner: "5.1.0.2.64" Java: "1.7.0_09" encoding: "UTF-8"
+JFDML JFormDesigner: "5.2.0.0.109" Java: "1.7.0_60" encoding: "UTF-8"
 
 new FormModel {
 	contentType: "form/swing"
@@ -7,61 +7,74 @@ new FormModel {
 			name: "this"
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
 				name: "panel2"
-				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.GridBagLayout ) {
-					"$columnSpecs": "0, 0, 0, 0, 0, 0, 0"
-					"$rowSpecs": "center:0:1.0, 0"
-					"$alignTop": true
-					"$alignLeft": true
-				} ) {
-					name: "panel4"
-					"border": new javax.swing.border.TitledBorder( "Render options" )
-					add( new FormComponent( "com.sqrt4.grimedi.ui.component.ColorMapSelector" ) {
-						name: "colorMapSelector"
-						"border": new javax.swing.border.TitledBorder( "Color map" )
-						addEvent( new FormEvent( "java.awt.event.ItemListener", "itemStateChanged", "colorMapSelected", true ) )
-					}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
-						"weightx": 1.0
-					} )
-					add( new FormComponent( "javax.swing.JCheckBox" ) {
-						name: "toggleTextures"
-						"action": new FormReference( "toggleTextureAction" )
-						"selected": true
-					}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
-						"gridx": 1
-					} )
-					add( new FormComponent( "javax.swing.JCheckBox" ) {
-						name: "toggleWireframe"
-						"action": new FormReference( "toggleWireframeAction" )
-					}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
-						"gridx": 2
-					} )
-					add( new FormComponent( "javax.swing.JCheckBox" ) {
-						name: "toggleNormals"
-						"action": new FormReference( "normalToggleAction" )
-					}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
-						"gridx": 3
-					} )
-					add( new FormComponent( "javax.swing.JCheckBox" ) {
-						name: "toggleSmooth"
-						"action": new FormReference( "toggleSmoothAction" )
-					}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
-						"gridx": 4
-					} )
-					add( new FormComponent( "javax.swing.JCheckBox" ) {
-						name: "toggleGrid"
-						"action": new FormReference( "toggleGridAction" )
-					}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
-						"gridx": 5
-					} )
-				}, new FormLayoutConstraints( class java.lang.String ) {
-					"value": "North"
-				} )
 			}, new FormLayoutConstraints( class java.lang.String ) {
 				"value": "Center"
 			} )
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class com.jformdesigner.runtime.NullLayout ) {
+				"autoSize": false
+			} ) {
+				name: "panel4"
+				auxiliary() {
+					"JavaCodeGenerator.postInitCode": "${field}.setLayout(new WrapLayout());"
+				}
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.FlowLayout ) ) {
+					name: "panel1"
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "label1"
+						"text": "Color Map:"
+					} )
+					add( new FormComponent( "com.sqrt4.grimedi.ui.component.ColorMapSelector" ) {
+						name: "colorMapSelector"
+						"minimumSize": new java.awt.Dimension( 100, 20 )
+						"preferredSize": new java.awt.Dimension( 100, 20 )
+						addEvent( new FormEvent( "java.awt.event.ItemListener", "itemStateChanged", "colorMapSelected", true ) )
+					} )
+				}, new FormLayoutConstraints( class com.jformdesigner.runtime.NullConstraints ) {
+					"x": 45
+					"y": 5
+				} )
+				add( new FormComponent( "javax.swing.JCheckBox" ) {
+					name: "toggleTextures"
+					"action": new FormReference( "toggleTextureAction" )
+					"selected": true
+				}, new FormLayoutConstraints( class com.jformdesigner.runtime.NullConstraints ) {
+					"x": 217
+					"y": 8
+				} )
+				add( new FormComponent( "javax.swing.JCheckBox" ) {
+					name: "toggleWireframe"
+					"action": new FormReference( "toggleWireframeAction" )
+				}, new FormLayoutConstraints( class com.jformdesigner.runtime.NullConstraints ) {
+					"x": 291
+					"y": 8
+				} )
+				add( new FormComponent( "javax.swing.JCheckBox" ) {
+					name: "toggleNormals"
+					"action": new FormReference( "normalToggleAction" )
+				}, new FormLayoutConstraints( class com.jformdesigner.runtime.NullConstraints ) {
+					"x": 371
+					"y": 8
+				} )
+				add( new FormComponent( "javax.swing.JCheckBox" ) {
+					name: "toggleSmooth"
+					"action": new FormReference( "toggleSmoothAction" )
+				}, new FormLayoutConstraints( class com.jformdesigner.runtime.NullConstraints ) {
+					"x": 164
+					"y": 40
+				} )
+				add( new FormComponent( "javax.swing.JCheckBox" ) {
+					name: "toggleGrid"
+					"action": new FormReference( "toggleGridAction" )
+				}, new FormLayoutConstraints( class com.jformdesigner.runtime.NullConstraints ) {
+					"x": 270
+					"y": 40
+				} )
+			}, new FormLayoutConstraints( class java.lang.String ) {
+				"value": "North"
+			} )
 		}, new FormLayoutConstraints( null ) {
-			"location": new java.awt.Point( 0, 0 )
-			"size": new java.awt.Dimension( 655, 300 )
+			"location": new java.awt.Point( 210, 30 )
+			"size": new java.awt.Dimension( 615, 440 )
 		} )
 		add( new FormNonVisual( "javax.swing.AbstractAction" ) {
 			name: "normalToggleAction"
@@ -71,7 +84,7 @@ new FormModel {
 				"JavaCodeGenerator.className": "NormalToggleAction"
 			}
 		}, new FormLayoutConstraints( null ) {
-			"location": new java.awt.Point( 0, 355 )
+			"location": new java.awt.Point( 55, 370 )
 		} )
 		add( new FormNonVisual( "javax.swing.AbstractAction" ) {
 			name: "toggleSmoothAction"
@@ -81,7 +94,7 @@ new FormModel {
 				"JavaCodeGenerator.className": "ToggleSmoothAction"
 			}
 		}, new FormLayoutConstraints( null ) {
-			"location": new java.awt.Point( 0, 310 )
+			"location": new java.awt.Point( 55, 325 )
 		} )
 		add( new FormNonVisual( "javax.swing.AbstractAction" ) {
 			name: "toggleTextureAction"
@@ -91,7 +104,7 @@ new FormModel {
 				"JavaCodeGenerator.className": "ToggleTextures"
 			}
 		}, new FormLayoutConstraints( null ) {
-			"location": new java.awt.Point( 0, 407 )
+			"location": new java.awt.Point( 55, 422 )
 		} )
 		add( new FormNonVisual( "javax.swing.AbstractAction" ) {
 			name: "toggleWireframeAction"
@@ -101,7 +114,7 @@ new FormModel {
 				"JavaCodeGenerator.className": "ToggleWireframe"
 			}
 		}, new FormLayoutConstraints( null ) {
-			"location": new java.awt.Point( 0, 459 )
+			"location": new java.awt.Point( 55, 474 )
 		} )
 		add( new FormNonVisual( "javax.swing.AbstractAction" ) {
 			name: "toggleGridAction"
@@ -111,7 +124,7 @@ new FormModel {
 				"JavaCodeGenerator.className": "ToggleGridAction"
 			}
 		}, new FormLayoutConstraints( null ) {
-			"location": new java.awt.Point( 0, 511 )
+			"location": new java.awt.Point( 55, 526 )
 		} )
 	}
 }

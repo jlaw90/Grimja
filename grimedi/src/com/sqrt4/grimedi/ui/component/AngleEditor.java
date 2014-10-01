@@ -43,22 +43,13 @@ public class AngleEditor extends JPanel {
 
     public AngleEditor() {
         initComponents();
-        angleDisplay.setFormatterFactory(new DefaultFormatterFactory(new NumberFormatter(NumberFormat.getNumberInstance())));
-    }
-
-    public AngleEditor(Angle angle) {
-        setAngle(angle);
-    }
-
-    public void setAngle(Angle angle) {
-        setAngle(angle.degrees);
     }
 
     public void setAngle(float degrees) {
         float old = getDegrees();
         adjusting = true;
         angleDisplay.setValue(degrees);
-        angleslider.setValue((int) degrees);
+        angleChooser.setAngle(degrees);
         adjusting = false;
 
         if(listeners.isEmpty())
@@ -81,56 +72,50 @@ public class AngleEditor extends JPanel {
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
         angleDisplay.setEnabled(enabled);
-        angleslider.setEnabled(enabled);
-    }
-
-    private void angleSliderChanged(ChangeEvent e) {
-        if(adjusting)
-            return;
-        setAngle(new Angle(angleslider.getValue()));
-    }
-
-    private void angleDisplayChanged(PropertyChangeEvent e) {
-        if(adjusting)
-            return;
-        if(angleDisplay == null || angleDisplay.getValue() == null)
-            setAngle(Angle.zero);
-        setAngle(getAngle());
+        angleChooser.setEnabled(enabled);
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         listeners.add(listener);
     }
 
+    private void angleChooserStateChanged(ChangeEvent e) {
+        if(adjusting)
+            return;
+        setAngle(angleChooser.getAngle());
+    }
+
+    private void angleDisplayStateChanged(ChangeEvent e) {
+        if(adjusting)
+            return;
+        setAngle(getDegrees());
+    }
+
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-        angleslider = new JSlider();
-        angleDisplay = new JFormattedTextField();
+        // Generated using JFormDesigner non-commercial license
+        angleChooser = new RadialAngleChooser();
+        angleDisplay = new JSpinner();
 
         //======== this ========
         setLayout(new BorderLayout());
 
-        //---- angleslider ----
-        angleslider.setMaximum(180);
-        angleslider.setPaintTicks(true);
-        angleslider.setMajorTickSpacing(90);
-        angleslider.setValue(0);
-        angleslider.setMinimum(-180);
-        angleslider.setMinorTickSpacing(30);
-        angleslider.setSnapToTicks(true);
-        angleslider.addChangeListener(new ChangeListener() {
+        //---- angleChooser ----
+        angleChooser.setPreferredSize(new Dimension(32, 32));
+        angleChooser.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
-                angleSliderChanged(e);
+                angleChooserStateChanged(e);
             }
         });
-        add(angleslider, BorderLayout.CENTER);
+        add(angleChooser, BorderLayout.CENTER);
 
         //---- angleDisplay ----
-        angleDisplay.addPropertyChangeListener("value", new PropertyChangeListener() {
+        angleDisplay.setModel(new SpinnerNumberModel(0.0, -180.0, 180.0, 1.0));
+        angleDisplay.addChangeListener(new ChangeListener() {
             @Override
-            public void propertyChange(PropertyChangeEvent e) {
-                angleDisplayChanged(e);
+            public void stateChanged(ChangeEvent e) {
+                angleDisplayStateChanged(e);
             }
         });
         add(angleDisplay, BorderLayout.SOUTH);
@@ -138,7 +123,8 @@ public class AngleEditor extends JPanel {
     }
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
-    private JSlider angleslider;
-    private JFormattedTextField angleDisplay;
+    // Generated using JFormDesigner non-commercial license
+    private RadialAngleChooser angleChooser;
+    private JSpinner angleDisplay;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 }

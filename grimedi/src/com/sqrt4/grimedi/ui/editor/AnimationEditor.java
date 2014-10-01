@@ -189,6 +189,7 @@ public class AnimationEditor extends EditorPanel<Animation> {
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+        // Generated using JFormDesigner non-commercial license
         renderer = new ModelRenderer();
         panel3 = new JPanel();
         label1 = new JLabel();
@@ -312,6 +313,7 @@ public class AnimationEditor extends EditorPanel<Animation> {
     }
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
+    // Generated using JFormDesigner non-commercial license
     private ModelRenderer renderer;
     private JPanel panel3;
     private JLabel label1;
@@ -333,6 +335,7 @@ public class AnimationEditor extends EditorPanel<Animation> {
     private class PlayAction extends AbstractAction {
         private PlayAction() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "Play");
             putValue(SHORT_DESCRIPTION, "play animation");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
@@ -352,6 +355,7 @@ public class AnimationEditor extends EditorPanel<Animation> {
     private class StopAction extends AbstractAction {
         private StopAction() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "Stop");
             putValue(SHORT_DESCRIPTION, "stop animation");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
@@ -374,6 +378,7 @@ public class AnimationEditor extends EditorPanel<Animation> {
     private class ExportGIFAction extends AbstractAction {
         private ExportGIFAction() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "Export GIF");
             putValue(SHORT_DESCRIPTION, "exports the current animation as a GIF (from the current viewpoint)");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
