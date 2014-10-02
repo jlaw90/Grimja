@@ -37,6 +37,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
  * @author James Lawrence
@@ -310,26 +311,31 @@ public class ImageView extends EditorPanel<GrimBitmap> {
 
         public void actionPerformed(ActionEvent e) {
             final JFileChooser jfc = window.createFileDialog();
+            jfc.setFileFilter(new FileNameExtensionFilter("Portable Network Graphics file (*.png)", "png"));
             String name = data.getName();
             int idx = name.lastIndexOf('.');
             if(idx != -1)
                 name = name.substring(0, idx);
             if(data.images.size() != 1)
-                name += "." + (imageList.getSelectedIndex() + 1);
+                name += "." + String.format("%02d", (imageList.getSelectedIndex() + 1));
             name += ".png";
             jfc.setSelectedFile(new File(name));
-            if(jfc.showSaveDialog(window) == JFileChooser.APPROVE_OPTION) {
-                window.runAsyncWithPopup("Exporting image...", new Runnable() {
-                    public void run() {
-                        File f = jfc.getSelectedFile();
-                        try {
-                            ImageIO.write((BufferedImage) imageList.getSelectedValue(), "png", f);
-                        } catch (IOException e1) {
-                            MainWindow.getInstance().handleException(e1);
-                        }
+            if (jfc.showSaveDialog(window) != JFileChooser.APPROVE_OPTION)
+                return;
+            File f = jfc.getSelectedFile();
+            name = f.getName();
+            if(!name.toLowerCase().endsWith(".png"))
+                name += ".png";
+            final File dest = new File(f.getParentFile(), name);
+            window.runAsyncWithPopup("Exporting image...", new Runnable() {
+                public void run() {
+                    try {
+                        ImageIO.write((BufferedImage) imageList.getSelectedValue(), "png", dest);
+                    } catch (IOException e1) {
+                        MainWindow.getInstance().handleException(e1);
                     }
-                });
-            }
+                }
+            });
         }
     }
 }

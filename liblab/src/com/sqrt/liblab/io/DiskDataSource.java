@@ -19,6 +19,7 @@ package com.sqrt.liblab.io;
 
 import com.sqrt.liblab.LabFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.BufferOverflowException;
@@ -207,5 +208,11 @@ public class DiskDataSource extends DataSource {
     @Override
     public int hashCode() {
         return (int) (source.hashCode() + start + len);
+    }
+
+    public static DiskDataSource createTempDataSource(LabFile container, String name) throws IOException {
+        File f = File.createTempFile(name, "tmp");
+        RandomAccessFile raf = new RandomAccessFile(f, "rw");
+        return new DiskDataSource(container, name, raf);
     }
 }

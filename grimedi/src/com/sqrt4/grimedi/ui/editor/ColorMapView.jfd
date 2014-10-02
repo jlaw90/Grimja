@@ -1,4 +1,4 @@
-JFDML JFormDesigner: "5.1.0.2.64" Java: "1.7.0_09" encoding: "UTF-8"
+JFDML JFormDesigner: "5.2.0.0.109" Java: "1.7.0_60" encoding: "UTF-8"
 
 new FormModel {
 	contentType: "form/swing"
@@ -15,9 +15,42 @@ new FormModel {
 			}, new FormLayoutConstraints( class java.lang.String ) {
 				"value": "Center"
 			} )
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.FlowLayout ) ) {
+				name: "panel1"
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "button1"
+					"action": new FormReference( "exportACTAction" )
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "button2"
+					"action": new FormReference( "importACTAction" )
+				} )
+			}, new FormLayoutConstraints( class java.lang.String ) {
+				"value": "South"
+			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 0, 0 )
 			"size": new java.awt.Dimension( 400, 300 )
+		} )
+		add( new FormNonVisual( "javax.swing.AbstractAction" ) {
+			name: "exportACTAction"
+			"$action.Name": "Export .ACT file"
+			"$action.ShortDescription": "Export to Adobe Color Table"
+			auxiliary() {
+				"JavaCodeGenerator.className": "ExportACTAction"
+			}
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 310 )
+		} )
+		add( new FormNonVisual( "javax.swing.AbstractAction" ) {
+			name: "importACTAction"
+			"$action.Name": "Import ACT"
+			"$action.ShortDescription": "Import Adobe Color Table"
+			auxiliary() {
+				"JavaCodeGenerator.className": "ImportACTAction"
+			}
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 364 )
 		} )
 	}
 }

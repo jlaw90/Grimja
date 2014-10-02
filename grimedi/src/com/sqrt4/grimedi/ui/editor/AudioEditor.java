@@ -33,6 +33,7 @@ import javax.sound.sampled.*;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
@@ -47,6 +48,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author James Lawrence
@@ -897,39 +899,54 @@ public class AudioEditor extends EditorPanel<Audio> {
         }
 
         public void actionPerformed(ActionEvent e) {
+            final AtomicBoolean cancel = new AtomicBoolean(false);
             final JFileChooser jfc = window.createFileDialog();
+            jfc.setFileFilter(new FileNameExtensionFilter("Wave file", "wav"));
             String name = data.getName();
             int idx = name.indexOf('.');
             if (idx != -1)
                 name = name.substring(0, idx);
             name += ".wav";
             jfc.setSelectedFile(new File(name));
-            if (jfc.showSaveDialog(window) == JFileChooser.APPROVE_OPTION) {
-                window.runAsyncWithPopup("Exporting region...", new Runnable() {
-                    public void run() {
-                        try {
-                            if (stopAction.isEnabled())
-                                stopAction.actionPerformed(null);
-                            WaveOutputStream wos = new WaveOutputStream(jfc.getSelectedFile(), data.channels, data.sampleRate, data.bits);
-                            Region selected = AudioEditor.this.selected;
-                            byte[] buf = new byte[data.sampleRate];
-                            int off = 0;
-                            while (off < selected.length) {
-                                final float ratio = ((float) off / (float) selected.length);
-                                window.setBusyMessage(String.format("Exporting region (%.2f%%)", ratio * 100f));
-                                data.stream.seek(selected.offset+off);
-                                int read = data.stream.read(buf, 0, Math.min(buf.length, selected.length - off));
-                                off += read;
-                                wos.write(buf, 0, read);
-                            }
-                            wos.finish();
-                            wos.close();
-                        } catch (IOException e1) {
-                            MainWindow.getInstance().handleException(e1);
+            if (jfc.showSaveDialog(window) != JFileChooser.APPROVE_OPTION)
+                return;
+            File f = jfc.getSelectedFile();
+            String fn = f.getName();
+            if(!fn.toLowerCase().endsWith(".wav"))
+                fn += ".wav";
+            final File dest = new File(f.getParentFile(), fn);
+            window.runAsyncWithPopup("Exporting region...", new Runnable() {
+                public void run() {
+                    try {
+                        if (stopAction.isEnabled())
+                            stopAction.actionPerformed(null);
+                        WaveOutputStream wos = new WaveOutputStream(dest, data.channels, data.sampleRate, data.bits);
+                        Region selected = AudioEditor.this.selected;
+                        byte[] buf = new byte[data.sampleRate];
+                        int off = 0;
+                        while (off < selected.length) {
+                            final float ratio = ((float) off / (float) selected.length);
+                            window.setBusyMessage(String.format("Exporting region (%.2f%%)", ratio * 100f));
+                            data.stream.seek(selected.offset+off);
+                            int read = data.stream.read(buf, 0, Math.min(buf.length, selected.length - off));
+                            off += read;
+                            wos.write(buf, 0, read);
+                            if(cancel.get())
+                                break;
                         }
+                        wos.finish();
+                        wos.close();
+                        if(cancel.get())
+                            dest.delete();
+                    } catch (IOException e1) {
+                        MainWindow.getInstance().handleException(e1);
                     }
-                });
-            }
+                }
+            }, true, new AbstractAction() {
+                public void actionPerformed(ActionEvent e) {
+                    cancel.set(true);
+                }
+            });
         }
     }
 
@@ -943,45 +960,63 @@ public class AudioEditor extends EditorPanel<Audio> {
 
         public void actionPerformed(ActionEvent e) {
             final JFileChooser jfc = window.createFileDialog();
+            final AtomicBoolean cancel = new AtomicBoolean(false);
+            jfc.setFileFilter(new FileNameExtensionFilter("Wave file", "wav"));
             String name = data.getName();
             int idx = name.indexOf('.');
             if (idx != -1)
                 name = name.substring(0, idx);
             name += ".wav";
             jfc.setSelectedFile(new File(name));
-            if (jfc.showSaveDialog(window) == JFileChooser.APPROVE_OPTION) {
-                window.runAsyncWithPopup("Exporting song...", new Runnable() {
-                    public void run() {
-                        try {
-                            if (stopAction.isEnabled())
-                                stopAction.actionPerformed(null);
-                            WaveOutputStream wos = new WaveOutputStream(jfc.getSelectedFile(), data.channels, data.sampleRate, data.bits);
+            if (jfc.showSaveDialog(window) != JFileChooser.APPROVE_OPTION)
+                return;
 
-                            byte[] buf = new byte[data.sampleRate];
-                            int len = 0;
-                            for (Region region : data.regions)
-                                len += region.length;
-                            int globOff = 0;
-                            for (Region region : data.regions) {
-                                int off = 0;
-                                while (off < region.length) {
-                                    final float ratio = ((float) globOff / (float) len);
-                                    window.setBusyMessage(String.format("Exporting song (%.2f%%)", ratio * 100f));
-                                    data.stream.seek(region.offset+off);
-                                    int read = data.stream.read(buf, 0, Math.min(buf.length, region.length - off));
-                                    off += read;
-                                    globOff += read;
-                                    wos.write(buf, 0, read);
-                                }
+            File f = jfc.getSelectedFile();
+            String fn = f.getName();
+            if(!fn.toLowerCase().endsWith(".wav"))
+                fn += ".wav";
+            final File dest = new File(f.getParentFile(), fn);
+
+            window.runAsyncWithPopup("Exporting song...", new Runnable() {
+                public void run() {
+                    try {
+                        if (stopAction.isEnabled())
+                            stopAction.actionPerformed(null);
+                        WaveOutputStream wos = new WaveOutputStream(dest, data.channels, data.sampleRate, data.bits);
+
+                        byte[] buf = new byte[5000];
+                        int len = 0;
+                        for (Region region : data.regions)
+                            len += region.length;
+                        int globOff = 0;
+                        mainLoop:
+                        for (Region region : data.regions) {
+                            int off = 0;
+                            while (off < region.length) {
+                                final float ratio = ((float) globOff / (float) len);
+                                window.setBusyMessage(String.format("Exporting song (%.2f%%)", ratio * 100f));
+                                data.stream.seek(region.offset+off);
+                                int read = data.stream.read(buf, 0, Math.min(buf.length, region.length - off));
+                                off += read;
+                                globOff += read;
+                                wos.write(buf, 0, read);
+                                if(cancel.get())
+                                    break mainLoop;
                             }
-                            wos.finish();
-                            wos.close();
-                        } catch (IOException e1) {
-                            MainWindow.getInstance().handleException(e1);
                         }
+                        wos.finish();
+                        wos.close();
+                        if(cancel.get())
+                            dest.delete();
+                    } catch (IOException e1) {
+                        MainWindow.getInstance().handleException(e1);
                     }
-                });
-            }
+                }
+            }, true, new AbstractAction() {
+                public void actionPerformed(ActionEvent e) {
+                    cancel.set(true);
+                }
+            });
         }
     }
 

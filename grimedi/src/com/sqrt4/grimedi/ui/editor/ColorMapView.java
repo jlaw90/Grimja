@@ -23,12 +23,20 @@
 
 package com.sqrt4.grimedi.ui.editor;
 
+import java.awt.event.*;
+
+import com.sqrt.liblab.codec.CodecMapper;
+import com.sqrt.liblab.codec.ColorMapCodec;
 import com.sqrt.liblab.entry.model.ColorMap;
+import com.sqrt4.grimedi.ui.MainWindow;
 
 import java.awt.*;
+import java.io.File;
+import java.io.IOException;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.event.ListDataListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
  * @author James Lawrence
@@ -88,8 +96,14 @@ public class ColorMapView extends EditorPanel<ColorMap> {
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+        // Generated using JFormDesigner non-commercial license
         scrollPane1 = new JScrollPane();
         colorList = new JList();
+        panel1 = new JPanel();
+        button1 = new JButton();
+        button2 = new JButton();
+        exportACTAction = new ExportACTAction();
+        importACTAction = new ImportACTAction();
 
         //======== this ========
         setLayout(new BorderLayout());
@@ -103,11 +117,92 @@ public class ColorMapView extends EditorPanel<ColorMap> {
             scrollPane1.setViewportView(colorList);
         }
         add(scrollPane1, BorderLayout.CENTER);
+
+        //======== panel1 ========
+        {
+            panel1.setLayout(new FlowLayout());
+
+            //---- button1 ----
+            button1.setAction(exportACTAction);
+            panel1.add(button1);
+
+            //---- button2 ----
+            button2.setAction(importACTAction);
+            panel1.add(button2);
+        }
+        add(panel1, BorderLayout.SOUTH);
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
+    // Generated using JFormDesigner non-commercial license
     private JScrollPane scrollPane1;
     private JList colorList;
+    private JPanel panel1;
+    private JButton button1;
+    private JButton button2;
+    private ExportACTAction exportACTAction;
+    private ImportACTAction importACTAction;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
+
+    private class ExportACTAction extends AbstractAction {
+        private ExportACTAction() {
+            // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+            // Generated using JFormDesigner non-commercial license
+            putValue(NAME, "Export .ACT file");
+            putValue(SHORT_DESCRIPTION, "Export to Adobe Color Table");
+            // JFormDesigner - End of action initialization  //GEN-END:initComponents
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            JFileChooser jfc = MainWindow.getInstance().createFileDialog();
+            jfc.setFileFilter(new FileNameExtensionFilter("Adobe Color Table (*.act)", "act"));
+
+            String name = data.getName();
+            int idx = name.lastIndexOf('.');
+            if(idx != -1)
+                name = name.substring(0, idx);
+            name += ".act";
+            jfc.setSelectedFile(new File(name));
+
+            if(jfc.showSaveDialog(MainWindow.getInstance()) != JFileChooser.APPROVE_OPTION)
+                return;
+
+            File f = jfc.getSelectedFile();
+            name = f.getName();
+            if(!name.toLowerCase().endsWith(".act"))
+                name += ".act";
+            f = new File(f.getParentFile(), name);
+            try {
+                ((ColorMapCodec) CodecMapper.codecForClass(ColorMap.class)).writeACT(data, f);
+            } catch (IOException e1) {
+                MainWindow.getInstance().handleException(e1);
+            }
+        }
+    }
+
+    private class ImportACTAction extends AbstractAction {
+        private ImportACTAction() {
+            // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+            // Generated using JFormDesigner non-commercial license
+            putValue(NAME, "Import ACT");
+            putValue(SHORT_DESCRIPTION, "Import Adobe Color Table");
+            // JFormDesigner - End of action initialization  //GEN-END:initComponents
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            JFileChooser jfc = MainWindow.getInstance().createFileDialog();
+            jfc.setFileFilter(new FileNameExtensionFilter("Adobe Color Table (*.act)", "act"));
+
+            if(jfc.showOpenDialog(MainWindow.getInstance()) != JFileChooser.APPROVE_OPTION)
+                return;
+
+            try {
+                ((ColorMapCodec) CodecMapper.codecForClass(ColorMap.class)).readACTFor(data, jfc.getSelectedFile());
+                setData(data); // Refresh view (nasty)
+            } catch (IOException e1) {
+                MainWindow.getInstance().handleException(e1);
+            }
+        }
+    }
 }

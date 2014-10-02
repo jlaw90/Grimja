@@ -38,12 +38,14 @@ import com.sqrt4.grimedi.ui.component.Vector3Editor;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
@@ -323,10 +325,22 @@ public class ModelView extends EditorPanel<GrimModel> {
 
         public void actionPerformed(ActionEvent e) {
             JFileChooser jfc = MainWindow.getInstance().createFileDialog();
+            jfc.setFileFilter(new FileNameExtensionFilter("Wavefront OBJ (*.obj)", "obj"));
+            String name = data.getName();
+            int idx = name.lastIndexOf('.');
+            if(idx != -1)
+                name = name.substring(0, idx);
+            name += ".obj";
+            jfc.setSelectedFile(new File(name));
             if(jfc.showSaveDialog(ModelView.this) != JFileChooser.APPROVE_OPTION)
                 return;
+            File f = jfc.getSelectedFile();
+            name = f.getName();
+            if(!name.toLowerCase().endsWith(".obj"))
+                name += ".obj";
+            f = new File(f.getParentFile(), name);
             try {
-                ((ModelCodec) CodecMapper.codecForClass(GrimModel.class)).exportWavefront(jfc.getSelectedFile(), renderer.getModel(), renderer.getColorMap());
+                ((ModelCodec) CodecMapper.codecForClass(GrimModel.class)).exportWavefront(f, renderer.getModel(), renderer.getColorMap());
             } catch (IOException e1) {
                 MainWindow.getInstance().handleException(e1);
             }

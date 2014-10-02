@@ -46,6 +46,8 @@ import org.netbeans.swing.outline.RowModel;
 
 import javax.swing.*;
 import javax.swing.event.*;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import java.awt.*;
@@ -561,14 +563,25 @@ public class MainWindow extends JFrame {
         }
 
         public void actionPerformed(ActionEvent e) {
+            String name = popupSource.getName();
+            String ext = name.substring(name.lastIndexOf('.') + 1).toLowerCase();
             final JFileChooser jfc = createFileDialog();
-            jfc.setSelectedFile(new File(popupSource.getName()));
+            jfc.setFileFilter(new FileNameExtensionFilter("Grim Fandango " + ext.toUpperCase() + " (*." + ext + ")", ext));
+
+            jfc.setSelectedFile(new File(name));
             if (jfc.showSaveDialog(MainWindow.this) != JFileChooser.APPROVE_OPTION)
                 return;
-            runAsyncWithPopup("Extracting " + popupSource.getName() + "...", new Runnable() {
+
+            File f = jfc.getSelectedFile();
+            String nn = f.getName();
+            if(!nn.toLowerCase().endsWith("." + ext))
+                nn += "." + ext;
+            final File dest = new File(f.getParentFile(), nn);
+
+            runAsyncWithPopup("Extracting " + name + "...", new Runnable() {
                 public void run() {
                     try {
-                        FileOutputStream fos = new FileOutputStream(jfc.getSelectedFile());
+                        FileOutputStream fos = new FileOutputStream(dest);
                         byte[] buf = new byte[5000];
                         int copied = 0;
                         long len = popupSource.length();
@@ -876,11 +889,21 @@ public class MainWindow extends JFrame {
 
         public void actionPerformed(ActionEvent e) {
             JFileChooser jfc = createFileDialog();
-            jfc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+            jfc.setFileFilter(new FileNameExtensionFilter("Grim Fandango LAB (*.lab)", "lab"));
+            String ln = labPopupSource.getName();
+            int idx = ln.lastIndexOf('.');
+            if(idx != -1)
+                ln = ln.substring(0, idx);
+            jfc.setSelectedFile(new File(ln + ".lab"));
             if(jfc.showSaveDialog(MainWindow.this) != JFileChooser.APPROVE_OPTION)
                 return;
 
-            final File dest = jfc.getSelectedFile();
+            File f = jfc.getSelectedFile();
+            File dir = f.getParentFile();
+            String name = f.getName();
+            if(!name.toLowerCase().endsWith(".lab"))
+                name += ".lab";
+            final File dest = new File(dir, name);
 
             runAsyncWithPopup("Building LAB file, please wait...", new Runnable() {
                 public void run() {
