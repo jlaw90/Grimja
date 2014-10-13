@@ -3,7 +3,9 @@
 /*
  * Copyright (C) 2014  James Lawrence.
  *
- *     This program is free software: you can redistribute it and/or modify
+ *     This file is part of GrimEdi.
+ *
+ *     GrimEdi is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
  *     the Free Software Foundation, either version 3 of the License, or
  *     (at your option) any later version.
@@ -23,21 +25,22 @@
 
 package com.sqrt4.grimedi.ui.editor;
 
-import java.awt.event.*;
-import javax.imageio.ImageIO;
-import javax.swing.event.*;
-
 import com.sqrt.liblab.entry.graphics.GrimBitmap;
 import com.sqrt4.grimedi.ui.MainWindow;
 
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import javax.swing.event.ListDataListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
  * @author James Lawrence

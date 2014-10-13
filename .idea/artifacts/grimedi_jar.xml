@@ -2,8 +2,8 @@
   <artifact type="jar" build-on-make="true" name="grimedi:jar">
     <output-path>$PROJECT_DIR$/grimedi/release</output-path>
     <root id="archive" name="grimedi.jar">
-      <element id="module-output" name="grimedi" />
-      <element id="module-output" name="liblab" />
+      <element id="module-output" name="GrimEdi" />
+      <element id="module-output" name="LibLab" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/netbeans/api/org-netbeans-swing-outline/RELEASE80/org-netbeans-swing-outline-RELEASE80.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/jogamp/jogl/jogl-all-main/2.2.0/jogl-all-main-2.2.0.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/jogamp/jogl/jogl-all/2.2.0/jogl-all-2.2.0.jar" path-in-jar="/" />

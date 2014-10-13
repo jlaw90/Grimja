@@ -1,7 +1,9 @@
 /*
  * Copyright (C) 2014  James Lawrence.
  *
- *     This program is free software: you can redistribute it and/or modify
+ *     This file is part of LibLab.
+ *
+ *     LibLab is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
  *     the Free Software Foundation, either version 3 of the License, or
  *     (at your option) any later version.
@@ -182,8 +184,9 @@ public class TextParser {
         return negative? -val: val;
     }
 
-    public int readInt() throws IOException {
-        skipWhitespace();
+    public int readInt(boolean skipWhitespace, boolean required) throws IOException {
+        if(skipWhitespace)
+            skipWhitespace();
         boolean negative = false;
         final int start = charIdx;
         if(peek() == '-') {
@@ -196,9 +199,13 @@ public class TextParser {
         final int curLine = idx;
         while(curLine == idx && line != null && charIdx < line.length() && isNumber(peek()))
             val = (val * 10) + (read() - '0');
-        if(charIdx - start == 0)
+        if(required && charIdx - start == 0)
             error("Number expected");
         return negative? -val : val;
+    }
+
+    public int readInt() throws IOException {
+        return readInt(true, true);
     }
 
     public float readFloat() throws IOException {
@@ -245,5 +252,13 @@ public class TextParser {
 
     public boolean eof() {
         return idx >= lines.size();
+    }
+
+    public String readString(int len) throws IOException {
+        if(charIdx + len >= line.length())
+            error("Not enough characters remaining (expected " + len + ", got " + (line.length() - charIdx) + ")");
+        String r = line.substring(charIdx, charIdx + len);
+        skip(len);
+        return r;
     }
 }

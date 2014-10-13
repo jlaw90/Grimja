@@ -1,7 +1,9 @@
 /*
  * Copyright (C) 2014  James Lawrence.
  *
- *     This program is free software: you can redistribute it and/or modify
+ *     This file is part of LibLab.
+ *
+ *     LibLab is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
  *     the Free Software Foundation, either version 3 of the License, or
  *     (at your option) any later version.
@@ -20,7 +22,10 @@ package com.sqrt.liblab.codec;
 import com.sqrt.liblab.entry.LabEntry;
 import com.sqrt.liblab.io.DataSource;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 public final class CodecMapper {
     private CodecMapper() {
@@ -82,8 +87,8 @@ public final class CodecMapper {
         CodecMapper.registerCodec(new SmushCodec());
         CodecMapper.registerCodec(new LuaChunkCodec());
         CodecMapper.registerCodec(new SetCodec());
+        CodecMapper.registerCodec(new CostumeCodec());
 
-        // Todo .cos (costume)
         // Todo .lip (lip sync)
         // Todo .txt
     }

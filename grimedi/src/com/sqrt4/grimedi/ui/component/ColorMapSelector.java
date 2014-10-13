@@ -1,7 +1,9 @@
 /*
  * Copyright (C) 2014  James Lawrence.
  *
- *     This program is free software: you can redistribute it and/or modify
+ *     This file is part of GrimEdi.
+ *
+ *     GrimEdi is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
  *     the Free Software Foundation, either version 3 of the License, or
  *     (at your option) any later version.
@@ -21,18 +23,18 @@
 
 package com.sqrt4.grimedi.ui.component;
 
-import com.sqrt.liblab.io.DataSource;
 import com.sqrt.liblab.LabCollection;
 import com.sqrt.liblab.LabFile;
 import com.sqrt.liblab.codec.CodecMapper;
 import com.sqrt.liblab.entry.model.ColorMap;
+import com.sqrt.liblab.io.DataSource;
 import com.sqrt4.grimedi.ui.MainWindow;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ItemListener;
 import java.io.IOException;
 import java.util.Vector;
-import javax.swing.*;
 
 public class ColorMapSelector extends JPanel {
     private LabCollection _last;

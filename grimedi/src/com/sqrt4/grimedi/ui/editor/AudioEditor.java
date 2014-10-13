@@ -3,7 +3,9 @@
 /*
  * Copyright (C) 2014  James Lawrence.
  *
- *     This program is free software: you can redistribute it and/or modify
+ *     This file is part of GrimEdi.
+ *
+ *     GrimEdi is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
  *     the Free Software Foundation, either version 3 of the License, or
  *     (at your option) any later version.
@@ -26,7 +28,6 @@ package com.sqrt4.grimedi.ui.editor;
 import com.sqrt.liblab.entry.audio.Audio;
 import com.sqrt.liblab.entry.audio.Jump;
 import com.sqrt.liblab.entry.audio.Region;
-import com.sqrt4.grimedi.Main;
 import com.sqrt4.grimedi.ui.MainWindow;
 
 import javax.sound.sampled.*;
@@ -46,6 +47,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.channels.FileChannel;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -1084,34 +1086,49 @@ public class AudioEditor extends EditorPanel<Audio> {
 class WaveOutputStream {
     private final int channels, sampleRate, bits, bytes;
     private RandomAccessFile dest;
+    private FileChannel channel;
+    private final ByteBuffer bb;
 
     private int writtenBytes;
 
     public WaveOutputStream(File f, int channels, int sampleRate, int bits) throws IOException {
         dest = new RandomAccessFile(f, "rw");
+        channel = dest.getChannel();
         this.channels = channels;
         this.sampleRate = sampleRate;
         this.bits = bits;
         this.bytes = bits / 8;
-        dest.writeInt(('R' << 24) | ('I' << 16) | ('F' << 8) | 'F');
-        dest.skipBytes(4);
+        bb = ByteBuffer.allocateDirect(sampleRate);
+        bb.order(ByteOrder.LITTLE_ENDIAN);
+        bb.put(new byte[]{'R', 'I', 'F', 'F'});
+        bb.putInt(0); // Skip 4, calculate size later
+        bb.put(new byte[]{'W', 'A', 'V', 'E', 'f', 'm', 't', ' '});
+        bb.putInt(16); // 16 bytes
+        bb.putShort((short) 1); // PCM
+        bb.putShort((short) channels);
+        bb.putInt(sampleRate);
+        bb.putInt(sampleRate * channels * bytes);
+        bb.putShort((short) (channels * bytes));
+        bb.putShort((short) bits);
+        bb.put(new byte[] {'d', 'a', 't', 'a'});
+        bb.putInt(0); // Skip 4, calculate size later
 
-        dest.writeInt(('W' << 24) | ('A' << 16) | ('V' << 8) | 'E');
-        // fmt chunk...
-        dest.writeInt(('f' << 24) | ('m' << 16) | ('t' << 8) | ' ');
-        dest.writeInt(reverse32(16)); // 16 bytes...
-        dest.writeShort(reverse16(1)); // pcm
-        dest.writeShort(reverse16(channels));
-        dest.writeInt(reverse32(sampleRate));
-        dest.writeInt(reverse32(sampleRate * channels * (bits / 8)));
-        dest.writeShort(reverse16(channels * (bits / 8)));
-        dest.writeShort(reverse16(bits));
+        // Write it
+        bb.flip();
+        while(bb.hasRemaining())
+            channel.write(bb);
+        bb.clear();
 
-        dest.writeInt(('d' << 24) | ('a' << 16) | ('t' << 8) | 'a');
-        dest.skipBytes(4);
+        dest.seek(channel.position());
     }
 
     public void write(byte[] data, int off, final int len) throws IOException {
+        writeC(data, off, len);
+        writtenBytes += len;
+    }
+
+    // Original implementation (slow, manually flips bytes based on audio bit length)
+    private void writeA(byte[] data, int off, final int len) throws IOException {
         final int end = off + len;
         switch (bits) {
             case 16:
@@ -1136,33 +1153,128 @@ class WaveOutputStream {
             default:
                 throw new IOException("Unhandled bitlength: " + bits);
         }
-        writtenBytes += len;
+        channel.position(dest.getFilePointer()); // keep NIO in sync
+    }
+
+    // Updated implementation (slightly faster, writes all to a native buffer, then flips while writing to destination)
+    private void writeB(byte[] data, int off, int len) throws IOException {
+        // Using a ByteBuffer is faster... If we used NIO then we could probably make it even faster
+        // We are now using NIO, see writeC
+        final int end = off + len;
+        bb.clear();
+        bb.order(ByteOrder.LITTLE_ENDIAN);
+        while(off < end) {
+            final int toCopy = Math.min(len, bb.remaining());
+            bb.put(data, off, toCopy);
+            off += toCopy;
+            len -= toCopy;
+            bb.flip();
+
+            switch(bits) {
+                case 16:
+                    while(bb.hasRemaining())
+                        dest.writeShort(bb.getShort());
+                    break;
+                case 32:
+                    while(bb.hasRemaining())
+                        dest.writeInt(bb.getInt());
+                    break;
+            }
+            bb.clear();
+        }
+
+        channel.position(dest.getFilePointer()); // keep NIO in sync
+    }
+
+    // We have a winner, it's ridiculous how much faster this is...
+    // We flip the bytes while writing to native buffer, then write the buffer to a FileChannel
+    private void writeC(byte[] data, int off, int len) throws IOException {
+        final int end = off + len;
+        bb.clear();
+        bb.order(ByteOrder.LITTLE_ENDIAN);
+        bb.limit(Math.min(bb.capacity(), end));
+        while(off < end) {
+            bb.limit(Math.min(bb.capacity(), len));
+            switch(bits) {
+                case 16:
+                    while(bb.hasRemaining()) {
+                        bb.putShort(asShort(data, off));
+                        off += 2;
+                        len -= 2;
+                    }
+                    break;
+                case 32:
+                    while(bb.hasRemaining()) {
+                        bb.putInt(asInt(data, off));
+                        off += 4;
+                        len -= 4;
+                    }
+                    break;
+            }
+            bb.flip();
+            while(bb.hasRemaining())
+                channel.write(bb);
+            bb.clear();
+        }
     }
 
     public void finish() throws IOException {
+        /*
         long pos = dest.getFilePointer();
         dest.seek(4);
         dest.writeInt(writtenBytes + 36);
         dest.seek(40);
         dest.writeInt(reverse32(writtenBytes));
-        dest.seek(pos);
+        dest.seek(pos);*/
+
+        long pos = channel.position();
+        channel.position(4);
+        buf.clear();
+        buf.order(ByteOrder.BIG_ENDIAN);
+        buf.putInt(writtenBytes + 36);
+        buf.flip();
+        while(buf.hasRemaining())
+            channel.write(buf);
+        channel.position(40);
+        buf.clear();
+        buf.order(ByteOrder.LITTLE_ENDIAN);
+        buf.putInt(writtenBytes);
+        buf.flip();
+        while(buf.hasRemaining())
+            channel.write(buf);
+        channel.position(pos);
     }
 
     public void close() throws IOException {
         finish();
+        channel.close();
         dest.close();
     }
 
-    private ByteBuffer buf = ByteBuffer.allocate(4);
+    private ByteBuffer buf = ByteBuffer.allocateDirect(4);
 
-    private int reverse16(int i) {
+    private synchronized int asInt(byte[] data, int off) {
+        buf.order(ByteOrder.BIG_ENDIAN);
+        buf.position(0);
+        buf.put(data, off, 4);
+        return buf.getInt(0);
+    }
+
+    private synchronized short asShort(byte[] data, int off) {
+        buf.order(ByteOrder.BIG_ENDIAN);
+        buf.position(0);
+        buf.put(data, off, 2);
+        return buf.getShort(0);
+    }
+
+    private synchronized int reverse16(int i) {
         buf.order(ByteOrder.BIG_ENDIAN);
         buf.putShort(0, (short) i);
         buf.order(ByteOrder.LITTLE_ENDIAN);
         return buf.getShort(0) & 0xffff;
     }
 
-    private int reverse32(int i) {
+    private synchronized int reverse32(int i) {
         buf.order(ByteOrder.BIG_ENDIAN);
         buf.putInt(0, i);
         buf.order(ByteOrder.LITTLE_ENDIAN);

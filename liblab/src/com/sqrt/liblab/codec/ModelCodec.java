@@ -1,7 +1,9 @@
 /*
  * Copyright (C) 2014  James Lawrence.
  *
- *     This program is free software: you can redistribute it and/or modify
+ *     This file is part of LibLab.
+ *
+ *     LibLab is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
  *     the Free Software Foundation, either version 3 of the License, or
  *     (at your option) any later version.
@@ -17,17 +19,20 @@
 
 package com.sqrt.liblab.codec;
 
-import com.sqrt.liblab.entry.model.Texture;
-import com.sqrt.liblab.io.DataSource;
 import com.sqrt.liblab.entry.model.*;
+import com.sqrt.liblab.io.DataSource;
 import com.sqrt.liblab.threed.Vector2f;
 import com.sqrt.liblab.threed.Vector3f;
-import com.sun.prism.*;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class ModelCodec extends EntryCodec<GrimModel> {
     public GrimModel _read(DataSource source) throws IOException {

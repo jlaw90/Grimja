@@ -1,7 +1,9 @@
 /*
  * Copyright (C) 2014  James Lawrence.
  *
- *     This program is free software: you can redistribute it and/or modify
+ *     This file is part of LibLab.
+ *
+ *     LibLab is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
  *     the Free Software Foundation, either version 3 of the License, or
  *     (at your option) any later version.
@@ -22,7 +24,6 @@ import com.sqrt.liblab.entry.video.VideoInputStream;
 import com.sqrt.liblab.io.DataSource;
 import com.sqrt.liblab.io.DiskDataSource;
 
-import javax.activation.FileDataSource;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;

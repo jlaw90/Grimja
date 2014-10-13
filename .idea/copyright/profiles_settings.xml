@@ -1,8 +1,9 @@
 <component name="CopyrightManager">
   <settings default="">
     <module2copyright>
-      <element module="GrimEdi" copyright="GPLv3" />
-      <element module="LibLab" copyright="GPLv3" />
+      <element module="GrimEdi" copyright="GrimEdi GPLv3" />
+      <element module="LibLab" copyright="LibLab GPLv3" />
+      <element module="All" copyright="GrimEdi GPLv3" />
     </module2copyright>
   </settings>
 </component>

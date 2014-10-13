@@ -3,7 +3,9 @@
 /*
  * Copyright (C) 2014  James Lawrence.
  *
- *     This program is free software: you can redistribute it and/or modify
+ *     This file is part of GrimEdi.
+ *
+ *     GrimEdi is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
  *     the Free Software Foundation, either version 3 of the License, or
  *     (at your option) any later version.
@@ -38,7 +40,6 @@ import com.sqrt4.grimedi.ui.editor.HexView;
 import com.sqrt4.grimedi.util.CachedPredicate;
 import com.sqrt4.grimedi.util.Predicate;
 import com.sqrt4.grimedi.util.Size;
-import com.sun.nio.file.ExtendedCopyOption;
 import org.netbeans.swing.outline.DefaultOutlineModel;
 import org.netbeans.swing.outline.Outline;
 import org.netbeans.swing.outline.RenderDataProvider;
@@ -46,7 +47,6 @@ import org.netbeans.swing.outline.RowModel;
 
 import javax.swing.*;
 import javax.swing.event.*;
-import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
@@ -59,7 +59,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.LinkedHashMap;

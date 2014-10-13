@@ -1,7 +1,9 @@
 /*
  * Copyright (C) 2014  James Lawrence.
  *
- *     This program is free software: you can redistribute it and/or modify
+ *     This file is part of GrimEdi.
+ *
+ *     GrimEdi is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
  *     the Free Software Foundation, either version 3 of the License, or
  *     (at your option) any later version.
@@ -29,12 +31,12 @@ import com.sqrt.liblab.threed.Bounds3;
 import com.sqrt.liblab.threed.Vector2f;
 import com.sqrt.liblab.threed.Vector3f;
 import com.sqrt4.grimedi.ui.MainWindow;
+import com.sqrt4.grimedi.ui.layout.WrapLayout;
 
 import javax.media.opengl.*;
 import javax.media.opengl.awt.GLCanvas;
 import javax.media.opengl.glu.GLU;
 import javax.swing.*;
-import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.PrintStream;
@@ -46,8 +48,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-
-import com.sqrt4.grimedi.ui.layout.WrapLayout;
 
 /**
  * @author James Lawrence

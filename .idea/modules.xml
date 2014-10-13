@@ -2,9 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/grimedi/grimedi.iml" filepath="$PROJECT_DIR$/grimedi/grimedi.iml" />
+      <module fileurl="file://$PROJECT_DIR$/grimedi/GrimEdi.iml" filepath="$PROJECT_DIR$/grimedi/GrimEdi.iml" />
+      <module fileurl="file://$PROJECT_DIR$/liblab/LibLab.iml" filepath="$PROJECT_DIR$/liblab/LibLab.iml" />
       <module fileurl="file://$PROJECT_DIR$/grimja.iml" filepath="$PROJECT_DIR$/grimja.iml" />
-      <module fileurl="file://$PROJECT_DIR$/liblab/liblab.iml" filepath="$PROJECT_DIR$/liblab/liblab.iml" />
     </modules>
   </component>
 </project>

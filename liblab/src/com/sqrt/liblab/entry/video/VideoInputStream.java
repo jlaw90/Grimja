@@ -1,7 +1,9 @@
 /*
  * Copyright (C) 2014  James Lawrence.
  *
- *     This program is free software: you can redistribute it and/or modify
+ *     This file is part of LibLab.
+ *
+ *     LibLab is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
  *     the Free Software Foundation, either version 3 of the License, or
  *     (at your option) any later version.
@@ -19,7 +21,6 @@ package com.sqrt.liblab.entry.video;
 
 import java.awt.image.WritableRaster;
 import java.io.IOException;
-import java.io.InputStream;
 
 public abstract class VideoInputStream {
     public abstract void seek(int pos) throws IOException;

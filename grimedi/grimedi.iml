@@ -8,7 +8,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module" module-name="liblab" />
+    <orderEntry type="module" module-name="LibLab" />
     <orderEntry type="library" name="org.jogamp.jogl:jogl-all-main:2.2.0" level="project" />
     <orderEntry type="library" name="org.jogamp.gluegen:gluegen:2.2.0" level="project" />
     <orderEntry type="library" name="org.jogamp.gluegen:gluegen-rt-main:2.2.0" level="project" />

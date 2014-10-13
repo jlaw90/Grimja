@@ -3,7 +3,9 @@
 /*
  * Copyright (C) 2014  James Lawrence.
  *
- *     This program is free software: you can redistribute it and/or modify
+ *     This file is part of GrimEdi.
+ *
+ *     GrimEdi is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
  *     the Free Software Foundation, either version 3 of the License, or
  *     (at your option) any later version.
@@ -23,8 +25,6 @@
 
 package com.sqrt4.grimedi.ui.editor;
 
-import java.awt.event.*;
-
 import com.sqrt.liblab.codec.CodecMapper;
 import com.sqrt.liblab.codec.ModelCodec;
 import com.sqrt.liblab.entry.model.GrimModel;
@@ -43,10 +43,10 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 /**
