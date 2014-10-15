@@ -1,6 +1,6 @@
 <component name="ArtifactManager">
   <artifact type="jar" build-on-make="true" name="GrimEdi-x64">
-    <output-path>$PROJECT_DIR$/out/artifacts/GrimEdi_x64</output-path>
+    <output-path>$PROJECT_DIR$/grimedi/release</output-path>
     <root id="archive" name="grimedi.jar">
       <element id="module-output" name="GrimEdi" />
       <element id="module-output" name="LibLab" />

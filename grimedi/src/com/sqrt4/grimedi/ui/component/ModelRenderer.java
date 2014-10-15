@@ -384,45 +384,49 @@ public class ModelRenderer extends JPanel implements GLEventListener {
     }
 
     private void loadGL() {
-        if (animator != null)
-            return;
-        animator = new OurAnimator();
-        GLCapabilities caps = new GLCapabilities(GLProfile.getDefault());
-        caps.setDepthBits(32);
-        canvas = new GLCanvas(caps);
-        canvas.addGLEventListener(this);
-        panel2.add(canvas, BorderLayout.CENTER);
-        animator.add(canvas);
-        animator.start();
+        try {
+            if (animator != null)
+                return;
+            animator = new OurAnimator();
+            GLCapabilities caps = new GLCapabilities(GLProfile.getDefault());
+            caps.setDepthBits(32);
+            canvas = new GLCanvas(caps);
+            canvas.addGLEventListener(this);
+            panel2.add(canvas, BorderLayout.CENTER);
+            animator.add(canvas);
+            animator.start();
 
-        MouseAdapter mad = new MouseAdapter() {
-            public void mousePressed(MouseEvent e) {
-                mouseLock.lock();
-                oldX = e.getX();
-                oldY = e.getY();
-                mouseLock.unlock();
-            }
+            MouseAdapter mad = new MouseAdapter() {
+                public void mousePressed(MouseEvent e) {
+                    mouseLock.lock();
+                    oldX = e.getX();
+                    oldY = e.getY();
+                    mouseLock.unlock();
+                }
 
-            public void mouseDragged(MouseEvent e) {
-                int x = e.getX();
-                int y = e.getY();
-                mouseLock.lock();
-                rX = x - oldX;
-                rY = y - oldY;
-                oldX = x;
-                oldY = y;
-                mouseUpdate = true;
-                mouseLock.unlock();
-            }
+                public void mouseDragged(MouseEvent e) {
+                    int x = e.getX();
+                    int y = e.getY();
+                    mouseLock.lock();
+                    rX = x - oldX;
+                    rY = y - oldY;
+                    oldX = x;
+                    oldY = y;
+                    mouseUpdate = true;
+                    mouseLock.unlock();
+                }
 
-            public void mouseWheelMoved(MouseWheelEvent e) {
-                camDistance += e.getPreciseWheelRotation() * 0.1f;
-            }
-        };
+                public void mouseWheelMoved(MouseWheelEvent e) {
+                    camDistance += e.getPreciseWheelRotation() * 0.1f;
+                }
+            };
 
-        canvas.addMouseListener(mad);
-        canvas.addMouseMotionListener(mad);
-        canvas.addMouseWheelListener(mad);
+            canvas.addMouseListener(mad);
+            canvas.addMouseMotionListener(mad);
+            canvas.addMouseWheelListener(mad);
+        } catch (Throwable t) {
+            MainWindow.getInstance().handleException(t);
+        }
     }
 
     private int getTexture(Texture tex) {
