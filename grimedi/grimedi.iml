@@ -12,7 +12,7 @@
     <orderEntry type="library" name="org.jogamp.jogl:jogl-all-main:2.2.0" level="project" />
     <orderEntry type="library" name="org.jogamp.gluegen:gluegen:2.2.0" level="project" />
     <orderEntry type="library" name="org.jogamp.gluegen:gluegen-rt-main:2.2.0" level="project" />
-    <orderEntry type="library" name="org.netbeans.api:org-netbeans-swing-outline:RELEASE80" level="project" />
+    <orderEntry type="library" name="org.netbeans.api:org-netbeans-swing-outline:RELEASE70" level="project" />
   </component>
 </module>
 
