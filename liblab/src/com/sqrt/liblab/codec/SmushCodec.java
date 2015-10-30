@@ -35,6 +35,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.ZipException;
 
 /*
   A lof of code in here has been borrowed from FFMPEG (https://github.com/FFmpeg/FFmpeg/blob/master/libavcodec/sanm.c)
@@ -47,35 +48,57 @@ import java.util.zip.GZIPInputStream;
  */
 public class SmushCodec extends EntryCodec<Video> {
     protected Video _read(DataSource compressed) throws IOException {
+        
+        DataSource smushSource;
+        
         SANMVideoContext ctx = new SANMVideoContext();
         ctx.video = new Video(compressed.container, compressed.getName());
         ctx.video.format = BufferedImage.TYPE_USHORT_565_RGB;
-        byte[] buf = new byte[5000];
-        File temp = File.createTempFile("video_decomp", ".snm.raw");
-        FileOutputStream fos = new FileOutputStream(temp);
-        GZIPInputStream gzis = new GZIPInputStream(compressed.asInputStream());
-        while (true) {
-            int len = gzis.read(buf, 0, buf.length);
-            if (len < 0)
-                break;
-            fos.write(buf, 0, len);
+        FileOutputStream fos = null;
+        File temp = null;
+        try {
+            GZIPInputStream gzis = new GZIPInputStream(compressed.asInputStream());
+            byte[] buf = new byte[5000];
+            while (true) {
+                int len = gzis.read(buf, 0, buf.length);
+                if (len < 0)
+                    break;
+                if(fos == null) {
+                    temp = File.createTempFile("video_decomp", ".snm.raw");
+                    fos = new FileOutputStream(temp);
+                }
+                fos.write(buf, 0, len);
+            }
+
+            buf = null;
+            RandomAccessFile raf = new RandomAccessFile(temp, "r");
+            DataSource source = new DiskDataSource(compressed.container, compressed.getName(), raf);
+            source.position(0);
+            smushSource = source;
+        } catch (ZipException ze) {
+            // Invalid GZIP file, smush files are uncompressed in remastered...
+            smushSource = compressed;
+        } finally {
+            if(fos != null)
+                fos.close();
         }
-        buf = null;
-        fos.close();
-        RandomAccessFile raf = new RandomAccessFile(temp, "r");
-        DataSource source = new DiskDataSource(compressed.container, compressed.getName(), raf);
-        source.position(0);
-        ctx.source = source;
+        
+        
+        ctx.source = smushSource;
+        ctx.source.position(0);
         ctx.video.stream = new SANMVideoStream(ctx);
-        if (source.getInt() != (('S' << 24) | ('A' << 16) | ('N' << 8) | 'M')) {
+        if (ctx.source.getInt() != (('S' << 24) | ('A' << 16) | ('N' << 8) | 'M')) {
             System.err.println("Not a SANM file?");
             return null;
         }
 
-        int size = source.getInt();
-        while (source.position() < size)
-            processBlock(ctx, source);
-        temp.delete();
+        int size = ctx.source.getInt();
+        while (ctx.source.position() < size)
+            processBlock(ctx, ctx.source);
+        
+        if(temp != null)
+            temp.delete();
+        
         ctx.video.fps = 14.99992f;
         return ctx.video;
     }
@@ -129,7 +152,7 @@ public class SmushCodec extends EntryCodec<Video> {
                         default:
                             System.out.println("Unknown frame metadata tag: " + tagToString(stag));
                     }
-                } while(source.position() < end);
+                } while (source.position() < end);
                 break;
             // Frame
             case (('F' << 24) | ('R' << 16) | ('M' << 8) | 'E'):
@@ -403,21 +426,21 @@ class SANMVideoStream extends VideoInputStream {
         NO_DIR;
 
         public static GlyphDir which(GlyphEdge edge0, GlyphEdge edge1) {
-            if (    (edge0 == GlyphEdge.LEFT_EDGE && edge1 == GlyphEdge.RIGHT_EDGE) ||
+            if ((edge0 == GlyphEdge.LEFT_EDGE && edge1 == GlyphEdge.RIGHT_EDGE) ||
                     (edge1 == GlyphEdge.LEFT_EDGE && edge0 == GlyphEdge.RIGHT_EDGE) ||
                     (edge0 == GlyphEdge.BOTTOM_EDGE && edge1 != GlyphEdge.TOP_EDGE) ||
                     (edge1 == GlyphEdge.BOTTOM_EDGE && edge0 != GlyphEdge.TOP_EDGE)) {
                 return DIR_UP;
             }
-            if (    (edge0 == GlyphEdge.TOP_EDGE && edge1 != GlyphEdge.BOTTOM_EDGE) ||
+            if ((edge0 == GlyphEdge.TOP_EDGE && edge1 != GlyphEdge.BOTTOM_EDGE) ||
                     (edge1 == GlyphEdge.TOP_EDGE && edge0 != GlyphEdge.BOTTOM_EDGE)) {
                 return DIR_DOWN;
             }
-            if (    (edge0 == GlyphEdge.LEFT_EDGE && edge1 != GlyphEdge.RIGHT_EDGE) ||
+            if ((edge0 == GlyphEdge.LEFT_EDGE && edge1 != GlyphEdge.RIGHT_EDGE) ||
                     (edge1 == GlyphEdge.LEFT_EDGE && edge0 != GlyphEdge.RIGHT_EDGE)) {
                 return DIR_LEFT;
             }
-            if (    (edge0 == GlyphEdge.TOP_EDGE && edge1 == GlyphEdge.BOTTOM_EDGE) ||
+            if ((edge0 == GlyphEdge.TOP_EDGE && edge1 == GlyphEdge.BOTTOM_EDGE) ||
                     (edge1 == GlyphEdge.TOP_EDGE && edge0 == GlyphEdge.BOTTOM_EDGE) ||
                     (edge0 == GlyphEdge.RIGHT_EDGE && edge1 != GlyphEdge.LEFT_EDGE) ||
                     (edge1 == GlyphEdge.RIGHT_EDGE && edge0 != GlyphEdge.LEFT_EDGE)) {
@@ -604,7 +627,7 @@ class SANMVideoStream extends VideoInputStream {
 
         for (int y = 0; y < block_size; y++) {
             for (int x = 0; x < block_size; x++)
-                dst[dstOff+x] = pglyph[glyphOff++] ? bg_color : fg_color;
+                dst[dstOff + x] = pglyph[glyphOff++] ? bg_color : fg_color;
             dstOff += pitch;
         }
     }
@@ -716,10 +739,10 @@ class SANMVideoStream extends VideoInputStream {
             if (block_size == 2) {
                 int indices;
                 indices = source.getIntLE();
-                dst[dstOff] = ctx.readCodebook((indices>>0) & 0xFF);
-                dst[dstOff + 1] = ctx.readCodebook((indices>>8) & 0xFF);
-                dst[dstOff + pitch] = ctx.readCodebook((indices>>16) & 0xFF);
-                dst[dstOff + pitch + 1] = ctx.readCodebook((indices>>24) & 0xFF);
+                dst[dstOff] = ctx.readCodebook((indices >> 0) & 0xFF);
+                dst[dstOff + 1] = ctx.readCodebook((indices >> 8) & 0xFF);
+                dst[dstOff + pitch] = ctx.readCodebook((indices >> 16) & 0xFF);
+                dst[dstOff + pitch + 1] = ctx.readCodebook((indices >> 24) & 0xFF);
             } else {
                 short fgcolor, bgcolor;
                 int glyph;
