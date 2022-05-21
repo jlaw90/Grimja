@@ -19,8 +19,7 @@ jobs:
           maven-version: 3.8.2
       - name: Compile
         run: |
-          ls -lah
-          cd Grimja
+          cd grimedi
           mvn compile
 
       - name: Release
