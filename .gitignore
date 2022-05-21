@@ -18,3 +18,6 @@
 
 # JIRA plugin
 atlassian-ide-plugin.xml
+
+out
+grimedi/target

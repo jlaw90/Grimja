@@ -32,13 +32,10 @@ import java.nio.BufferOverflowException;
 
 public class BitmapCodec extends EntryCodec<GrimBitmap> {
     public GrimBitmap _read(DataSource source) throws IOException {
-        int tag = source.getInt();
-        switch (tag) {
-            case ('B' << 24) | ('M' << 16) | (' ' << 8) | ' ':
-                return readBm(source);
-            default:
-                throw new IOException("Unknown bitmap format");
+        if (source.getInt() != (('B' << 24) | ('M' << 16) | (' ' << 8) | ' ')) {
+            throw new IOException("Unknown bitmap format");
         }
+        return readBm(source);
     }
 
     private GrimBitmap readBm(DataSource source) throws IOException {
@@ -54,21 +51,19 @@ public class BitmapCodec extends EntryCodec<GrimBitmap> {
         int transparentColor = source.getIntLE();
         int format = source.getIntLE();
         int bpp = source.getIntLE();
-        int redBits = source.getIntLE();
-        int greenBits = source.getIntLE();
-        int blueBits = source.getIntLE();
-        int redShift = source.getIntLE();
-        int greenShift = source.getIntLE();
-        int blueShift = source.getIntLE();
+        long redBits = source.getUIntLE();
+        long greenBits = source.getUIntLE();
+        long blueBits = source.getUIntLE();
+        long redShift = source.getUIntLE();
+        long greenShift = source.getUIntLE();
+        long blueShift = source.getUIntLE();
 
         source.position(128);
-        int width = source.getIntLE();
-        int height = source.getIntLE();
-        source.position(128);
         byte[][] data = new byte[numImages][];
-        int expectedDataLength = width * height * (bpp / 8);
         for (int i = 0; i < numImages; i++) {
-            source.skip(8);
+            int width = source.getIntLE();
+            int height = source.getIntLE();
+            int expectedDataLength = width * height * (bpp / 8);
             data[i] = new byte[expectedDataLength];
             if (codec == 0)
                 source.get(data[i]);
@@ -81,17 +76,25 @@ public class BitmapCodec extends EntryCodec<GrimBitmap> {
 
             if (data[i].length != expectedDataLength)
                 throw new UnsupportedOperationException("Invalid data length, got: " + data[i].length + ", expected " + (width * height * (bpp / 8)) + " with " + bpp + "bpp");
-            if (format == 1) {
+            if (format == 1 || format == 5) {
                 for (int j = 0; j < expectedDataLength; j += 2) {
                     byte t = data[i][j];
                     data[i][j] = data[i][j + 1];
                     data[i][j + 1] = t;
                 }
             }
+
             short[] rgb565 = new short[width * height];
             for (int k = 0; k < expectedDataLength; k += 2)
                 rgb565[k / 2] = (short) (((data[i][k] & 0xff) << 8) | (data[i][k + 1] & 0xff));
-            BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_USHORT_565_RGB);
+
+            BufferedImage bi;
+            if(format != 5) {
+                bi = new BufferedImage(width, height, BufferedImage.TYPE_USHORT_565_RGB);
+            } else {
+                bi = new BufferedImage(width, height, BufferedImage.TYPE_USHORT_GRAY);
+            }
+
             WritableRaster raster = bi.getRaster();
             raster.setDataElements(0, 0, width, height, rgb565);
             result.images.add(bi);
