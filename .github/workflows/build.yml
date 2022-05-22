@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          depth: 0
+          fetch-depth: 0
       - uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
@@ -19,15 +19,16 @@ jobs:
       - uses: stCarolas/setup-maven@v4.3
         with:
           maven-version: 3.8.2
+      - name: Debug
+        run: |
+          git fetch
+          git tag -l
       - name: Build
         id: build
         run: |
           cd grimedi
           VERSION=$(mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -e '^v[[:digit:]]')
           mvn -B package
-          
-          git fetch
-          git tag -l
           echo ::set-output name=version::$VERSION
           echo ::set-output name=version_exists::$(git tag -l "$VERSION")
 
