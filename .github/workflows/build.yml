@@ -26,9 +26,10 @@ jobs:
           
           echo ::set-output name=version::$VERSION
           echo ::set-output name=version_exists::$(git tag -l "$VERSION")
+          echo "Version exists?: $(git tag -l "$VERSION$)"
 
       - name: Release
-        if: github.ref == 'refs/heads/master' && steps.build.outputs.version_exists == ''
+        if: github.ref == 'refs/heads/master' && !steps.build.outputs.version_exists
         id: create_release
         uses: actions/create-release@v1
         env:
