@@ -19,10 +19,6 @@ jobs:
       - uses: stCarolas/setup-maven@v4.3
         with:
           maven-version: 3.8.2
-      - name: Debug
-        run: |
-          git fetch
-          git tag -l
       - name: Build
         id: build
         run: |
