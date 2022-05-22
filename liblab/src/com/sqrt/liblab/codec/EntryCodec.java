@@ -50,14 +50,16 @@ public abstract class EntryCodec<T extends LabEntry> {
        if(cache.containsKey(edp)) {
            WeakReference<T> ref = cache.get(edp);
            T t = ref.get();
-           if(t == null)
-               cache.remove(edp);
-           else
-               return t;
+           if(t == null) {
+             cache.remove(edp);
+           } else {
+             return t;
+           }
        }
        T t = _read(edp);
-       if(t != null)
-           cache.put(edp, new WeakReference<T>(t));
+       if(t != null) {
+         cache.put(edp, new WeakReference<T>(t));
+       }
        return t;
    }
 

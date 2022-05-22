@@ -37,6 +37,7 @@ import com.sqrt4.grimedi.ui.component.BusyDialog;
 import com.sqrt4.grimedi.ui.editor.EditorMapper;
 import com.sqrt4.grimedi.ui.editor.EditorPanel;
 import com.sqrt4.grimedi.ui.editor.HexView;
+import com.sqrt4.grimedi.ui.editor.TextView;
 import com.sqrt4.grimedi.util.CachedPredicate;
 import com.sqrt4.grimedi.util.Predicate;
 import com.sqrt4.grimedi.util.Size;
@@ -61,8 +62,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -225,7 +225,18 @@ public class MainWindow extends JFrame {
 
     public void handleException(Throwable t) {
         t.printStackTrace();
-        JOptionPane.showMessageDialog(this, t.getLocalizedMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        if(t instanceof ExceptionInInitializerError) {
+            t = ((ExceptionInInitializerError) t).getException();
+        }
+        String message = t.getLocalizedMessage();
+        if(message == null) {
+            message = t.getMessage();
+        }
+        if(message == null) {
+            message = t.toString();
+        }
+
+        JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
     }
 
     private void fileSelected(ListSelectionEvent e) {
@@ -273,8 +284,18 @@ public class MainWindow extends JFrame {
                     editorPane.add(panel);
                     panel.onShow();
                 }
-                if (fallback)
-                    editorPane.add(new HexView(selected));
+                if (fallback) {
+                    String extension = selected.getName().substring(selected.getName().lastIndexOf('.') + 1);
+                    Set<String> textExtensions = new HashSet<>();
+                    textExtensions.addAll(Arrays.asList("cos", "txt", "set", "hot"));
+                    if(textExtensions.contains(extension.toLowerCase())) {
+                        TextView t = new TextView();
+                        t.setData(selected);
+                        editorPane.add(t.getContentPane());
+                    } else {
+                        editorPane.add(new HexView(selected));
+                    }
+                }
 
                 editorPane.invalidate();
                 editorPane.revalidate();
@@ -313,7 +334,6 @@ public class MainWindow extends JFrame {
     }
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
-    // Generated using JFormDesigner non-commercial license
     private JMenuBar menuBar1;
     private JMenu menu1;
     private JMenuItem menuItem1;
@@ -353,10 +373,9 @@ public class MainWindow extends JFrame {
     private class OpenAction extends AbstractAction {
         private OpenAction() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "Open");
             putValue(SHORT_DESCRIPTION, "Open a LAB file");
-            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyEvent.CTRL_MASK));
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyEvent.CTRL_DOWN_MASK));
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
         }
 
@@ -381,7 +400,6 @@ public class MainWindow extends JFrame {
     private class CloseAction extends AbstractAction {
         private CloseAction() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "Close");
             putValue(SHORT_DESCRIPTION, "Close the current LAB file");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
@@ -555,7 +573,6 @@ public class MainWindow extends JFrame {
     private class ExtractEntryAction extends AbstractAction {
         private ExtractEntryAction() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "Extract");
             putValue(SHORT_DESCRIPTION, "Extract this entry to a file");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
@@ -604,7 +621,6 @@ public class MainWindow extends JFrame {
     private class DeleteEntryAction extends AbstractAction {
         private DeleteEntryAction() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "Delete");
             putValue(SHORT_DESCRIPTION, "Delete the entry from the LAB file");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
@@ -619,7 +635,6 @@ public class MainWindow extends JFrame {
     private class ExtractAllAction extends AbstractAction {
         private ExtractAllAction() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "Extract all...");
             putValue(SHORT_DESCRIPTION, "Extract all the entries in this LAB file to the specified directory...");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
@@ -673,7 +688,6 @@ public class MainWindow extends JFrame {
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-        // Generated using JFormDesigner non-commercial license
         menuBar1 = new JMenuBar();
         menu1 = new JMenu();
         menuItem1 = new JMenuItem();
@@ -718,103 +732,98 @@ public class MainWindow extends JFrame {
         //======== menuBar1 ========
         {
 
-            //======== menu1 ========
-            {
-                menu1.setText("File");
+          //======== menu1 ========
+          {
+            menu1.setText("File");
 
-                //---- menuItem1 ----
-                menuItem1.setAction(openAction);
-                menuItem1.setMnemonic('O');
-                menu1.add(menuItem1);
+            //---- menuItem1 ----
+            menuItem1.setAction(openAction);
+            menuItem1.setMnemonic('O');
+            menu1.add(menuItem1);
 
-                //---- menuItem2 ----
-                menuItem2.setAction(closeAction);
-                menu1.add(menuItem2);
-                menu1.add(separator1);
+            //---- menuItem2 ----
+            menuItem2.setAction(closeAction);
+            menu1.add(menuItem2);
+            menu1.add(separator1);
 
-                //---- menuItem3 ----
-                menuItem3.setText("Exit");
-                menu1.add(menuItem3);
-            }
-            menuBar1.add(menu1);
+            //---- menuItem3 ----
+            menuItem3.setText("Exit");
+            menu1.add(menuItem3);
+          }
+          menuBar1.add(menu1);
 
-            //======== menu2 ========
-            {
-                menu2.setText("Help");
+          //======== menu2 ========
+          {
+            menu2.setText("Help");
 
-                //---- menuItem7 ----
-                menuItem7.setAction(openAboutDialogAction);
-                menu2.add(menuItem7);
-            }
-            menuBar1.add(menu2);
+            //---- menuItem7 ----
+            menuItem7.setAction(openAboutDialogAction);
+            menu2.add(menuItem7);
+          }
+          menuBar1.add(menu2);
         }
         setJMenuBar(menuBar1);
 
         //======== splitPane1 ========
         {
 
-            //======== panel1 ========
+          //======== panel1 ========
+          {
+            panel1.setLayout(new BorderLayout());
+
+            //======== scrollPane1 ========
             {
-                panel1.setLayout(new BorderLayout());
 
-                //======== scrollPane1 ========
-                {
-
-                    //---- fileList ----
-                    fileList.setFillsViewportHeight(true);
-                    fileList.setAutoResizeMode(JTable.AUTO_RESIZE_NEXT_COLUMN);
-                    fileList.setFullyNonEditable(true);
-                    fileList.setSurrendersFocusOnKeystroke(false);
-                    fileList.setShowHorizontalLines(true);
-                    fileList.addMouseListener(new MouseAdapter() {
-                        @Override
-                        public void mousePressed(MouseEvent e) {
-                            fileListMousePressed(e);
-                        }
-                    });
-                    scrollPane1.setViewportView(fileList);
+              //---- fileList ----
+              fileList.setFillsViewportHeight(true);
+              fileList.setAutoResizeMode(JTable.AUTO_RESIZE_NEXT_COLUMN);
+              fileList.setFullyNonEditable(true);
+              fileList.setSurrendersFocusOnKeystroke(false);
+              fileList.setShowHorizontalLines(true);
+              fileList.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mousePressed(MouseEvent e) {
+                  fileListMousePressed(e);
                 }
-                panel1.add(scrollPane1, BorderLayout.CENTER);
-
-                //======== panel2 ========
-                {
-                    panel2.setLayout(new GridBagLayout());
-                    ((GridBagLayout)panel2.getLayout()).columnWidths = new int[] {0, 0, 0, 0};
-                    ((GridBagLayout)panel2.getLayout()).rowHeights = new int[] {0, 0, 0};
-                    ((GridBagLayout)panel2.getLayout()).columnWeights = new double[] {1.0, 1.0, 0.0, 1.0E-4};
-                    ((GridBagLayout)panel2.getLayout()).rowWeights = new double[] {1.0, 1.0, 1.0E-4};
-
-                    //---- searchLabel ----
-                    searchLabel.setIcon(new ImageIcon(getClass().getResource("/tm_item_search.png")));
-                    searchLabel.setLabelFor(searchField);
-                    searchLabel.setText("Search:");
-                    searchLabel.setEnabled(false);
-                    searchLabel.setHorizontalAlignment(SwingConstants.TRAILING);
-                    panel2.add(searchLabel, new GridBagConstraints(0, 0, 1, 1, 1.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 2, 2), 0, 0));
-
-                    //---- searchField ----
-                    searchField.setEnabled(false);
-                    searchField.addCaretListener(new CaretListener() {
-                        @Override
-                        public void caretUpdate(CaretEvent e) {
-                            fileSearch(e);
-                        }
-                    });
-                    panel2.add(searchField, new GridBagConstraints(1, 0, 2, 1, 3.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 2, 0), 0, 0));
-                }
-                panel1.add(panel2, BorderLayout.NORTH);
+              });
+              scrollPane1.setViewportView(fileList);
             }
-            splitPane1.setLeftComponent(panel1);
+            panel1.add(scrollPane1, BorderLayout.CENTER);
 
-            //======== editorPane ========
+            //======== panel2 ========
             {
-                editorPane.setLayout(new BorderLayout());
+              panel2.setLayout(new GridBagLayout());
+              ((GridBagLayout)panel2.getLayout()).columnWidths = new int[] {0, 0, 0, 0};
+              ((GridBagLayout)panel2.getLayout()).rowHeights = new int[] {0, 0, 0};
+              ((GridBagLayout)panel2.getLayout()).columnWeights = new double[] {1.0, 1.0, 0.0, 1.0E-4};
+              ((GridBagLayout)panel2.getLayout()).rowWeights = new double[] {1.0, 1.0, 1.0E-4};
+
+              //---- searchLabel ----
+              searchLabel.setIcon(new ImageIcon(getClass().getResource("/tm_item_search.png")));
+              searchLabel.setLabelFor(searchField);
+              searchLabel.setText("Search:");
+              searchLabel.setEnabled(false);
+              searchLabel.setHorizontalAlignment(SwingConstants.TRAILING);
+              panel2.add(searchLabel, new GridBagConstraints(0, 0, 1, 1, 1.0, 0.0,
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                new Insets(0, 0, 2, 2), 0, 0));
+
+              //---- searchField ----
+              searchField.setEnabled(false);
+              searchField.addCaretListener(e -> fileSearch(e));
+              panel2.add(searchField, new GridBagConstraints(1, 0, 2, 1, 3.0, 0.0,
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                new Insets(0, 0, 2, 0), 0, 0));
             }
-            splitPane1.setRightComponent(editorPane);
+            panel1.add(panel2, BorderLayout.NORTH);
+          }
+          splitPane1.setLeftComponent(panel1);
+
+          //======== editorPane ========
+          {
+            editorPane.setLayout(new BorderLayout());
+          }
+          splitPane1.setRightComponent(editorPane);
         }
         contentPane.add(splitPane1, BorderLayout.CENTER);
         setSize(800, 600);
@@ -823,41 +832,41 @@ public class MainWindow extends JFrame {
         //======== entryPopupMenu ========
         {
 
-            //---- menuItem9 ----
-            menuItem9.setAction(insertFileAction);
-            entryPopupMenu.add(menuItem9);
-            entryPopupMenu.addSeparator();
+          //---- menuItem9 ----
+          menuItem9.setAction(insertFileAction);
+          entryPopupMenu.add(menuItem9);
+          entryPopupMenu.addSeparator();
 
-            //---- menuItem10 ----
-            menuItem10.setAction(replaceFileAction);
-            entryPopupMenu.add(menuItem10);
+          //---- menuItem10 ----
+          menuItem10.setAction(replaceFileAction);
+          entryPopupMenu.add(menuItem10);
 
-            //---- menuItem4 ----
-            menuItem4.setMnemonic('E');
-            menuItem4.setAction(extractEntryAction);
-            entryPopupMenu.add(menuItem4);
+          //---- menuItem4 ----
+          menuItem4.setMnemonic('E');
+          menuItem4.setAction(extractEntryAction);
+          entryPopupMenu.add(menuItem4);
 
-            //---- menuItem5 ----
-            menuItem5.setMnemonic('D');
-            menuItem5.setAction(deleteEntryAction);
-            entryPopupMenu.add(menuItem5);
+          //---- menuItem5 ----
+          menuItem5.setMnemonic('D');
+          menuItem5.setAction(deleteEntryAction);
+          entryPopupMenu.add(menuItem5);
         }
 
         //======== labPopupMenu ========
         {
 
-            //---- menuItem11 ----
-            menuItem11.setText("text");
-            menuItem11.setAction(insertFileAction);
-            labPopupMenu.add(menuItem11);
+          //---- menuItem11 ----
+          menuItem11.setText("text");
+          menuItem11.setAction(insertFileAction);
+          labPopupMenu.add(menuItem11);
 
-            //---- menuItem6 ----
-            menuItem6.setAction(extractAllAction);
-            labPopupMenu.add(menuItem6);
+          //---- menuItem6 ----
+          menuItem6.setAction(extractAllAction);
+          labPopupMenu.add(menuItem6);
 
-            //---- menuItem8 ----
-            menuItem8.setAction(saveLabAction);
-            labPopupMenu.add(menuItem8);
+          //---- menuItem8 ----
+          menuItem8.setAction(saveLabAction);
+          labPopupMenu.add(menuItem8);
         }
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
@@ -865,7 +874,6 @@ public class MainWindow extends JFrame {
     private class OpenAboutDialogAction extends AbstractAction {
         private OpenAboutDialogAction() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "About");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
         }
@@ -880,7 +888,6 @@ public class MainWindow extends JFrame {
     private class SaveLabAction extends AbstractAction {
         private SaveLabAction() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "Save LAB");
             putValue(SHORT_DESCRIPTION, "Rebuild and save this LAB");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
@@ -919,7 +926,6 @@ public class MainWindow extends JFrame {
     private class InsertFileAction extends AbstractAction {
         private InsertFileAction() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "Insert");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
         }
@@ -946,7 +952,6 @@ public class MainWindow extends JFrame {
     private class ReplaceFileAction extends AbstractAction {
         private ReplaceFileAction() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "Replace");
             putValue(SHORT_DESCRIPTION, "Replaces the selected file with one from your hard drive");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents

@@ -1,7 +1,5 @@
-
-
 /*
- * Copyright (C) 2014  James Lawrence.
+ * Copyright (C) 2022  James Lawrence.
  *
  *     This file is part of GrimEdi.
  *
@@ -21,40 +19,30 @@
 
 package com.sqrt4.grimedi.ui.editor;
 
-import com.sqrt.liblab.entry.LabEntry;
-import com.sqrt4.grimedi.ui.MainWindow;
+import com.sqrt.liblab.io.DataSource;
 
 import javax.swing.*;
+import java.io.IOException;
 
-public abstract class EditorPanel<T extends LabEntry> extends JPanel {
-    public static final ImageIcon defaultIcon = new ImageIcon(EditorPanel.class.getResource("/file.png"));
-    protected T data;
-    protected MainWindow window;
+public class TextView {
+  private JPanel panel1;
+  private JTextArea textArea1;
+  private String content;
 
-    public final void setData(T data) {
-        this.data = data;
-        onNewData();
+  public void setData(DataSource source) {
+    byte[] data = new byte[(int) source.length()];
+    try {
+      source.position(0);
+      source.get(data);
+    } catch (IOException e) {
+      e.printStackTrace();
     }
+    this.content = new String(data);
+    // We work with multiple data types, which one is this
+    textArea1.setText(this.content);
+  }
 
-    public T getData() {
-        return this.data;
-    }
-
-    public abstract void onNewData();
-
-    public final void setWindow(MainWindow mw) {
-        window = mw;
-    }
-
-    public void onHide() {
-
-    }
-
-    public void onShow() {
-
-    }
-
-    public ImageIcon getIcon() {
-        return defaultIcon;
-    }
+  public JComponent getContentPane() {
+    return this.panel1;
+  }
 }
