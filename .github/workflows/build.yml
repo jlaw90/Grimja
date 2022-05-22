@@ -17,21 +17,37 @@ jobs:
       - uses: stCarolas/setup-maven@v4.3
         with:
           maven-version: 3.8.2
-      - name: Compile
+      - name: Build
+        id: build
         run: |
           cd grimedi
+          VERSION=$(mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -e '^[[:digit:]]')
           mvn compile
+          mvn package
+          
+          NEW_VERSION=$(git tag -l "$VERSION")
+          echo ::set-output name=version::$VERSION
+          echo ::set-output name=version_exists::$(git tag -l "$VERSION")
 
       - name: Release
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/master' && steps.build.outputs.version_exists == ''
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          body: |
-            Automatic release
-          draft: true
+          tag_name: ${{ steps.build.outputs.version }}
+          release_name: ${{ steps.build.outputs.version }}
           prerelease: true
+
+      - name: Upload Release Asset
+        id: upload-release-asset
+        if: steps.create_release.outputs.upload_url
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./target/GrimEdi-${{ steps.build.outputs.version }}-jar-with-dependencies.jar
+          asset_name: grimedi-${{ steps.build.outputs.version}}.zip
+          asset_content_type: application/java-archive
