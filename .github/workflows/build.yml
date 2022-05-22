@@ -24,6 +24,7 @@ jobs:
           VERSION=$(mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -e '^v[[:digit:]]')
           mvn -B package
           
+          git fetch
           git tag -l
           echo ::set-output name=version::$VERSION
           echo ::set-output name=version_exists::$(git tag -l "$VERSION")
