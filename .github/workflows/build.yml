@@ -22,7 +22,6 @@ jobs:
         run: |
           cd grimedi
           VERSION=$(mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -e '^v[[:digit:]]')
-          mvn compile
           mvn package
           
           echo ::set-output name=version::$VERSION
