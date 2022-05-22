@@ -22,11 +22,11 @@ jobs:
         run: |
           cd grimedi
           VERSION=$(mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -e '^v[[:digit:]]')
-          mvn package
+          mvn -B package
           
           echo ::set-output name=version::$VERSION
           echo ::set-output name=version_exists::$(git tag -l "$VERSION")
-          echo "Version exists?: $(git tag -l "$VERSION$)"
+          echo "Version exists?: $(git tag -l "$VERSION)"
 
       - name: Release
         if: github.ref == 'refs/heads/master' && !steps.build.outputs.version_exists
