@@ -21,7 +21,7 @@ jobs:
         id: build
         run: |
           cd grimedi
-          VERSION=v$(mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -e '^[[:digit:]]')
+          VERSION=$(mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -e '^[[:digit:]]')
           mvn compile
           mvn package
           
@@ -35,8 +35,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v${{ steps.build.outputs.version }}
-          release_name: v${{ steps.build.outputs.version }}
+          tag_name: ${{ steps.build.outputs.version }}
+          release_name: ${{ steps.build.outputs.version }}
           draft: true
 
       - name: Upload Release Asset
